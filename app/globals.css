@@ -2,20 +2,45 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Default Light Mode */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #dde2e8; /* Soft white */
+  --secondary-background: #84b7e191;
+  --foreground: #092368; /* Deep blue */
+  --muted-foreground: #0922684a;
+  --primary: #45a9fb; /* Stronger blue */
+  --primary-hover: #66afebbb;
+  --secondary: #d3ebfb; /* Pale sky blue */
+  --secondary-hover:#b9dff8;
+  --accent: #15d0fa; /* Golden yellow */
+  --popover-background:rgba(211, 235, 251, 0.8);
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-full: 50px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Explicit Dark Mode */
+.dark {
+  --background: #121212; /* Charcoal gray */
+  --secondary-background: #201c32;
+  --foreground: #d3ceefe1; /* Muted light blue */
+  --muted-foreground: #d3ceef45;
+  --primary: #376dae; /* Medium pale blue */
+  --primary-hover: #376caebb;
+  --secondary: #252e4d; /* Dark navy */
+  --secondary-hover: #202946;
+  --accent: #15d0fac5; /* Soft yellow */
+  --popover-background: rgba(37, 46, 77, 0.8);
 }
 
+/* Apply to body */
 body {
   color: var(--foreground);
-  background: var(--background);
+  background-color: var(--background);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+button, input, textarea {
+  border-radius: var(--radius-sm);
 }
