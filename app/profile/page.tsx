@@ -9,6 +9,8 @@ import { logout } from '@/store/authSlice'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import Image from 'next/image'
+import { Pencil } from 'lucide-react'
 
 const GET_PROFILE = gql`
   query Me {
@@ -16,6 +18,7 @@ const GET_PROFILE = gql`
       id
       username
       email
+      profileImage
     }
   }
 `
@@ -38,6 +41,7 @@ export default function Profile() {
 
   const [form, setForm] = useState({ username: '', email: '' })
   const [editing, setEditing] = useState(false)
+  const [hovered, setHovered] = useState(false)
 
   if (loading) return <p>Loading...</p>
   if (error) return <p>Error: {error.message}</p>
@@ -64,15 +68,45 @@ export default function Profile() {
     router.push('/login')
   }
 
+  const handleFileChange = (event) => {
+    const file = event.target.files[0]
+    if (file) {
+      // You can now send the file to your mutation
+      // onUpload(file);
+      return
+    }
+  }
+
   return (
     <div className='flex min-h-screen items-center justify-center bg-background'>
       <div className='w-full max-w-md rounded-lg p-6 shadow-lg bg-componentBackground'>
         <h2 className='mb-4 text-2xl font-bold text-foreground'>Profile</h2>
-        {/* <img
-          src={user.profilePicture || '/default-avatar.png'}
-          alt='Profile'
-          className='mb-4 h-24 w-24 rounded-full mx-auto'
-        /> */}
+        <div
+          className='flex justify-center items-center w-full mb-3'
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
+        >
+          <Image
+            src={`data:image/png;base64,${user.profileImage}`}
+            alt='profile'
+            style={{ borderRadius: '50%' }}
+            width={150}
+            className='rounded-full w-[140px] h-[140px] object-cover'
+            height={1}
+          />
+          {/* Hover Overlay */}
+          {hovered && (
+            <div className='absolute w-[140px] h-[140px] bg-black bg-opacity-50 rounded-full flex justify-center items-center cursor-pointer'>
+              <Pencil className='text-white' />
+              <input
+                type='file'
+                accept='image/*'
+                className='hidden'
+                onChange={handleFileChange}
+              />
+            </div>
+          )}
+        </div>
         {editing ? (
           <form
             onSubmit={handleSubmit}
