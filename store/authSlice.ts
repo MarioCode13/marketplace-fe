@@ -3,6 +3,7 @@ import { gql } from '@apollo/client'
 import { jwtDecode } from 'jwt-decode'
 import client from '@/context/apollo-client'
 
+
 // GraphQL Login Mutation
 const LOGIN_MUTATION = gql`
   mutation Login($emailOrUsername: String!, $password: String!) {
@@ -31,9 +32,14 @@ export const loginUser = createAsyncThunk(
                 variables: { emailOrUsername, password },
             })
             localStorage.setItem('token', data.login.token) // Save token to localStorage
+
+
+
             return data.login
         } catch (error: any) { // eslint-disable-line
+
             return rejectWithValue(error.message)
+
         }
     }
 )
@@ -71,6 +77,8 @@ const authSlice = createSlice({
             state.token = null
             state.user = null
             localStorage.removeItem('token')
+            client.clearStore()
+
         },
     },
     extraReducers: (builder) => {

@@ -68,7 +68,7 @@ export default function Profile() {
 
   const handleLogout = () => {
     dispatch(logout())
-    router.push('/login')
+    router.push('/')
   }
 
   // const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -90,7 +90,7 @@ export default function Profile() {
 
     try {
       const response = await fetch(
-        `http://localhost:8080/api/users/10/profile-image`,
+        `http://localhost:8080/api/users/${user.id}/profile-image`,
         {
           method: 'POST',
           body: formData,

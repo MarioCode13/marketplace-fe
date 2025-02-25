@@ -8,6 +8,7 @@ import { AppDispatch, RootState } from '@/store/store'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
 
 export default function Login() {
   const router = useRouter()
@@ -24,7 +25,11 @@ export default function Login() {
     e.preventDefault()
     const result = await dispatch(loginUser(form))
     if (result.meta.requestStatus === 'fulfilled') {
+      toast.success('Login successful!')
       router.push('/')
+    } else {
+      toast.dismiss()
+      toast.error(`Login failed.`)
     }
   }
 
