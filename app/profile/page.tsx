@@ -1,16 +1,17 @@
 'use client'
 
 import { gql, useMutation, useQuery } from '@apollo/client'
-import { useState } from 'react'
+import { ChangeEvent, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useSelector, useDispatch } from 'react-redux'
-import { RootState, AppDispatch } from '@/store/store'
+import { useDispatch } from 'react-redux'
+import { AppDispatch } from '@/store/store'
 import { logout } from '@/store/authSlice'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import Image from 'next/image'
 import { Pencil } from 'lucide-react'
+import { toast } from 'sonner'
 
 const GET_PROFILE = gql`
   query Me {
@@ -43,6 +44,8 @@ export default function Profile() {
   const [editing, setEditing] = useState(false)
   const [hovered, setHovered] = useState(false)
 
+  const { refetch } = useQuery(GET_PROFILE)
+
   if (loading) return <p>Loading...</p>
   if (error) return <p>Error: {error.message}</p>
 
@@ -68,12 +71,46 @@ export default function Profile() {
     router.push('/login')
   }
 
-  const handleFileChange = (event) => {
-    const file = event.target.files[0]
-    if (file) {
-      // You can now send the file to your mutation
-      // onUpload(file);
-      return
+  // const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+  //   const file = e.target.files?.[0]
+  //   if (!file) {
+  //     console.log('No image attached')
+  //     return
+  //   }
+  //   // Pass the file to the upload function
+  //   // onUpload(file)
+  // }
+
+  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files?.length) return
+
+    const file = e.target.files[0]
+    const formData = new FormData()
+    formData.append('image', file)
+
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/users/10/profile-image`,
+        {
+          method: 'POST',
+          body: formData,
+          // headers: {
+          //   Authorization: `Bearer ${yourAuthToken}`,
+          // },
+        }
+      )
+
+      if (response.ok) {
+        toast.dismiss() // Remove loading toast
+        toast.success('Profile image updated!')
+        await refetch() // Refresh profile image
+      } else {
+        toast.dismiss()
+        toast.error('Upload failed. Please try again.')
+      }
+    } catch (err) {
+      toast.dismiss()
+      toast.error(`Something went wrong. ${err}`)
     }
   }
 
@@ -81,32 +118,41 @@ export default function Profile() {
     <div className='flex min-h-screen items-center justify-center bg-background'>
       <div className='w-full max-w-md rounded-lg p-6 shadow-lg bg-componentBackground'>
         <h2 className='mb-4 text-2xl font-bold text-foreground'>Profile</h2>
-        <div
-          className='flex justify-center items-center w-full mb-3'
-          onMouseEnter={() => setHovered(true)}
-          onMouseLeave={() => setHovered(false)}
-        >
-          <Image
-            src={`data:image/png;base64,${user.profileImage}`}
-            alt='profile'
-            style={{ borderRadius: '50%' }}
-            width={150}
-            className='rounded-full w-[140px] h-[140px] object-cover'
-            height={1}
-          />
-          {/* Hover Overlay */}
-          {hovered && (
-            <div className='absolute w-[140px] h-[140px] bg-black bg-opacity-50 rounded-full flex justify-center items-center cursor-pointer'>
+        <div className='relative flex justify-center items-center w-full mb-3'>
+          <label className='relative w-[140px] h-[140px] cursor-pointer'>
+            <Image
+              src={
+                user.profileImage
+                  ? `data:image/png;base64,${user.profileImage}`
+                  : '/default-profile.png'
+              }
+              alt='profile'
+              className='rounded-full w-[140px] h-[140px] object-cover'
+              width={140}
+              height={140}
+            />
+
+            {/* Hidden file input */}
+            <input
+              type='file'
+              accept='image/*'
+              className='hidden'
+              onChange={(e) => handleFileChange(e)}
+            />
+
+            {/* Hover Overlay */}
+            <div
+              className={`absolute inset-0 flex justify-center items-center bg-black bg-opacity-50 rounded-full transition-opacity ${
+                hovered ? 'opacity-100' : 'opacity-0'
+              }`}
+              onMouseEnter={() => setHovered(true)}
+              onMouseLeave={() => setHovered(false)}
+            >
               <Pencil className='text-white' />
-              <input
-                type='file'
-                accept='image/*'
-                className='hidden'
-                onChange={handleFileChange}
-              />
             </div>
-          )}
+          </label>
         </div>
+
         {editing ? (
           <form
             onSubmit={handleSubmit}

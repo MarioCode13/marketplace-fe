@@ -44,3 +44,18 @@ body {
 button, input, textarea {
   border-radius: var(--radius-sm);
 }
+
+
+
+@layer base {}
+
+
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
