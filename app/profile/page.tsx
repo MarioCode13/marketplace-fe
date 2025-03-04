@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import Image from 'next/image'
-import { Pencil } from 'lucide-react'
+import { Pencil, User } from 'lucide-react'
 import { toast } from 'sonner'
 
 const GET_PROFILE = gql`
@@ -120,17 +120,23 @@ export default function Profile() {
         <h2 className='mb-4 text-2xl font-bold text-foreground'>Profile</h2>
         <div className='relative flex justify-center items-center w-full mb-3'>
           <label className='relative w-[140px] h-[140px] cursor-pointer'>
-            <Image
-              src={
-                user.profileImage
-                  ? `data:image/png;base64,${user.profileImage}`
-                  : '/default-profile.png'
-              }
-              alt='profile'
-              className='rounded-full w-[140px] h-[140px] object-cover'
-              width={140}
-              height={140}
-            />
+            {user.profileImage ? (
+              <Image
+                src={
+                  user.profileImage
+                    ? `data:image/png;base64,${user.profileImage}`
+                    : '/default-profile.png'
+                }
+                alt='profile'
+                className='rounded-full w-[140px] h-[140px] object-cover'
+                width={140}
+                height={140}
+              />
+            ) : (
+              <div className='flex justify-center h-full items-center'>
+                <User className='rounded-full w-[90px] h-[90px] object-cover' />
+              </div>
+            )}
 
             {/* Hidden file input */}
             <input

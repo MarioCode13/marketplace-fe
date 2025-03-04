@@ -6,6 +6,7 @@ import { useState } from 'react'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
 
 const REGISTER_MUTATION = gql`
   mutation Register($username: String!, $email: String!, $password: String!) {
@@ -30,7 +31,7 @@ export default function Register() {
     e.preventDefault()
     try {
       await register({ variables: form })
-      alert('Registration successful! You can now log in.')
+      toast.success('Registration successful! You can now login')
       router.push('/login')
     } catch (err) {
       console.error(err)

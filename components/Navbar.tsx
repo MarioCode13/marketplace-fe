@@ -15,15 +15,34 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { gql, useApolloClient, useQuery } from '@apollo/client'
+
+const GET_PROFILE = gql`
+  query Me {
+    me {
+      id
+      username
+      email
+      profileImage
+    }
+  }
+`
 
 export default function Navbar() {
   const dispatch = useDispatch()
   const router = useRouter()
+  const client = useApolloClient()
   const token = useSelector((state: RootState) => state.auth.token)
   const { theme, setTheme } = useTheme()
+  const { data, loading } = useQuery(GET_PROFILE, {
+    skip: !token, // Only fetch if user is logged in
+    fetchPolicy: 'no-cache',
+  })
+  const profileImage = data?.me?.profileImage
 
   const handleLogout = () => {
     dispatch(logout())
+    client.clearStore()
     router.push('/')
   }
 
@@ -46,7 +65,7 @@ export default function Navbar() {
           <li>
             <Link
               href='/buy'
-              className='hover:text-secondary transition'
+              className='hover:text-primary transition'
             >
               Buy
             </Link>
@@ -54,7 +73,7 @@ export default function Navbar() {
           <li>
             <Link
               href='/sell'
-              className='hover:text-secondary transition'
+              className='hover:text-primary transition'
             >
               Sell
             </Link>
@@ -67,7 +86,8 @@ export default function Navbar() {
           <Button
             onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
             variant='secondary'
-            className='p-2'
+            size='lg'
+            className='p-2 w-10 h-10 rounded-full'
           >
             {theme === 'light' ? (
               <Moon className='w-5 h-5' />
@@ -79,8 +99,26 @@ export default function Navbar() {
           {/* Profile Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant='secondary'>
-                <User />
+              <Button
+                variant='secondary'
+                size='icon'
+                className='rounded-full w-12 h-12'
+              >
+                {!token ? (
+                  <User className='w-6 h-6' />
+                ) : loading ? (
+                  <div className='w-6 h-6 bg-gray-300 rounded-full animate-pulse' />
+                ) : profileImage ? (
+                  <Image
+                    src={`data:image/png;base64,${profileImage}`}
+                    alt='profile'
+                    width={60}
+                    height={39}
+                    className='rounded-full w-12 h-12 object-cover'
+                  />
+                ) : (
+                  <User className='w-6 h-6' />
+                )}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align='end'>
