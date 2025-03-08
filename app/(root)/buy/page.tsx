@@ -48,13 +48,10 @@ export default function BuyPage() {
                 className='border p-4 rounded-lg shadow-lg'
               >
                 <Image
-                  src={
-                    `data:image/png;base64,${listing.images[0]}` ||
-                    '/placeholder.png'
-                  }
+                  src={`${listing.images[0]}` || '/placeholder.png'}
                   alt={listing.title}
-                  width={10}
-                  height={20}
+                  width={100}
+                  height={100}
                   className='w-full h-40 object-cover rounded-md'
                 />
                 <h2 className='text-xl font-semibold mt-2'>{listing.title}</h2>

@@ -31,7 +31,7 @@
   --secondary: #252e4d; /* Dark navy */
   --secondary-hover: #202946;
   --accent: #15d0fac5; /* Soft yellow */
-  --popover-background: rgba(37, 46, 77, 0.8);
+  --popover-background:  rgba(37, 46, 77, 0.7);
 }
 
 /* Apply to body */

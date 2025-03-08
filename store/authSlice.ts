@@ -11,6 +11,7 @@ const LOGIN_MUTATION = gql`
       token
       email
       role
+      userId
     }
   }
 `
@@ -20,6 +21,7 @@ type DecodedToken = {
     username: string
     role: 'VISITOR' | 'HAS_ACCOUNT' | 'SUBSCRIBED'
     exp: number
+    userId: string
 }
 
 // Async thunk for login
@@ -31,15 +33,18 @@ export const loginUser = createAsyncThunk(
                 mutation: LOGIN_MUTATION,
                 variables: { emailOrUsername, password },
             })
-            localStorage.setItem('token', data.login.token) // Save token to localStorage
+            const token = data.login.token
 
+            // Decode the token to get user info, including userId
+            const decoded: DecodedToken = jwtDecode(token)
 
+            // Save the token and decoded user info in localStorage and Redux state
+            localStorage.setItem('token', token)
 
-            return data.login
-        } catch (error: any) { // eslint-disable-line
-
+            return { token, user: decoded }  // Return decoded user object here 
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (error: any) {
             return rejectWithValue(error.message)
-
         }
     }
 )
@@ -52,6 +57,12 @@ const getInitialAuthState = () => {
     if (token) {
         try {
             const decoded: DecodedToken = jwtDecode(token)
+            // Check if the token is expired
+            if (decoded.exp * 1000 < Date.now()) {
+                console.log('Token expired')
+                localStorage.removeItem('token') // Remove expired token
+                return { token: null, user: null }
+            }
             return { token, user: decoded }
         } catch (error) {
             console.error('Invalid token:', error)
@@ -60,6 +71,7 @@ const getInitialAuthState = () => {
     }
     return { token: null, user: null }
 }
+
 
 // 🔹 Load token from localStorage on initial state
 const initialState = {
@@ -88,9 +100,14 @@ const authSlice = createSlice({
                 state.error = null
             })
             .addCase(loginUser.fulfilled, (state, action) => {
+                console.log('Login successful, payload:', action.payload)
                 state.token = action.payload.token
                 try {
-                    state.user = jwtDecode(action.payload.token) // Decode and store user info
+                    state.user = {
+                        ...action.payload.user,
+                        // @ts-ignore
+                        userId: action.payload.user.userId // Add userId if it's not already in user
+                    }
                 } catch (error) {
                     console.error('Error decoding token:', error)
                     state.user = null
