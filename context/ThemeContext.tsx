@@ -10,10 +10,9 @@ type ThemeContextType = {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<string | null>(null) // Start with `null` to avoid SSR issues
+  const [theme, setTheme] = useState<string | null>(null)
 
   useEffect(() => {
-    // Ensure this runs only on the client
     const storedTheme = localStorage.getItem('theme')
     const systemTheme = window.matchMedia('(prefers-color-scheme: dark)')
       .matches

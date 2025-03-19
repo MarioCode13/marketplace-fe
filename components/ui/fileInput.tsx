@@ -6,7 +6,6 @@ const FileInput = React.forwardRef<
   HTMLInputElement,
   React.ComponentProps<'input'> & { loading?: boolean }
 >(({ className, loading, ...props }, ref) => {
-  // Conditional rendering of label content
   const labelContent = loading ? (
     <>
       <Loader2 className='animate-spin' />
@@ -45,7 +44,7 @@ const FileInput = React.forwardRef<
         type='file'
         className={cn('hidden', className)}
         ref={ref}
-        disabled={loading} // Disable input when loading
+        disabled={loading}
         {...props}
       />
     </div>

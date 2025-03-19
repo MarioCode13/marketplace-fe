@@ -71,16 +71,6 @@ export default function Profile() {
     router.push('/')
   }
 
-  // const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-  //   const file = e.target.files?.[0]
-  //   if (!file) {
-  //     console.log('No image attached')
-  //     return
-  //   }
-  //   // Pass the file to the upload function
-  //   // onUpload(file)
-  // }
-
   const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.length) return
 
@@ -101,9 +91,9 @@ export default function Profile() {
       )
 
       if (response.ok) {
-        toast.dismiss() // Remove loading toast
+        toast.dismiss()
         toast.success('Profile image updated!')
-        await refetch() // Refresh profile image
+        await refetch()
       } else {
         toast.dismiss()
         toast.error('Upload failed. Please try again.')

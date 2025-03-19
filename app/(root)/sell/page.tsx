@@ -130,7 +130,7 @@ export default function SellPage() {
         throw new Error(`Upload failed: ${data}`)
       }
 
-      setImages([...images, data[0]]) // Backend returns an array of URLs
+      setImages([...images, data[0]])
       toast.success('Image uploaded successfully!')
     } catch (err) {
       toast.error('Image upload failed')

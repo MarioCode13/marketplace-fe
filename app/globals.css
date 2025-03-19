@@ -5,10 +5,10 @@
 /* Default Light Mode */
 :root {
   --background: #dde2e8; /* Soft white */
-  --secondary-background: #84b7e191;
+  --secondary-background: #b5d0e5ee;
   --foreground: #092368; /* Deep blue */
   --muted-foreground: #0922684a;
-  --primary: #45a9fb; /* Stronger blue */
+  --primary: #5ca9dc; /* Stronger blue */
   --primary-hover: #66afebbb;
   --secondary: #d3ebfb; /* Pale sky blue */
   --secondary-hover:#b9dff8;

@@ -4,7 +4,6 @@ import { jwtDecode } from 'jwt-decode'
 import client from '@/context/apollo-client'
 
 
-// GraphQL Login Mutation
 const LOGIN_MUTATION = gql`
   mutation Login($emailOrUsername: String!, $password: String!) {
     login(emailOrUsername: $emailOrUsername, password: $password) {
@@ -24,7 +23,7 @@ type DecodedToken = {
     userId: string
 }
 
-// Async thunk for login
+
 export const loginUser = createAsyncThunk(
     'auth/loginUser',
     async ({ emailOrUsername, password }: { emailOrUsername: string; password: string }, { rejectWithValue }) => {
@@ -35,13 +34,11 @@ export const loginUser = createAsyncThunk(
             })
             const token = data.login.token
 
-            // Decode the token to get user info, including userId
             const decoded: DecodedToken = jwtDecode(token)
 
-            // Save the token and decoded user info in localStorage and Redux state
             localStorage.setItem('token', token)
 
-            return { token, user: decoded }  // Return decoded user object here 
+            return { token, user: decoded }
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
             return rejectWithValue(error.message)
@@ -49,7 +46,6 @@ export const loginUser = createAsyncThunk(
     }
 )
 
-// 🔹 Get token from localStorage and decode it
 const getInitialAuthState = () => {
     if (typeof window === 'undefined') return { token: null, user: null }
 
@@ -57,26 +53,25 @@ const getInitialAuthState = () => {
     if (token) {
         try {
             const decoded: DecodedToken = jwtDecode(token)
-            // Check if the token is expired
             if (decoded.exp * 1000 < Date.now()) {
                 console.log('Token expired')
-                localStorage.removeItem('token') // Remove expired token
+                localStorage.removeItem('token')
                 return { token: null, user: null }
             }
             return { token, user: decoded }
         } catch (error) {
             console.error('Invalid token:', error)
-            localStorage.removeItem('token') // Remove invalid token
+            localStorage.removeItem('token')
         }
     }
     return { token: null, user: null }
 }
 
 
-// 🔹 Load token from localStorage on initial state
+
 const initialState = {
     ...getInitialAuthState(),
-    token: typeof window !== 'undefined' ? localStorage.getItem('token') : null, // Prevents SSR issues
+    token: typeof window !== 'undefined' ? localStorage.getItem('token') : null,
     loading: false,
     error: null as string | null,
 }
@@ -105,8 +100,7 @@ const authSlice = createSlice({
                 try {
                     state.user = {
                         ...action.payload.user,
-                        // @ts-ignore
-                        userId: action.payload.user.userId // Add userId if it's not already in user
+                        userId: action.payload.user.userId
                     }
                 } catch (error) {
                     console.error('Error decoding token:', error)

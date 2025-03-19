@@ -47,7 +47,10 @@ export default {
 				md: "var(--radius-md)",
 				lg: "var(--radius-lg)",
 				full: "var(--radius-full)",
-			}
+			},
+			animation: {
+				'pulse-fast': 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+			},
 		}
 	},
 	darkMode: "class",

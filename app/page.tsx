@@ -66,7 +66,7 @@ export default function Home() {
             variant={'default'}
             className='w-full'
             size='xl'
-            onClick={() => router.push('/buy')}
+            onClick={() => router.push('/listings')}
           >
             Browse Listings
           </Button>

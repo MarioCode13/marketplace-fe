@@ -35,7 +35,7 @@ export default function Navbar() {
   const token = useSelector((state: RootState) => state.auth.token)
   const { theme, setTheme } = useTheme()
   const { data, loading } = useQuery(GET_PROFILE, {
-    skip: !token, // Only fetch if user is logged in
+    skip: !token,
     fetchPolicy: 'no-cache',
   })
   const profileImage = data?.me?.profileImage
@@ -64,7 +64,7 @@ export default function Navbar() {
         <ul className='flex gap-6 text-lg font-medium'>
           <li>
             <Link
-              href='/buy'
+              href='/listings'
               className='hover:text-primary transition'
             >
               Buy
