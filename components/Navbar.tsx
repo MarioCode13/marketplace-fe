@@ -67,15 +67,15 @@ export default function Navbar() {
               href='/listings'
               className='hover:text-primary transition'
             >
-              Buy
+              Browse
             </Link>
           </li>
           <li>
             <Link
-              href='/sell'
+              href='/my-listings'
               className='hover:text-primary transition'
             >
-              Sell
+              My Listings
             </Link>
           </li>
         </ul>

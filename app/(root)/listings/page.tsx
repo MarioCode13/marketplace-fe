@@ -110,7 +110,9 @@ export default function ListingsPage() {
                       <h2 className='text-xl font-semibold mt-2'>
                         {listing.title}
                       </h2>
-                      <p className='text-gray-600'>{listing.description}</p>
+                      <p className='text-gray-600 line-clamp-2 min-h-[48px]'>
+                        {listing.description}
+                      </p>
                       <p className='text-green-600 font-bold'>
                         ${listing.price}
                       </p>
