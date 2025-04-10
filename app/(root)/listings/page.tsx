@@ -4,13 +4,12 @@ import { useSelector } from 'react-redux'
 import { RootState } from '@/store/store'
 import { useQuery } from '@apollo/client'
 import Link from 'next/link'
-import Image from 'next/image'
-import dayjs from 'dayjs'
 import SkeletonListingCard from '@/components/cards/SkeletonListingCard'
 import FilterDrawer from '@/components/drawers/FilterDrawer'
 import { Button } from '@/components/ui/button'
 import { GET_CATEGORIES, GET_LISTINGS } from '@/lib/graphql/queries'
 import { ChevronLeft, ChevronRight, ListFilter } from 'lucide-react'
+import ListingCard from '@/components/cards/ListingCard'
 
 interface Listing {
   id: string
@@ -91,36 +90,10 @@ export default function ListingsPage() {
             ) : listings.length > 0 ? (
               <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full '>
                 {listings.map((listing) => (
-                  <Link
+                  <ListingCard
                     key={listing.id}
-                    href={`/listings/${listing.id}`}
-                    passHref
-                  >
-                    <div
-                      key={listing.id}
-                      className='border p-4 rounded-lg shadow-lg min-h-[300px]'
-                    >
-                      <Image
-                        src={listing.images[0] || '/placeholder.png'}
-                        alt={listing.title}
-                        width={100}
-                        height={100}
-                        className='w-full h-40 object-cover rounded-md'
-                      />
-                      <h2 className='text-xl font-semibold mt-2'>
-                        {listing.title}
-                      </h2>
-                      <p className='text-gray-600 line-clamp-2 min-h-[48px]'>
-                        {listing.description}
-                      </p>
-                      <p className='text-green-600 font-bold'>
-                        ${listing.price}
-                      </p>
-                      <p className='text-sm text-gray-500'>
-                        {dayjs(listing.createdAt).format('DD-MM-YYYY')}
-                      </p>
-                    </div>
-                  </Link>
+                    listing={listing}
+                  />
                 ))}
               </div>
             ) : (

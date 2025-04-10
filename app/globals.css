@@ -23,7 +23,7 @@
 /* Explicit Dark Mode */
 .dark {
   --background: #121212; /* Charcoal gray */
-  --secondary-background: #201c32;
+  --secondary-background: rgba(32, 28, 50, 1);
   --foreground: #d3ceefe1; /* Muted light blue */
   --muted-foreground: #d3ceef45;
   --primary: #376dae; /* Medium pale blue */
