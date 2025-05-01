@@ -10,8 +10,14 @@ import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import Image from 'next/image'
-import { Pencil, User } from 'lucide-react'
+import { Pencil, User, CheckCircle, ArrowRight } from 'lucide-react'
 import { toast } from 'sonner'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 
 const GET_PROFILE = gql`
   query Me {
@@ -19,7 +25,7 @@ const GET_PROFILE = gql`
       id
       username
       email
-      profileImage
+      profileImageUrl
     }
   }
 `
@@ -39,13 +45,11 @@ export default function Profile() {
   const router = useRouter()
   const { data, loading, error } = useQuery(GET_PROFILE)
   const [updateProfile] = useMutation(UPDATE_PROFILE)
-
   const [form, setForm] = useState({ username: '', email: '' })
   const [editing, setEditing] = useState(false)
   const [hovered, setHovered] = useState(false)
-
   const { refetch } = useQuery(GET_PROFILE)
-
+  const [profileComplete] = useState(false)
   if (loading) return <p>Loading...</p>
   if (error) return <p>Error: {error.message}</p>
 
@@ -107,7 +111,22 @@ export default function Profile() {
   return (
     <div className='flex min-h-screen items-center justify-center bg-background'>
       <div className='w-full max-w-md rounded-lg p-6 shadow-lg bg-componentBackground'>
-        <h2 className='mb-4 text-2xl font-bold text-foreground'>Profile</h2>
+        <div className='w-full flex justify-between items-center'>
+          <h2 className='mb-4 text-2xl font-bold text-foreground'>Profile</h2>
+          {profileComplete && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <CheckCircle className='text-green-500 w-5 h-5 ml-2 cursor-pointer hover:scale-110' />
+                </TooltipTrigger>
+                <TooltipContent side='top'>
+                  <p>Profile complete</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+        </div>
+
         <div className='relative flex justify-center items-center w-full mb-3'>
           <label className='relative w-[140px] h-[140px] cursor-pointer'>
             {user.profileImage ? (
@@ -198,24 +217,16 @@ export default function Profile() {
             </Button>
           </div>
         )}
-        {/* <h3 className='mt-6 text-lg font-semibold'>Listings</h3> */}
-        {/* <ul className='mt-2'>
-          {user.listings.length > 0 ? (
-            user.listings.map((listing: any) => (
-              <li
-                key={listing.id}
-                className='border-b py-2'
-              >
-                <strong>{listing.title}</strong>
-                <p className='text-sm text-muted-foreground'>
-                  {listing.description}
-                </p>
-              </li>
-            ))
-          ) : (
-            <p>No listings found.</p>
-          )}
-        </ul> */}
+        {!profileComplete && (
+          <Button
+            variant={'secondary'}
+            className='w-full mt-6'
+            onClick={() => router.push('/profile/complete')}
+          >
+            Complete Your Profile <ArrowRight className='w-4 h-4 ml-2' />
+          </Button>
+        )}
+
         <Button
           variant='destructive'
           className='w-full mt-6'
