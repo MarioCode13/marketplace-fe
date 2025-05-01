@@ -115,7 +115,7 @@ export default function SellPage() {
 
     try {
       const res = await fetch(
-        'http://localhost:8080/api/listings/upload-images',
+        `${process.env.NEXT_PUBLIC_GRAPHQL_URL}/api/listings/upload-images`,
         {
           method: 'POST',
           body: formData,

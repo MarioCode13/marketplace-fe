@@ -84,7 +84,7 @@ export default function Profile() {
 
     try {
       const response = await fetch(
-        `http://localhost:8080/api/users/${user.id}/profile-image`,
+        `${process.env.NEXT_PUBLIC_GRAPHQL_URL}/api/users/${user.id}/profile-image`,
         {
           method: 'POST',
           body: formData,

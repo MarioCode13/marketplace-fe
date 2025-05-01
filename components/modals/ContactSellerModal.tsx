@@ -39,18 +39,21 @@ const ContactSellerModal = ({
     setSuccess('')
 
     try {
-      const response = await fetch('http://localhost:8080/api/send-email', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          to: sellerEmail,
-          subject: `Inquiry about your listing`,
-          message: `Name: ${name}\nEmail: ${email}\n\n${message}`,
-        }),
-      })
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_GRAPHQL_URL}/api/send-email`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            to: sellerEmail,
+            subject: `Inquiry about your listing`,
+            message: `Name: ${name}\nEmail: ${email}\n\n${message}`,
+          }),
+        }
+      )
 
       if (!response.ok) throw new Error('Failed to send email')
 
