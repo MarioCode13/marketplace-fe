@@ -1,13 +1,13 @@
 'use client'
 
-import { gql, useMutation, useQuery } from '@apollo/client'
+import { gql, useQuery } from '@apollo/client'
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+// import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-import { toast } from 'sonner'
+// import { toast } from 'sonner'
 
 const GET_PROFILE = gql`
   query Me {
@@ -22,30 +22,30 @@ const GET_PROFILE = gql`
   }
 `
 
-const COMPLETE_PROFILE = gql`
-  mutation CompleteProfile(
-    $id: ID!
-    $firstName: String!
-    $lastName: String!
-    $bio: String
-    $location: String
-  ) {
-    updateUser(
-      id: $id
-      firstName: $firstName
-      lastName: $lastName
-      bio: $bio
-      location: $location
-    ) {
-      id
-    }
-  }
-`
+// const COMPLETE_PROFILE = gql`
+//   mutation CompleteProfile(
+//     $id: ID!
+//     $firstName: String!
+//     $lastName: String!
+//     $bio: String
+//     $location: String
+//   ) {
+//     updateUser(
+//       id: $id
+//       firstName: $firstName
+//       lastName: $lastName
+//       bio: $bio
+//       location: $location
+//     ) {
+//       id
+//     }
+//   }
+// `
 
 export default function CompleteProfilePage() {
-  const router = useRouter()
-  const { data, loading, error } = useQuery(GET_PROFILE)
-  const [completeProfile] = useMutation(COMPLETE_PROFILE)
+  //   const router = useRouter()
+  const { loading, error } = useQuery(GET_PROFILE)
+  //   const [completeProfile] = useMutation(COMPLETE_PROFILE)
   const [form, setForm] = useState({
     firstName: '',
     lastName: '',
@@ -56,7 +56,7 @@ export default function CompleteProfilePage() {
   if (loading) return <p>Loading...</p>
   if (error) return <p>Error loading profile</p>
 
-  const user = data.me
+  //   const user = data.me
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -64,22 +64,22 @@ export default function CompleteProfilePage() {
     setForm({ ...form, [e.target.name]: e.target.value })
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  //   const handleSubmit = async (e: React.FormEvent) => {
+  //     e.preventDefault()
 
-    try {
-      await completeProfile({
-        variables: {
-          id: user.id,
-          ...form,
-        },
-      })
-      toast.success('Profile updated successfully')
-      router.push('/profile')
-    } catch (err) {
-      toast.error('Something went wrong. Try again.')
-    }
-  }
+  //     try {
+  //       await completeProfile({
+  //         variables: {
+  //           id: user.id,
+  //           ...form,
+  //         },
+  //       })
+  //       toast.success('Profile updated successfully')
+  //       router.push('/profile')
+  //     } catch (err) {
+  //       toast.error('Something went wrong. Try again.')
+  //     }
+  //   }
 
   return (
     <div className='flex min-h-screen items-center justify-center bg-background'>
@@ -89,7 +89,7 @@ export default function CompleteProfilePage() {
         </h2>
 
         <form
-          onSubmit={handleSubmit}
+          //   onSubmit={handleSubmit}
           className='space-y-4'
         >
           <div>
