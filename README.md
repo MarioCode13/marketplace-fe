@@ -1,36 +1,85 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🛒 Marketplace App – Frontend
 
-## Getting Started
+This is the frontend for a full-stack marketplace application built with [Next.js](https://nextjs.org). Users can browse listings, post second-hand items for sale, and manage their profile – all in one modern, mobile-responsive UI.
 
-First, run the development server:
+The app is connected to a Spring Boot backend via GraphQL, and handles secure image uploads, listing management, and real-time updates via push notifications.
+
+---
+
+## ⚙️ Tech Stack
+
+- **Framework**: [Next.js](https://nextjs.org) (App Router)
+- **UI**: Tailwind CSS
+- **State/Data**: Apollo Client (GraphQL)
+- **Image Handling**: REST image upload to Backblaze B2
+- **Auth**: JWT-based (via backend)
+- **Forms**: React Hook Form + Zod
+- **Deployment**: [Vercel](https://vercel.com) (recommended)
+
+---
+
+## 🚀 Getting Started
+
+Clone the repository and install dependencies:
+
+```bash
+git clone https://github.com/your-username/marketplace-frontend.git
+cd marketplace-frontend
+npm install
+```
+
+Start the local dev server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🔑 Environment Variables
 
-## Learn More
+Create a `.env.local` file at the root with your API endpoint and image upload URL:
 
-To learn more about Next.js, take a look at the following resources:
+```env
+NEXT_PUBLIC_GRAPHQL_ENDPOINT=http://localhost:8080/graphql
+NEXT_PUBLIC_IMAGE_UPLOAD_URL=http://localhost:8080/api/upload
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Make sure CORS is configured on your backend to allow frontend requests.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 📦 Features
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- ✅ View all active listings
+- ✅ Create and edit your own listings
+- ✅ Upload images to B2 storage
+- ✅ Mark listings as sold (no deletions)
+- ✅ Filter by category, condition, and search query
+- ✅ View listing history
+- ✅ Push notifications for listing changes (coming soon)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## 📁 Project Structure
+
+```
+/graphql/queries/      → All GraphQL queries
+/graphql/mutations/    → All GraphQL mutations
+/components/           → UI components
+/app/                  → Route-based pages
+/context/              → Apollo & Auth context
+/styles/               → Global Tailwind styles
+```
+
+---
+
+## 🛠️ To Do
+
+- [x] Dark mode
+- [ ] Notification system
+- [ ] Favorites / saved listings
+- [x] Infinite scroll or pagination
+- [ ] Seller ratings and profiles

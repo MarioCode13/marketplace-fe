@@ -13,7 +13,7 @@ export const GET_LISTING_BY_ID = gql`
       createdAt
       user {
         username 
-        profileImage
+        profileImageUrl
         email
       }
     }
