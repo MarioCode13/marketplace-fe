@@ -2,13 +2,10 @@
 
 import { gql, useQuery, useMutation } from '@apollo/client'
 import { useState, useEffect } from 'react'
-// import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-// import { toast } from 'sonner'
-import { FileInput } from '@/components/ui/fileInput'
 import { toast } from 'sonner'
 import { Upload, Check, Loader2 } from 'lucide-react'
 
@@ -66,12 +63,6 @@ export default function CompleteProfilePage() {
 		license: false,
 		address: false,
 	})
-	const [previews, setPreviews] = useState({
-		profile: user?.profileImageUrl || '',
-		id: user?.idPhotoUrl || '',
-		license: user?.driversLicenseUrl || '',
-		address: user?.proofOfAddressUrl || '',
-	})
 
 	useEffect(() => {
 		if (user) {
@@ -80,12 +71,6 @@ export default function CompleteProfilePage() {
 				lastName: user.lastName || '',
 				bio: user.bio || '',
 				location: user.location || '',
-			})
-			setPreviews({
-				profile: user.profileImageUrl || '',
-				id: user.idPhotoUrl || '',
-				license: user.driversLicenseUrl || '',
-				address: user.proofOfAddressUrl || '',
 			})
 		}
 	}, [user])
@@ -133,7 +118,7 @@ export default function CompleteProfilePage() {
 			if (!res.ok) throw new Error('Upload failed')
 			toast.success('Upload successful!')
 			await refetch()
-		} catch (e) {
+		} catch {
 			toast.error('Upload failed')
 		} finally {
 			setUploading((u) => ({ ...u, [type]: false }))
@@ -146,7 +131,6 @@ export default function CompleteProfilePage() {
 	) => {
 		const file = e.target.files?.[0]
 		if (!file) return
-		setPreviews((p) => ({ ...p, [type]: URL.createObjectURL(file) }))
 		uploadFile(type, file)
 	}
 
@@ -167,7 +151,7 @@ export default function CompleteProfilePage() {
 			})
 			toast.success('Profile updated successfully')
 			await refetch()
-		} catch (err) {
+		} catch {
 			toast.error('Something went wrong. Try again.')
 		}
 	}
@@ -259,7 +243,7 @@ export default function CompleteProfilePage() {
 						</div>
 					</div>
 					<div>
-						<Label>Driver's License</Label>
+						<Label>Driver&apos;s License</Label>
 						<div className="flex items-center gap-2">
 							<label className="cursor-pointer flex items-center gap-2 p-2 border rounded-md hover:bg-secondary transition">
 								<input
