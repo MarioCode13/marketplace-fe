@@ -19,6 +19,8 @@ import {
 } from '@/components/ui/select'
 import { FileInput } from '@/components/ui/fileInput'
 import { Category } from '@/lib/graphql/types/category'
+import { ImagePreview } from '@/components/ImagePreview'
+import { ImageUploadArea } from '@/components/ImageUploadArea'
 
 // const UPLOAD_IMAGE = gql`
 //   mutation UploadListingImage($image: String!) {
@@ -89,6 +91,10 @@ export default function SellPage() {
 
   const [images, setImages] = useState<string[]>([])
 
+  const handleRemoveImage = (index: number) => {
+    setImages(images.filter((_, i) => i !== index))
+  }
+
   // const [uploadImage] = useMutation(UPLOAD_IMAGE, {
   //   context: { headers: { Authorization: `Bearer ${token}` } },
   // })
@@ -105,11 +111,10 @@ export default function SellPage() {
     setForm({ ...form, [e.target.name]: e.target.value })
   }
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    setUploading(true)
-    if (!e.target.files) return
+  const handleImageUpload = async (file: File) => {
+    if (images.length >= 5) return
 
-    const file = e.target.files[0]
+    setUploading(true)
     const formData = new FormData()
     formData.append('images', file)
 
@@ -347,20 +352,25 @@ export default function SellPage() {
           </div>
 
           <div className='flex flex-col'>
-            <FileInput
-              id='image'
-              accept='image/*'
-              onChange={handleImageUpload}
+            <Label className='mb-2'>
+              Images
+            </Label>
+            <ImageUploadArea
+              onImageUpload={handleImageUpload}
               loading={uploading}
+              disabled={images.length >= 5}
+              maxImages={5}
+              currentImageCount={images.length}
             />
-
-            {/* <Input
-              id='image'
-              type='file'
-              accept='image/*'
-              onChange={handleImageUpload}
-            /> */}
           </div>
+
+          {/* Image Preview */}
+          <ImagePreview
+            images={images}
+            onRemoveImage={handleRemoveImage}
+            maxImages={5}
+            loading={uploading}
+          />
 
           {error && (
             <p className='text-sm text-red-500 text-center'>{error.message}</p>

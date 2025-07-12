@@ -9,8 +9,9 @@ import { logout } from '@/store/authSlice'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import Image from 'next/image'
-import { Pencil, User, CheckCircle, ArrowRight } from 'lucide-react'
+import { Pencil, User, CheckCircle, ArrowRight, Shield, Star } from 'lucide-react'
 import { toast } from 'sonner'
 import {
 	Tooltip,
@@ -18,6 +19,8 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { TrustRatingDisplay } from '@/components/TrustRatingDisplay'
+import { GET_TRUST_RATING } from '@/lib/graphql/queries/getTrustRating'
 
 const GET_PROFILE = gql`
 	query Me {
@@ -50,6 +53,12 @@ export default function Profile() {
 	const [hovered, setHovered] = useState(false)
 	const { refetch } = useQuery(GET_PROFILE)
 	const [profileComplete] = useState(false)
+	
+	// Fetch trust rating data
+	const { data: trustData, loading: trustLoading } = useQuery(GET_TRUST_RATING, {
+		variables: { userId: data?.me?.id },
+		skip: !data?.me?.id
+	})
 	if (loading) return <p>Loading...</p>
 	if (error) return <p>Error: {error.message}</p>
 
@@ -216,6 +225,40 @@ export default function Profile() {
 					>
 						Complete Your Profile <ArrowRight className="w-4 h-4 ml-2" />
 					</Button>
+				)}
+
+				{/* Trust Rating Section */}
+				{trustLoading ? (
+					<div className="mt-6 p-4 border border-secondary rounded-lg">
+						<div className="flex items-center gap-2 mb-3">
+							<Shield className="w-5 h-5 text-blue-600" />
+							<h3 className="font-semibold">Trust Rating</h3>
+						</div>
+						<p className="text-sm text-gray-600">Loading trust rating...</p>
+					</div>
+				) : trustData?.getTrustRating ? (
+					<div className="mt-6">
+						<TrustRatingDisplay 
+							trustRating={trustData.getTrustRating} 
+							showDetails={true}
+						/>
+					</div>
+				) : (
+					<div className="mt-6 p-4 border border-secondary rounded-lg">
+						<div className="flex items-center gap-2 mb-3">
+							<Shield className="w-5 h-5 text-blue-600" />
+							<h3 className="font-semibold">Trust Rating</h3>
+						</div>
+						<p className="text-sm text-gray-600">No trust rating available yet.</p>
+						<Button
+							variant="outline"
+							size="sm"
+							className="mt-2"
+							onClick={() => router.push('/profile/complete')}
+						>
+							Complete Profile to Build Trust
+						</Button>
+					</div>
 				)}
 
 				<Button

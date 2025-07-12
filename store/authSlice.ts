@@ -41,7 +41,24 @@ export const loginUser = createAsyncThunk(
             return { token, user: decoded }
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
-            return rejectWithValue(error.message)
+            // Handle specific GraphQL error codes
+            if (error.graphQLErrors && error.graphQLErrors.length > 0) {
+                const graphQLError = error.graphQLErrors[0]
+                const errorCode = graphQLError.extensions?.code
+                
+                switch (errorCode) {
+                    case 'INVALID_CREDENTIALS':
+                        return rejectWithValue('Invalid email/username or password')
+                    case 'VALIDATION_ERROR':
+                        return rejectWithValue(graphQLError.message || 'Please check your input and try again')
+                    case 'AUTH_ERROR':
+                        return rejectWithValue(graphQLError.message || 'Login failed. Please try again')
+                    default:
+                        return rejectWithValue(graphQLError.message || 'Login failed. Please try again')
+                }
+            } else {
+                return rejectWithValue(error.message || 'Login failed. Please try again')
+            }
         }
     }
 )
@@ -49,9 +66,9 @@ export const loginUser = createAsyncThunk(
 const getInitialAuthState = () => {
     if (typeof window === 'undefined') return { token: null, user: null }
 
-    const token = localStorage.getItem('token')
-    if (token) {
-        try {
+    try {
+        const token = localStorage.getItem('token')
+        if (token) {
             const decoded: DecodedToken = jwtDecode(token)
             if (decoded.exp * 1000 < Date.now()) {
                 console.log('Token expired')
@@ -59,8 +76,10 @@ const getInitialAuthState = () => {
                 return { token: null, user: null }
             }
             return { token, user: decoded }
-        } catch (error) {
-            console.error('Invalid token:', error)
+        }
+    } catch (error) {
+        console.error('Error accessing localStorage or decoding token:', error)
+        if (typeof window !== 'undefined') {
             localStorage.removeItem('token')
         }
     }
@@ -71,7 +90,6 @@ const getInitialAuthState = () => {
 
 const initialState = {
     ...getInitialAuthState(),
-    token: typeof window !== 'undefined' ? localStorage.getItem('token') : null,
     loading: false,
     error: null as string | null,
 }

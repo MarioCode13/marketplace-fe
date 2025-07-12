@@ -29,7 +29,7 @@ export default function Login() {
       router.push('/')
     } else {
       toast.dismiss()
-      toast.error(`Login failed.`)
+      toast.error(error || 'Login failed. Please try again.')
     }
   }
 

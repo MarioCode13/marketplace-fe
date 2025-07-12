@@ -67,11 +67,20 @@ export default function Navbar() {
 							Browse
 						</Link>
 					</li>
-					<li>
-						<Link href="/my-listings" className="hover:text-primary transition">
-							My Listings
-						</Link>
-					</li>
+					{token && (
+						<>
+							<li>
+								<Link href="/my-listings" className="hover:text-primary transition">
+									My Listings
+								</Link>
+							</li>
+							<li>
+								<Link href="/transactions" className="hover:text-primary transition">
+									Transactions
+								</Link>
+							</li>
+						</>
+					)}
 				</ul>
 
 				{/* Theme Toggle & Auth */}

@@ -17,6 +17,17 @@ interface Listing {
   price: string
   images: string[]
   createdAt: string
+  user?: {
+    id: string
+    username: string
+    trustRating?: {
+      overallScore: number
+      starRating: number
+      trustLevel: string
+      totalReviews: number
+      positiveReviews: number
+    }
+  }
 }
 
 export default function MyListingsPage() {

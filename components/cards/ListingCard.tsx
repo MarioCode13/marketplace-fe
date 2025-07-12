@@ -1,8 +1,9 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import dayjs from 'dayjs'
-import { MoreVertical } from 'lucide-react'
+import { MoreVertical, Star, Shield } from 'lucide-react'
 import { useState } from 'react'
+import { Badge } from '@/components/ui/badge'
 
 interface ListingCardProps {
   listing: {
@@ -12,6 +13,17 @@ interface ListingCardProps {
     price: string
     images: string[]
     createdAt: string
+    user?: {
+      id: string
+      username: string
+      trustRating?: {
+        overallScore: number
+        starRating: number
+        trustLevel: string
+        totalReviews: number
+        positiveReviews: number
+      }
+    }
   }
   showMenu?: boolean // If true, show the ellipsis menu for actions
   onEdit?: () => void
@@ -45,7 +57,34 @@ export default function ListingCard({
             {listing.description}
           </p>
           <p className='text-green-600 font-bold'>${listing.price}</p>
-          <p className='text-sm text-gray-500'>
+          
+          {/* Seller Info and Trust Rating */}
+          <div className='mt-2 space-y-1'>
+            <p className='text-sm text-gray-600'>
+              Seller: {listing.user?.username || 'Unknown'}
+            </p>
+            {listing.user?.trustRating && (
+              <div className='flex items-center gap-2'>
+                <div className='flex items-center gap-1'>
+                  <Star className='w-3 h-3 fill-yellow-400 text-yellow-400' />
+                  <span className='text-xs font-medium'>
+                    {listing.user.trustRating.starRating.toFixed(1)}
+                  </span>
+                </div>
+                <Badge variant="outline" className='text-xs'>
+                  <Shield className='w-3 h-3 mr-1' />
+                  {listing.user.trustRating.trustLevel}
+                </Badge>
+                {listing.user.trustRating.totalReviews > 0 && (
+                  <span className='text-xs text-gray-500'>
+                    ({listing.user.trustRating.totalReviews} reviews)
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+          
+          <p className='text-sm text-gray-500 mt-2'>
             {dayjs(listing.createdAt).format('DD-MM-YYYY')}
           </p>
         </div>

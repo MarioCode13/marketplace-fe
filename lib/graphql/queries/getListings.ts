@@ -21,6 +21,13 @@ export const GET_LISTINGS = gql`
       user {
         id
         username
+        trustRating {
+          overallScore
+          starRating
+          trustLevel
+          totalReviews
+          positiveReviews
+        }
       }
     }
     totalCount

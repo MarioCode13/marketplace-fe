@@ -12,6 +12,17 @@ export const MY_LISTINGS = gql`
     condition
     createdAt
     sold
+    user {
+      id
+      username
+      trustRating {
+        overallScore
+        starRating
+        trustLevel
+        totalReviews
+        positiveReviews
+      }
+    }
   }
 }
 `
