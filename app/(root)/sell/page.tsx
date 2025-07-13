@@ -17,7 +17,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { FileInput } from '@/components/ui/fileInput'
 import { Category } from '@/lib/graphql/types/category'
 import { ImagePreview } from '@/components/ImagePreview'
 import { ImageUploadArea } from '@/components/ImageUploadArea'
@@ -352,9 +351,7 @@ export default function SellPage() {
           </div>
 
           <div className='flex flex-col'>
-            <Label className='mb-2'>
-              Images
-            </Label>
+            <Label className='mb-2'>Images</Label>
             <ImageUploadArea
               onImageUpload={handleImageUpload}
               loading={uploading}

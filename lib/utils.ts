@@ -14,12 +14,12 @@ export function generateImageUrl(filename: string): string {
   // For now, return a placeholder or the filename as-is
   // In a real implementation, you would call the backend to generate a pre-signed URL
   if (filename.startsWith('http')) {
-    return filename; // Already a URL
+    return filename // Already a URL
   }
-  
+
   // For development, you might want to return a placeholder image
   // or implement a proper URL generation mechanism
-  return `/api/files/${filename}`;
+  return `/api/files/${filename}`
 }
 
 /**
@@ -27,9 +27,9 @@ export function generateImageUrl(filename: string): string {
  */
 export function isValidUrl(string: string): boolean {
   try {
-    new URL(string);
-    return true;
-  } catch (_) {
-    return false;
+    new URL(string)
+    return true
+  } catch {
+    return false
   }
 }

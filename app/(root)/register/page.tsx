@@ -1,6 +1,6 @@
 'use client'
 
-import { gql, useMutation } from '@apollo/client'
+import { ApolloError, gql, useMutation } from '@apollo/client'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { Label } from '@/components/ui/label'
@@ -33,29 +33,41 @@ export default function Register() {
       await register({ variables: form })
       toast.success('Registration successful! You can now login')
       router.push('/login')
-    } catch (err: any) {
-      console.error(err)
-      
-      // Handle specific error codes
-      if (err.graphQLErrors && err.graphQLErrors.length > 0) {
-        const graphQLError = err.graphQLErrors[0]
-        const errorCode = graphQLError.extensions?.code
-        
-        switch (errorCode) {
-          case 'USER_ALREADY_EXISTS':
-            toast.error(graphQLError.message || 'An account with this email or username already exists')
-            break
-          case 'VALIDATION_ERROR':
-            toast.error(graphQLError.message || 'Please check your input and try again')
-            break
-          case 'AUTH_ERROR':
-            toast.error(graphQLError.message || 'Registration failed. Please try again')
-            break
-          default:
-            toast.error(graphQLError.message || 'Registration failed. Please try again')
+    } catch (err) {
+      if (err instanceof ApolloError) {
+        if (err.graphQLErrors.length > 0) {
+          const graphQLError = err.graphQLErrors[0]
+          const errorCode = graphQLError.extensions?.code
+
+          switch (errorCode) {
+            case 'USER_ALREADY_EXISTS':
+              toast.error(
+                graphQLError.message ||
+                  'An account with this email or username already exists'
+              )
+              break
+            case 'VALIDATION_ERROR':
+              toast.error(
+                graphQLError.message || 'Please check your input and try again'
+              )
+              break
+            case 'AUTH_ERROR':
+              toast.error(
+                graphQLError.message || 'Registration failed. Please try again'
+              )
+              break
+            default:
+              toast.error(
+                graphQLError.message || 'Registration failed. Please try again'
+              )
+          }
+        } else {
+          toast.error('Registration failed. Please try again')
         }
       } else {
-        toast.error('Registration failed. Please try again')
+        // Optional: handle unknown errors
+        console.error('Unexpected error:', err)
+        toast.error('An unexpected error occurred.')
       }
     }
   }
