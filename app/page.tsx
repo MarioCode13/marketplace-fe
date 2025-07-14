@@ -6,8 +6,7 @@ import { useRouter } from 'next/navigation'
 export default function Home() {
   const router = useRouter()
   return (
-    <div className='min-h-screen flex flex-col items-center text-center'>
-      {/* Hero Section */}
+    <>
       <section className='relative w-full flex flex-col items-center'>
         <div className='relative w-full'>
           <Image
@@ -29,65 +28,59 @@ export default function Home() {
           </div>
         </div>
       </section>
+      <div className='min-h-[60vh] flex flex-col items-center text-center'>
+        <section className='mt-16 max-w-4xl text-left px-6 sm:px-0'>
+          <h2 className='text-2xl font-semibold text-gray-800 dark:text-white'>
+            Why Choose Our Marketplace?
+          </h2>
+          <p className='mt-3 text-gray-600 dark:text-gray-300 leading-relaxed'>
+            The secondhand market should be **safe and stress-free**.
+            That&apos;s why we&apos;re introducing a{' '}
+            <span className='font-semibold text-blue-500 text-lg'>
+              Trust Rating System
+            </span>
+            , ensuring that buyers and sellers have{' '}
+            <span className='text-green-500 font-medium'>
+              verified reputations
+            </span>
+            .
+            <br />
+            <br />
+            ✅ **No more scams** — just fair deals.
+            <br />
+            ✅ **Seller Transparency** — know who you’re buying from.
+            <br />✅ **Secure Transactions** — peace of mind when shopping.
+          </p>
+        </section>
 
-      {/* About Section */}
-      <section className='mt-16 max-w-4xl text-left px-6 sm:px-0'>
-        <h2 className='text-2xl font-semibold text-gray-800 dark:text-white'>
-          Why Choose Our Marketplace?
-        </h2>
-        <p className='mt-3 text-gray-600 dark:text-gray-300 leading-relaxed'>
-          The secondhand market should be **safe and stress-free**. That&apos;s
-          why we&apos;re introducing a{' '}
-          <span className='font-semibold text-blue-500 text-lg'>
-            Trust Rating System
-          </span>
-          , ensuring that buyers and sellers have{' '}
-          <span className='text-green-500 font-medium'>
-            verified reputations
-          </span>
-          .
-          <br />
-          <br />
-          ✅ **No more scams** — just fair deals.
-          <br />
-          ✅ **Seller Transparency** — know who you’re buying from.
-          <br />✅ **Secure Transactions** — peace of mind when shopping.
-        </p>
-      </section>
+        {/* Call to Action */}
+        <section className='mt-12 flex flex-col items-center gap-4'>
+          <h2 className='text-xl font-semibold text-gray-800 dark:text-white'>
+            Start Exploring Now!
+          </h2>
+          <div className='flex gap-4'>
+            <Button
+              type='submit'
+              variant={'default'}
+              className='w-full'
+              size='xl'
+              onClick={() => router.push('/listings')}
+            >
+              Browse Listings
+            </Button>
 
-      {/* Call to Action */}
-      <section className='mt-12 flex flex-col items-center gap-4'>
-        <h2 className='text-xl font-semibold text-gray-800 dark:text-white'>
-          Start Exploring Now!
-        </h2>
-        <div className='flex gap-4'>
-          <Button
-            type='submit'
-            variant={'default'}
-            className='w-full'
-            size='xl'
-            onClick={() => router.push('/listings')}
-          >
-            Browse Listings
-          </Button>
-
-          <Button
-            type='button'
-            variant='secondary'
-            className='w-full'
-            size='xl'
-            onClick={() => router.push('/sell')}
-          >
-            Sell an Item
-          </Button>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className='mt-20 text-gray-500 text-sm'>
-        &copy; {new Date().getFullYear()} Secondhand Marketplace. All rights
-        reserved.
-      </footer>
-    </div>
+            <Button
+              type='button'
+              variant='secondary'
+              className='w-full'
+              size='xl'
+              onClick={() => router.push('/sell')}
+            >
+              Sell an Item
+            </Button>
+          </div>
+        </section>
+      </div>
+    </>
   )
 }

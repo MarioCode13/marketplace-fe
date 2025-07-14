@@ -1,6 +1,11 @@
 import { Star, Shield, CheckCircle, AlertCircle, XCircle } from 'lucide-react'
 import { Badge } from './badge'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from './tooltip'
 
 interface TrustRatingProps {
   overallScore: number
@@ -17,10 +22,11 @@ export function TrustRating({
   positiveReviews,
   trustLevel,
   showDetails = false,
-  size = 'md'
+  size = 'md',
 }: TrustRatingProps) {
   const starRating = overallScore / 20 // Convert 0-100 to 0-5 stars
-  const positivePercentage = totalReviews > 0 ? (positiveReviews / totalReviews) * 100 : 0
+  const positivePercentage =
+    totalReviews > 0 ? (positiveReviews / totalReviews) * 100 : 0
 
   const getTrustLevelColor = (level: string) => {
     switch (level) {
@@ -44,30 +50,30 @@ export function TrustRating({
     switch (level) {
       case 'EXCELLENT':
       case 'VERY_GOOD':
-        return <Shield className="w-4 h-4" />
+        return <Shield className='w-4 h-4' />
       case 'GOOD':
-        return <CheckCircle className="w-4 h-4" />
+        return <CheckCircle className='w-4 h-4' />
       case 'FAIR':
-        return <AlertCircle className="w-4 h-4" />
+        return <AlertCircle className='w-4 h-4' />
       case 'POOR':
       case 'VERY_POOR':
-        return <XCircle className="w-4 h-4" />
+        return <XCircle className='w-4 h-4' />
       default:
-        return <Shield className="w-4 h-4" />
+        return <Shield className='w-4 h-4' />
     }
   }
 
   const sizeClasses = {
     sm: 'text-xs',
     md: 'text-sm',
-    lg: 'text-base'
+    lg: 'text-base',
   }
 
   return (
     <TooltipProvider>
-      <div className="flex items-center gap-2">
+      <div className='flex items-center gap-2'>
         {/* Star Rating */}
-        <div className="flex items-center gap-1">
+        <div className='flex items-center gap-1'>
           {[1, 2, 3, 4, 5].map((star) => (
             <Star
               key={star}
@@ -87,18 +93,22 @@ export function TrustRating({
         <Tooltip>
           <TooltipTrigger>
             <Badge
-              variant="outline"
-              className={`flex items-center gap-1 ${getTrustLevelColor(trustLevel)} ${sizeClasses[size]}`}
+              variant='outline'
+              className={`flex items-center gap-1 ${getTrustLevelColor(
+                trustLevel
+              )} ${sizeClasses[size]}`}
             >
               {getTrustIcon(trustLevel)}
-              {trustLevel.replace('_', ' ')}
             </Badge>
           </TooltipTrigger>
           <TooltipContent>
-            <div className="text-center">
-              <p className="font-medium">Trust Score: {overallScore.toFixed(1)}/100</p>
-              <p className="text-sm text-gray-600">
-                {totalReviews} reviews ({positivePercentage.toFixed(0)}% positive)
+            <div className='text-center'>
+              <p className='font-medium'>
+                Trust Score: {overallScore.toFixed(1)}/100
+              </p>
+              <p className='text-sm text-gray-600'>
+                {totalReviews} reviews ({positivePercentage.toFixed(0)}%
+                positive)
               </p>
             </div>
           </TooltipContent>
@@ -113,4 +123,4 @@ export function TrustRating({
       </div>
     </TooltipProvider>
   )
-} 
+}

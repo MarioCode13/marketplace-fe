@@ -6,7 +6,9 @@ import { useState } from 'react'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { toast } from 'sonner'
+import Link from 'next/link'
 
 const REGISTER_MUTATION = gql`
   mutation Register($username: String!, $email: String!, $password: String!) {
@@ -21,6 +23,7 @@ const REGISTER_MUTATION = gql`
 export default function Register() {
   const router = useRouter()
   const [form, setForm] = useState({ username: '', email: '', password: '' })
+  const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [register, { loading, error }] = useMutation(REGISTER_MUTATION)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -29,6 +32,12 @@ export default function Register() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!acceptedTerms) {
+      toast.error('Please accept the Terms of Use and Privacy Policy to continue')
+      return
+    }
+    
     try {
       await register({ variables: form })
       toast.success('Registration successful! You can now login')
@@ -113,7 +122,7 @@ export default function Register() {
             />
           </div>
 
-          <div className='flex flex-col mb-6'>
+          <div className='flex flex-col mb-4'>
             <Label
               htmlFor='password'
               className='mb-2'
@@ -130,6 +139,31 @@ export default function Register() {
             />
           </div>
 
+          {/* Terms Acceptance */}
+          <div className='flex items-start space-x-2 mb-4'>
+            <Checkbox
+              id='terms'
+              checked={acceptedTerms}
+              onCheckedChange={(checked) => setAcceptedTerms(checked as boolean)}
+              className='mt-1'
+            />
+            <div className='grid gap-1.5 leading-none'>
+              <Label
+                htmlFor='terms'
+                className='text-sm text-muted-foreground'
+              >
+                I agree to the{' '}
+                <Link href='/terms' className='text-blue-600 hover:underline'>
+                  Terms of Use
+                </Link>{' '}
+                and{' '}
+                <Link href='/privacy' className='text-blue-600 hover:underline'>
+                  Privacy Policy
+                </Link>
+              </Label>
+            </div>
+          </div>
+
           {error && (
             <p className='text-sm text-red-500 text-center'>{error.message}</p>
           )}
@@ -139,7 +173,7 @@ export default function Register() {
               type='submit'
               variant='default'
               className='w-full'
-              disabled={loading}
+              disabled={loading || !acceptedTerms}
             >
               {loading ? 'Registering...' : 'Register'}
             </Button>

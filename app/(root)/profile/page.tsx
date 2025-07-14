@@ -20,6 +20,7 @@ import {
 } from '@/components/ui/tooltip'
 import { TrustRatingDisplay } from '@/components/TrustRatingDisplay'
 import { GET_TRUST_RATING } from '@/lib/graphql/queries/getTrustRating'
+import { generateImageUrl } from '@/lib/utils'
 
 const GET_PROFILE = gql`
   query Me {
@@ -91,17 +92,18 @@ export default function Profile() {
 
     const file = e.target.files[0]
     const formData = new FormData()
-    formData.append('image', file)
+    formData.append('file', file)
 
     try {
+      const token = localStorage.getItem('token')
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_GRAPHQL_URL}/api/users/${user.id}/profile-image`,
+        `${process.env.NEXT_PUBLIC_GRAPHQL_URL}/api/users/upload-profile-image`,
         {
           method: 'POST',
           body: formData,
-          // headers: {
-          //   Authorization: `Bearer ${yourAuthToken}`,
-          // },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
       )
 
@@ -120,8 +122,9 @@ export default function Profile() {
   }
 
   return (
-    <div className='flex min-h-screen items-center justify-center bg-background'>
-      <div className='w-full max-w-md rounded-lg p-6 shadow-lg bg-componentBackground'>
+    <div className='w-full flex justify-center'>
+      <div className='w-full max-w-4xl py-8 px-6'>
+        <div className='w-full max-w-md mx-auto rounded-lg p-6 shadow-lg bg-componentBackground'>
         <div className='w-full flex justify-between items-center'>
           <h2 className='mb-4 text-2xl font-bold text-foreground'>Profile</h2>
           {profileComplete && (
@@ -142,15 +145,15 @@ export default function Profile() {
           <label className='relative w-[140px] h-[140px] cursor-pointer'>
             {user.profileImageUrl ? (
               <Image
-                src={
-                  user.profileImageUrl
-                    ? `data:image/png;base64,${user.profileImageUrl}`
-                    : '/default-profile.png'
-                }
+                src={generateImageUrl(user.profileImageUrl)}
                 alt='profile'
                 className='rounded-full w-[140px] h-[140px] object-cover'
                 width={140}
                 height={140}
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = '/logo.png';
+                }}
               />
             ) : (
               <div className='flex justify-center h-full items-center'>
@@ -281,6 +284,7 @@ export default function Profile() {
         >
           Logout
         </Button>
+        </div>
       </div>
     </div>
   )

@@ -6,20 +6,18 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /**
- * Generates a pre-signed URL for a B2 filename
- * This is a temporary solution until we implement proper URL generation
- * In production, this should be handled by the backend
+ * Generates a safe image URL for display
+ * Handles both pre-signed URLs and relative filenames
  */
 export function generateImageUrl(filename: string): string {
-  // For now, return a placeholder or the filename as-is
-  // In a real implementation, you would call the backend to generate a pre-signed URL
-  if (filename.startsWith('http')) {
-    return filename // Already a URL
+  // If it's already a valid URL, return it
+  if (filename && (filename.startsWith('http://') || filename.startsWith('https://'))) {
+    return filename
   }
 
-  // For development, you might want to return a placeholder image
-  // or implement a proper URL generation mechanism
-  return `/api/files/${filename}`
+  // If it's a relative filename, return a placeholder
+  // In production, this should be handled by the backend
+  return '/logo.png'
 }
 
 /**

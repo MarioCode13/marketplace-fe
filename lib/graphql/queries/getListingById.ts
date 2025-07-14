@@ -8,10 +8,12 @@ export const GET_LISTING_BY_ID = gql`
       description
       images
       price
+      sold
       location
       condition
       createdAt
       user {
+        id
         username 
         profileImageUrl
         email

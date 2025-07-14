@@ -9,6 +9,7 @@ import Image from 'next/image'
 import { useTheme } from '@/context/ThemeContext'
 import { Moon, SunMedium, User } from 'lucide-react'
 import { Button } from './ui/button'
+import { generateImageUrl } from '@/lib/utils'
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -47,7 +48,7 @@ export default function Navbar() {
 	}
 
 	return (
-		<nav className="bg-componentBackground text-foreground p-4 shadow-md transition-colors duration-300 sticky top-0">
+		<nav className="bg-componentBackground text-foreground p-4 shadow-md transition-colors duration-300 sticky top-0 z-10">
 			<div className="container mx-auto flex justify-between items-center">
 				{/* Logo */}
 				<Link href="/">
@@ -113,11 +114,15 @@ export default function Navbar() {
 									<div className="w-6 h-6 bg-gray-300 rounded-full animate-pulse" />
 								) : profileImageUrl ? (
 									<Image
-										src={`data:image/png;base64,${profileImageUrl}`}
+										src={generateImageUrl(profileImageUrl)}
 										alt="profile"
 										width={60}
 										height={39}
 										className="rounded-full w-12 h-12 object-cover"
+										onError={(e) => {
+											const target = e.target as HTMLImageElement;
+											target.src = '/logo.png';
+										}}
 									/>
 								) : (
 									<User className="w-6 h-6" />

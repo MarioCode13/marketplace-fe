@@ -8,6 +8,11 @@ const nextConfig: NextConfig = {
         hostname: "f003.backblazeb2.com",
       },
     ],
+    domains: [
+      'www.google.com',
+      'images.unsplash.com',
+      'plus.unsplash.com'
+    ],
   },
 }
 

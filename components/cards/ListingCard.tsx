@@ -1,9 +1,10 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import dayjs from 'dayjs'
-import { MoreVertical, Star, Shield } from 'lucide-react'
+import { MoreVertical, Star } from 'lucide-react'
 import { useState } from 'react'
 import { Badge } from '@/components/ui/badge'
+import { generateImageUrl } from '@/lib/utils'
 
 interface ListingCardProps {
   listing: {
@@ -13,6 +14,7 @@ interface ListingCardProps {
     price: string
     images: string[]
     createdAt: string
+    sold?: boolean
     user?: {
       id: string
       username: string
@@ -44,21 +46,40 @@ export default function ListingCard({
         href={`/listings/${listing.id}`}
         passHref
       >
-        <div className='border border-secondary p-4 rounded-lg shadow-lg min-h-[300px] cursor-pointer transition-all duration-200 ease-in-out bg-componentBackground hover:shadow-xl hover:opacity-80 hover:scale-[1.02]'>
+        <div
+          className={`border border-secondary p-4 rounded-lg shadow-lg min-h-[300px] cursor-pointer transition-all duration-200 ease-in-out bg-componentBackground hover:shadow-xl hover:opacity-80 hover:scale-[1.02] ${
+            listing.sold ? 'opacity-60' : ''
+          }`}
+        >
+          {listing.sold && (
+            <div className='absolute top-2 left-2 z-10'>
+              <Badge className='bg-red-500 text-white'>SOLD</Badge>
+            </div>
+          )}
           <Image
-            src={listing.images[0] || '/placeholder.png'}
+            src={listing.images && listing.images.length > 0 ? generateImageUrl(listing.images[0]) : '/logo.png'}
             alt={listing.title}
             width={100}
             height={100}
             className='w-full h-40 object-cover rounded-md'
+            onError={(e) => {
+              const target = e.target as HTMLImageElement
+              target.src = '/logo.png'
+            }}
           />
-          <h2 className='text-xl font-semibold mt-2'>{listing.title}</h2>
+          <h2 className='text-xl font-semibold mt-2 line-clamp-2 leading-snug min-h-[3.438rem]'>
+            {listing.title}
+          </h2>
           <p className='text-gray-600 line-clamp-2 min-h-[48px]'>
             {listing.description}
           </p>
-          <p className='text-green-600 font-bold'>${listing.price}</p>
-          
-          {/* Seller Info and Trust Rating */}
+          <p
+            className={`font-bold ${
+              listing.sold ? 'text-gray-500 line-through' : 'text-green-600'
+            }`}
+          >
+            ${listing.price}
+          </p>
           <div className='mt-2 space-y-1'>
             <p className='text-sm text-gray-600'>
               Seller: {listing.user?.username || 'Unknown'}
@@ -71,10 +92,7 @@ export default function ListingCard({
                     {listing.user.trustRating.starRating.toFixed(1)}
                   </span>
                 </div>
-                <Badge variant="outline" className='text-xs'>
-                  <Shield className='w-3 h-3 mr-1' />
-                  {listing.user.trustRating.trustLevel}
-                </Badge>
+
                 {listing.user.trustRating.totalReviews > 0 && (
                   <span className='text-xs text-gray-500'>
                     ({listing.user.trustRating.totalReviews} reviews)
@@ -83,9 +101,9 @@ export default function ListingCard({
               </div>
             )}
           </div>
-          
+
           <p className='text-sm text-gray-500 mt-2'>
-            {dayjs(listing.createdAt).format('DD-MM-YYYY')}
+            {dayjs(listing.createdAt).format('DD MMM YYYY')}
           </p>
         </div>
       </Link>

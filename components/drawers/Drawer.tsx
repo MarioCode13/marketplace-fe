@@ -19,7 +19,7 @@ export default function Drawer({
     <>
       {/* Overlay with fade-in/out */}
       <div
-        className={`fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 z-40 transition-opacity duration-300 ${
+        className={`fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 z-[55] transition-opacity duration-300 ${
           isOpen
             ? 'opacity-100 pointer-events-auto'
             : 'opacity-0 pointer-events-none'
@@ -29,7 +29,7 @@ export default function Drawer({
 
       {/* Sidebar with slide-in animation */}
       <div
-        className={`fixed top-0 left-0 h-full min-w-[26rem] bg-componentBackground dark:bg-componentBackground shadow-lg px-12 py-10 z-50 transition-transform duration-300 ease-in-out ${
+        className={`fixed top-0 left-0 h-full min-w-[26rem] bg-componentBackground dark:bg-componentBackground shadow-lg px-12 py-10 z-[60] transition-transform duration-300 ease-in-out overflow-y-auto ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
         onClick={(e) => e.stopPropagation()}

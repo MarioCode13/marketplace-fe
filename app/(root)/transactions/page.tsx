@@ -1,23 +1,30 @@
 'use client'
 
-import { useQuery } from '@apollo/client'
+import { useQuery, useMutation } from '@apollo/client'
 import { useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Star, Package, ShoppingCart, MessageSquare } from 'lucide-react'
+import {
+  Star,
+  Package,
+  ShoppingCart,
+  MessageSquare,
+  CheckCircle,
+} from 'lucide-react'
 import Image from 'next/image'
 import dayjs from 'dayjs'
 import ReviewModal from '@/components/modals/ReviewModal'
+import { toast } from 'sonner'
 import {
   GET_MY_PURCHASES,
   GET_MY_SALES,
   GET_MY_COMPLETED_PURCHASES,
   GET_MY_COMPLETED_SALES,
-  // GET_MY_REVIEW_FOR_TRANSACTION
 } from '@/lib/graphql/queries'
 import { Transaction, Review } from '@/lib/graphql/types/trust'
+import { COMPLETE_TRANSACTION } from '@/lib/graphql/mutations/transactionMutations'
 
 export default function TransactionsPage() {
   const [selectedTransaction, setSelectedTransaction] =
@@ -31,6 +38,16 @@ export default function TransactionsPage() {
   const { data: completedPurchasesData } = useQuery(GET_MY_COMPLETED_PURCHASES)
   const { data: completedSalesData } = useQuery(GET_MY_COMPLETED_SALES)
 
+  const [completeTransaction] = useMutation(COMPLETE_TRANSACTION, {
+    onCompleted: () => {
+      toast.success('Transaction completed successfully!')
+      window.location.reload()
+    },
+    onError: (error) => {
+      toast.error(`Failed to complete transaction: ${error.message}`)
+    },
+  })
+
   const purchases = purchasesData?.myPurchases || []
   const sales = salesData?.mySales || []
   const completedPurchases = completedPurchasesData?.myCompletedPurchases || []
@@ -41,7 +58,6 @@ export default function TransactionsPage() {
 
     // Check if user already reviewed this transaction
     try {
-      // This would need to be implemented with a proper query
       // For now, we'll assume no existing review
       setExistingReview(null)
     } catch {
@@ -79,7 +95,9 @@ export default function TransactionsPage() {
     type: 'purchase' | 'sale'
   }) => {
     const isCompleted = transaction.status === 'COMPLETED'
+    const isPending = transaction.status === 'PENDING'
     const canReview = type === 'purchase' && isCompleted
+    const canComplete = type === 'sale' && isPending
 
     return (
       <Card className='mb-4'>
@@ -146,6 +164,21 @@ export default function TransactionsPage() {
                   </Button>
                 )}
 
+                {canComplete && (
+                  <Button
+                    size='sm'
+                    onClick={() =>
+                      completeTransaction({
+                        variables: { transactionId: transaction.id },
+                      })
+                    }
+                    className='flex items-center gap-1'
+                  >
+                    <CheckCircle className='w-4 h-4' />
+                    Complete Sale
+                  </Button>
+                )}
+
                 <Button
                   size='sm'
                   variant='outline'
@@ -166,116 +199,134 @@ export default function TransactionsPage() {
   }
 
   if (purchasesLoading || salesLoading) {
-    return <div className='animate-pulse'>Loading transactions...</div>
+    return (
+      <div className='w-full flex justify-center'>
+        <div className='w-full max-w-7xl py-8 px-6'>
+          <div className='animate-pulse'>Loading transactions...</div>
+        </div>
+      </div>
+    )
   }
 
   return (
-    <div className='max-w-6xl mx-auto p-6'>
-      <div className='mb-6'>
-        <h1 className='text-3xl font-bold mb-2'>My Transactions</h1>
-        <p className='text-gray-600'>Manage your purchases and sales</p>
-      </div>
+    <div className='w-full flex justify-center'>
+      <div className='flex flex-col py-12 px-6 w-full max-w-7xl min-h-[70vh]'>
+        {/* Header with title */}
+        <div className='flex items-center justify-between w-full mb-6'>
+          <div className='w-12'></div> {/* Spacer to balance the layout */}
+          <div className='flex items-center gap-4'>
+            <h1 className='text-2xl font-bold'>My Transactions</h1>
+          </div>
+          <div className='w-12'></div> {/* Spacer to balance the layout */}
+        </div>
 
-      <Tabs
-        defaultValue='purchases'
-        className='w-full'
-      >
-        <TabsList className='grid w-full grid-cols-2'>
-          <TabsTrigger
+        <p className='text-gray-600 mb-6 text-center'>
+          Manage your purchases and sales
+        </p>
+
+        <Tabs
+          defaultValue='purchases'
+          className='w-full'
+        >
+          <TabsList className='grid w-full grid-cols-2'>
+            <TabsTrigger
+              value='purchases'
+              className='flex items-center gap-2'
+            >
+              <ShoppingCart className='w-4 h-4' />
+              Purchases ({purchases.length})
+            </TabsTrigger>
+            <TabsTrigger
+              value='sales'
+              className='flex items-center gap-2'
+            >
+              <Package className='w-4 h-4' />
+              Sales ({sales.length})
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent
             value='purchases'
-            className='flex items-center gap-2'
+            className='mt-6'
           >
-            <ShoppingCart className='w-4 h-4' />
-            Purchases ({purchases.length})
-          </TabsTrigger>
-          <TabsTrigger
+            <div className='mb-4'>
+              <h2 className='text-xl font-semibold mb-2'>My Purchases</h2>
+              <p className='text-sm text-gray-600'>
+                {completedPurchases.length} completed purchases
+              </p>
+            </div>
+
+            {purchases.length > 0 ? (
+              purchases.map((transaction: Transaction) => (
+                <TransactionCard
+                  key={transaction.id}
+                  transaction={transaction}
+                  type='purchase'
+                />
+              ))
+            ) : (
+              <Card>
+                <CardContent className='p-8 text-center'>
+                  <Package className='w-12 h-12 mx-auto text-gray-400 mb-4' />
+                  <h3 className='text-lg font-semibold mb-2'>
+                    No purchases yet
+                  </h3>
+                  <p className='text-gray-600'>
+                    Start shopping to see your purchase history here.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+
+          <TabsContent
             value='sales'
-            className='flex items-center gap-2'
+            className='mt-6'
           >
-            <Package className='w-4 h-4' />
-            Sales ({sales.length})
-          </TabsTrigger>
-        </TabsList>
+            <div className='mb-4'>
+              <h2 className='text-xl font-semibold mb-2'>My Sales</h2>
+              <p className='text-sm text-gray-600'>
+                {completedSales.length} completed sales
+              </p>
+            </div>
 
-        <TabsContent
-          value='purchases'
-          className='mt-6'
-        >
-          <div className='mb-4'>
-            <h2 className='text-xl font-semibold mb-2'>My Purchases</h2>
-            <p className='text-sm text-gray-600'>
-              {completedPurchases.length} completed purchases
-            </p>
-          </div>
+            {sales.length > 0 ? (
+              sales.map((transaction: Transaction) => (
+                <TransactionCard
+                  key={transaction.id}
+                  transaction={transaction}
+                  type='sale'
+                />
+              ))
+            ) : (
+              <Card>
+                <CardContent className='p-8 text-center'>
+                  <Package className='w-12 h-12 mx-auto text-gray-400 mb-4' />
+                  <h3 className='text-lg font-semibold mb-2'>No sales yet</h3>
+                  <p className='text-gray-600'>
+                    Start selling to see your sales history here.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+        </Tabs>
 
-          {purchases.length > 0 ? (
-            purchases.map((transaction: Transaction) => (
-              <TransactionCard
-                key={transaction.id}
-                transaction={transaction}
-                type='purchase'
-              />
-            ))
-          ) : (
-            <Card>
-              <CardContent className='p-8 text-center'>
-                <Package className='w-12 h-12 mx-auto text-gray-400 mb-4' />
-                <h3 className='text-lg font-semibold mb-2'>No purchases yet</h3>
-                <p className='text-gray-600'>
-                  Start shopping to see your purchase history here.
-                </p>
-              </CardContent>
-            </Card>
-          )}
-        </TabsContent>
-
-        <TabsContent
-          value='sales'
-          className='mt-6'
-        >
-          <div className='mb-4'>
-            <h2 className='text-xl font-semibold mb-2'>My Sales</h2>
-            <p className='text-sm text-gray-600'>
-              {completedSales.length} completed sales
-            </p>
-          </div>
-
-          {sales.length > 0 ? (
-            sales.map((transaction: Transaction) => (
-              <TransactionCard
-                key={transaction.id}
-                transaction={transaction}
-                type='sale'
-              />
-            ))
-          ) : (
-            <Card>
-              <CardContent className='p-8 text-center'>
-                <Package className='w-12 h-12 mx-auto text-gray-400 mb-4' />
-                <h3 className='text-lg font-semibold mb-2'>No sales yet</h3>
-                <p className='text-gray-600'>
-                  Start selling to see your sales history here.
-                </p>
-              </CardContent>
-            </Card>
-          )}
-        </TabsContent>
-      </Tabs>
-
-      {/* Review Modal */}
-      {selectedTransaction && (
-        <ReviewModal
-          isOpen={reviewModalOpen}
-          onClose={() => {
-            setReviewModalOpen(false)
-            setSelectedTransaction(null)
-            setExistingReview(null)
-          }}
-          transaction={selectedTransaction}
-          existingReview={existingReview}
-          onReviewSubmitted={handleReviewSubmitted}
-        />
-      )}
+        {/* Review Modal */}
+        {selectedTransaction && (
+          <ReviewModal
+            isOpen={reviewModalOpen}
+            onClose={() => {
+              setReviewModalOpen(false)
+              setSelectedTransaction(null)
+              setExistingReview(null)
+            }}
+            transaction={selectedTransaction}
+            existingReview={existingReview}
+            onReviewSubmitted={handleReviewSubmitted}
+          />
+        )}
+      </div>
     </div>
   )
 }
