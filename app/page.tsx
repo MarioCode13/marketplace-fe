@@ -14,14 +14,14 @@ export default function Home() {
             alt='Marketplace Banner'
             width={1500}
             height={1500}
-            className='shadow-lg object-cover object-center w-full h-[30rem] [filter:hue-rotate(330deg)]'
+            className='shadow-lg object-cover object-center w-full h-64 sm:h-[30rem] [filter:hue-rotate(330deg)]'
             priority
           />
-          <div className='absolute inset-0 bg-black/40 flex flex-col justify-center items-center'>
-            <h1 className='text-3xl sm:text-5xl font-bold text-white drop-shadow-lg'>
+          <div className='absolute inset-0 bg-black/40 flex flex-col justify-center items-center px-4 py-8'>
+            <h1 className='text-3xl sm:text-5xl font-bold text-white drop-shadow-lg text-center'>
               Buy & Sell with Confidence
             </h1>
-            <p className='mt-3 text-gray-200 text-lg max-w-2xl drop-shadow-md'>
+            <p className='mt-3 text-gray-200 text-lg max-w-2xl drop-shadow-md text-center'>
               A hassle-free marketplace for secondhand items. Secure,
               transparent, and built on trust.
             </p>
@@ -58,7 +58,7 @@ export default function Home() {
           <h2 className='text-xl font-semibold text-gray-800 dark:text-white'>
             Start Exploring Now!
           </h2>
-          <div className='flex gap-4'>
+          <div className='flex gap-4 mb-8 w-full max-w-md'>
             <Button
               type='submit'
               variant={'default'}

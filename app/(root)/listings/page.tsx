@@ -45,6 +45,9 @@ interface Filters {
   maxDate?: string
   sortBy?: string
   sortOrder?: 'asc' | 'desc'
+  cityId?: string
+  cityName?: string
+  customCity?: string
 }
 
 export default function ListingsPage() {
@@ -125,19 +128,8 @@ export default function ListingsPage() {
           </div>
           <div className='flex items-center gap-4'>
             <h1 className='text-2xl font-bold'>Available Listings</h1>
-            {hasActiveFilters() && (
-              <Button
-                variant='ghost'
-                size='sm'
-                onClick={clearAllFilters}
-                className='text-sm'
-              >
-                Clear Filters
-              </Button>
-            )}
           </div>
           <div className='w-12'></div>{' '}
-          {/* Spacer to balance the filter button */}
         </div>
 
         {/* Active filters display */}
@@ -162,9 +154,14 @@ export default function ListingsPage() {
                   Condition: {filters.condition}
                 </span>
               )}
-              {filters.location && (
+              {filters.cityId && (
                 <span className='bg-background px-2 py-1 rounded text-xs'>
-                  Location: {filters.location}
+                  City: {filters.cityName || 'Selected city'}
+                </span>
+              )}
+              {filters.customCity && (
+                <span className='bg-background px-2 py-1 rounded text-xs'>
+                  Custom City: {filters.customCity}
                 </span>
               )}
               {filters.searchTerm && (
@@ -178,6 +175,16 @@ export default function ListingsPage() {
                 </span>
               )}
             </div>
+            {hasActiveFilters() && (
+              <Button
+                variant='secondary'
+                size='sm'
+                onClick={clearAllFilters}
+                className='text-sm mt-4'
+              >
+                Clear Filters
+              </Button>
+            )}
           </div>
         )}
 

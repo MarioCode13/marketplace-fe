@@ -7,15 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
-import {
-  Star,
-  MapPin,
-  Calendar,
-  Phone,
-  Shield,
-  CheckCircle,
-  Clock,
-} from 'lucide-react'
+import { Star, Calendar, Phone, Shield, CheckCircle, Clock } from 'lucide-react'
 import Link from 'next/link'
 import { formatDistanceToNow } from 'date-fns'
 import { generateImageUrl } from '@/lib/utils'
@@ -127,12 +119,10 @@ export default function SellerProfilePage() {
               {user.bio && <p className='text-gray-700 mb-4'>{user.bio}</p>}
 
               <div className='flex flex-wrap gap-4 text-sm text-gray-600'>
-                {user.location && (
-                  <div className='flex items-center gap-1'>
-                    <MapPin className='h-4 w-4' />
-                    {user.location}
-                  </div>
-                )}
+                {user.customCity ||
+                  (user.city
+                    ? `${user.city.name}, ${user.city.region.name}, ${user.city.region.country.name}`
+                    : '')}
                 {user.contactNumber && (
                   <div className='flex items-center gap-1'>
                     <Phone className='h-4 w-4' />

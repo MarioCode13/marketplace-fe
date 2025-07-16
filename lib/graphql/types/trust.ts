@@ -76,7 +76,8 @@ export interface Listing {
   category?: Category
   price: number
   sold: boolean
-  location: string
+  city?: City;
+  customCity?: string;
   condition: Condition
   createdAt: string
   expiresAt: string
@@ -93,7 +94,8 @@ export interface User {
   firstName?: string
   lastName?: string
   bio?: string
-  location?: string
+  city?: City;
+  customCity?: string;
   contactNumber?: string
 }
 
@@ -134,4 +136,15 @@ export interface ProfileCompletion {
   completionPercentage: number
   createdAt: string
   updatedAt: string
+}
+
+export interface City {
+  id: string;
+  name: string;
+  region: {
+    name: string;
+    country: {
+      name: string;
+    };
+  };
 } 

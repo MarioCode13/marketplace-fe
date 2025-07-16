@@ -2,31 +2,36 @@ import { gql } from '@apollo/client'
 
 export const MY_LISTINGS = gql`
   query MyListings($limit: Int, $offset: Int) {
-  myListings(limit: $limit, offset: $offset) {
-    listings {
-      id
-      title
-      description
-      images
-      price
-      location
-      condition
-      createdAt
-      sold
-      user {
+    myListings(limit: $limit, offset: $offset) {
+      listings {
         id
-        username
-        trustRating {
-          overallScore
-          starRating
-          trustLevel
-          totalReviews
-          positiveReviews
+        title
+        description
+        images
+        price
+        sold
+        city {
+          id
+          name
+          region {
+            name
+            country {
+              name
+            }
+          }
+        }
+        customCity
+        condition
+        createdAt
+        expiresAt
+        user {
+          id
+          username
+          profileImageUrl
         }
       }
+      totalCount
     }
-    totalCount
   }
-}
-`
+`;
 

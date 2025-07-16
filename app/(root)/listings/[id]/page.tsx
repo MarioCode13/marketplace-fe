@@ -178,7 +178,7 @@ const Page = () => {
                 ${listing.price}
               </p>
               <p className='text-sm text-gray-500'>
-                Location: {listing.location}
+                Location: {listing.customCity || (listing.city ? `${listing.city.name}, ${listing.city.region.name}, ${listing.city.region.country.name}` : '')}
               </p>
               <Badge className='w-fit'>{listing.condition}</Badge>
             </div>

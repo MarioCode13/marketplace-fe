@@ -8,7 +8,7 @@ export const GET_LISTINGS = gql`
     $minPrice: Float, 
     $maxPrice: Float,
     $condition: Condition,
-    $location: String,
+    $cityId: ID,
     $searchTerm: String,
     $minDate: String,
     $maxDate: String,
@@ -22,7 +22,7 @@ export const GET_LISTINGS = gql`
       minPrice: $minPrice, 
       maxPrice: $maxPrice,
       condition: $condition,
-      location: $location,
+      cityId: $cityId,
       searchTerm: $searchTerm,
       minDate: $minDate,
       maxDate: $maxDate,
@@ -34,29 +34,29 @@ export const GET_LISTINGS = gql`
         title
         description
         images
-        category {
-          id
-          name
-        }
         price
         sold
-        location
+        city {
+          id
+          name
+          region {
+            name
+            country {
+              name
+            }
+          }
+        }
+        customCity
         condition
         createdAt
         expiresAt
         user {
           id
           username
-          trustRating {
-            overallScore
-            starRating
-            trustLevel
-            totalReviews
-            positiveReviews
-          }
+          profileImageUrl
         }
       }
       totalCount
     }
   }
-`
+`;

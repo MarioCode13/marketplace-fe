@@ -1,26 +1,25 @@
 import { gql } from '@apollo/client'
 
-export const GET_ALL_USERS = gql`
-  query GetAllUsers {
+export const GET_USERS = gql`
+  query GetUsers {
     getAllUsers {
       id
       username
       email
-      profileImageUrl
-      firstName
-      lastName
-      location
-      trustRating {
-        overallScore
-        starRating
-        trustLevel
-        totalReviews
-        totalTransactions
-        successfulTransactions
+      city {
+        id
+        name
+        region {
+          name
+          country {
+            name
+          }
+        }
       }
+      customCity
     }
   }
-`
+`;
 
 export const SEARCH_USERS = gql`
   query SearchUsers($searchTerm: String!) {

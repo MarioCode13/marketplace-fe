@@ -9,7 +9,17 @@ export const GET_LISTING_BY_ID = gql`
       images
       price
       sold
-      location
+      city {
+        id
+        name
+        region {
+          name
+          country {
+            name
+          }
+        }
+      }
+      customCity
       condition
       createdAt
       user {
@@ -20,4 +30,4 @@ export const GET_LISTING_BY_ID = gql`
       }
     }
   }
-`
+`;

@@ -12,6 +12,7 @@ import {
 import { Input } from '../ui/input'
 import { Badge } from '../ui/badge'
 import { X, Search, MapPin, Calendar, SortAsc, SortDesc } from 'lucide-react'
+import CityAutocomplete from './CityAutocomplete'
 
 interface FilterDrawerProps {
   isOpen: boolean
@@ -21,7 +22,8 @@ interface FilterDrawerProps {
     minPrice?: number
     maxPrice?: number
     condition?: string
-    location?: string
+    cityId?: string
+    customCity?: string
     searchTerm?: string
     minDate?: string
     maxDate?: string
@@ -34,7 +36,8 @@ interface FilterDrawerProps {
     minPrice?: number
     maxPrice?: number
     condition?: string
-    location?: string
+    cityId?: string
+    customCity?: string
     searchTerm?: string
     minDate?: string
     maxDate?: string
@@ -72,13 +75,16 @@ export default function FilterDrawer({
     minPrice: currentFilters.minPrice || undefined,
     maxPrice: currentFilters.maxPrice || undefined,
     condition: currentFilters.condition || undefined,
-    location: currentFilters.location || '',
+    cityId: currentFilters.cityId || undefined,
+    customCity: currentFilters.customCity || '',
     searchTerm: currentFilters.searchTerm || '',
     minDate: currentFilters.minDate || '',
     maxDate: currentFilters.maxDate || '',
     sortBy: currentFilters.sortBy || 'createdAt',
-    sortOrder: currentFilters.sortOrder || 'desc' as 'asc' | 'desc',
+    sortOrder: currentFilters.sortOrder || ('desc' as 'asc' | 'desc'),
   })
+
+  const [showCustomCity, setShowCustomCity] = useState(false)
 
   // Reset filters when drawer opens
   useEffect(() => {
@@ -88,7 +94,8 @@ export default function FilterDrawer({
         minPrice: currentFilters.minPrice || undefined,
         maxPrice: currentFilters.maxPrice || undefined,
         condition: currentFilters.condition || undefined,
-        location: currentFilters.location || '',
+        cityId: currentFilters.cityId || undefined,
+        customCity: currentFilters.customCity || '',
         searchTerm: currentFilters.searchTerm || '',
         minDate: currentFilters.minDate || '',
         maxDate: currentFilters.maxDate || '',
@@ -99,11 +106,11 @@ export default function FilterDrawer({
   }, [isOpen, currentFilters])
 
   const updateFilter = (key: string, value: string | number | undefined) => {
-    setFilters(prev => ({ ...prev, [key]: value }))
+    setFilters((prev) => ({ ...prev, [key]: value }))
   }
 
   const clearFilter = (key: string) => {
-    setFilters(prev => ({ ...prev, [key]: undefined }))
+    setFilters((prev) => ({ ...prev, [key]: undefined }))
   }
 
   const clearAllFilters = () => {
@@ -112,7 +119,8 @@ export default function FilterDrawer({
       minPrice: undefined,
       maxPrice: undefined,
       condition: undefined,
-      location: '',
+      cityId: undefined,
+      customCity: '',
       searchTerm: '',
       minDate: '',
       maxDate: '',
@@ -123,13 +131,16 @@ export default function FilterDrawer({
 
   const applyFilters = () => {
     const filterParams: Record<string, string | number | undefined> = {}
-    
+
     if (filters.categoryId) filterParams.categoryId = filters.categoryId
     if (filters.minPrice) filterParams.minPrice = filters.minPrice
     if (filters.maxPrice) filterParams.maxPrice = filters.maxPrice
     if (filters.condition) filterParams.condition = filters.condition
-    if (filters.location.trim()) filterParams.location = filters.location.trim()
-    if (filters.searchTerm.trim()) filterParams.searchTerm = filters.searchTerm.trim()
+    if (filters.cityId) filterParams.cityId = filters.cityId
+    if (filters.customCity.trim())
+      filterParams.customCity = filters.customCity.trim()
+    if (filters.searchTerm.trim())
+      filterParams.searchTerm = filters.searchTerm.trim()
     if (filters.minDate) filterParams.minDate = filters.minDate
     if (filters.maxDate) filterParams.maxDate = filters.maxDate
     if (filters.sortBy) filterParams.sortBy = filters.sortBy
@@ -140,14 +151,17 @@ export default function FilterDrawer({
   }
 
   const hasActiveFilters = () => {
-    return filters.categoryId || 
-           filters.minPrice || 
-           filters.maxPrice || 
-           filters.condition || 
-           filters.location.trim() || 
-           filters.searchTerm.trim() || 
-           filters.minDate || 
-           filters.maxDate
+    return (
+      filters.categoryId ||
+      filters.minPrice ||
+      filters.maxPrice ||
+      filters.condition ||
+      filters.cityId ||
+      filters.customCity.trim() ||
+      filters.searchTerm.trim() ||
+      filters.minDate ||
+      filters.maxDate
+    )
   }
 
   return (
@@ -156,48 +170,96 @@ export default function FilterDrawer({
       onClose={onClose}
       title='Advanced Filters'
     >
-      <div className='flex flex-col gap-6 h-full'>
+      <div className='flex flex-col gap-6 max-w-96'>
         {/* Active Filters Display */}
         {hasActiveFilters() && (
           <div className='flex flex-wrap gap-2 p-3 bg-muted rounded-lg'>
-            <span className='text-sm font-medium text-muted-foreground'>Active filters:</span>
+            <span className='text-sm font-medium text-muted-foreground'>
+              Active filters:
+            </span>
             {filters.categoryId && (
-              <Badge variant="secondary" className='flex items-center gap-1'>
-                Category: {categories.find(c => c.id === filters.categoryId)?.name}
-                <X className='w-3 h-3 cursor-pointer' onClick={() => clearFilter('categoryId')} />
+              <Badge
+                variant='secondary'
+                className='flex items-center gap-1'
+              >
+                Category:{' '}
+                {categories.find((c) => c.id === filters.categoryId)?.name}
+                <X
+                  className='w-3 h-3 cursor-pointer'
+                  onClick={() => clearFilter('categoryId')}
+                />
               </Badge>
             )}
             {filters.condition && (
-              <Badge variant="secondary" className='flex items-center gap-1'>
-                Condition: {CONDITIONS.find(c => c.value === filters.condition)?.label}
-                <X className='w-3 h-3 cursor-pointer' onClick={() => clearFilter('condition')} />
+              <Badge
+                variant='secondary'
+                className='flex items-center gap-1'
+              >
+                Condition:{' '}
+                {CONDITIONS.find((c) => c.value === filters.condition)?.label}
+                <X
+                  className='w-3 h-3 cursor-pointer'
+                  onClick={() => clearFilter('condition')}
+                />
               </Badge>
             )}
             {(filters.minPrice || filters.maxPrice) && (
-              <Badge variant="secondary" className='flex items-center gap-1'>
+              <Badge
+                variant='secondary'
+                className='flex items-center gap-1'
+              >
                 Price: ${filters.minPrice || 0} - ${filters.maxPrice || '∞'}
-                <X className='w-3 h-3 cursor-pointer' onClick={() => { clearFilter('minPrice'); clearFilter('maxPrice') }} />
+                <X
+                  className='w-3 h-3 cursor-pointer'
+                  onClick={() => {
+                    clearFilter('minPrice')
+                    clearFilter('maxPrice')
+                  }}
+                />
               </Badge>
             )}
-            {filters.location.trim() && (
-              <Badge variant="secondary" className='flex items-center gap-1'>
-                Location: {filters.location}
-                <X className='w-3 h-3 cursor-pointer' onClick={() => updateFilter('location', '')} />
+            {filters.cityId || filters.customCity.trim() ? (
+              <Badge
+                variant='secondary'
+                className='flex items-center gap-1'
+              >
+                Location: {filters.customCity || 'City'}
+                <X
+                  className='w-3 h-3 cursor-pointer'
+                  onClick={() => {
+                    setFilters((prev) => ({
+                      ...prev,
+                      cityId: undefined,
+                      customCity: '',
+                    }))
+                  }}
+                />
               </Badge>
-            )}
+            ) : null}
             {filters.searchTerm.trim() && (
-              <Badge variant="secondary" className='flex items-center gap-1'>
+              <Badge
+                variant='secondary'
+                className='flex items-center gap-1'
+              >
                 Search: {filters.searchTerm}
-                <X className='w-3 h-3 cursor-pointer' onClick={() => updateFilter('searchTerm', '')} />
+                <X
+                  className='w-3 h-3 cursor-pointer'
+                  onClick={() => updateFilter('searchTerm', '')}
+                />
               </Badge>
             )}
-            <Button variant="ghost" size="sm" onClick={clearAllFilters} className='h-6 px-2 text-xs'>
+            <Button
+              variant='ghost'
+              size='sm'
+              onClick={clearAllFilters}
+              className='h-6 px-2 text-xs'
+            >
               Clear All
             </Button>
           </div>
         )}
 
-        <div className='flex-1 space-y-6'>
+        <div className='flex-col space-y-6 '>
           {/* Search */}
           <div className='space-y-2'>
             <Label className='flex items-center gap-2'>
@@ -227,7 +289,10 @@ export default function FilterDrawer({
               <SelectContent>
                 <SelectItem value='all'>All Categories</SelectItem>
                 {categories.map((category) => (
-                  <SelectItem key={category.id} value={category.id}>
+                  <SelectItem
+                    key={category.id}
+                    value={category.id}
+                  >
                     {category.name}
                   </SelectItem>
                 ))}
@@ -250,7 +315,10 @@ export default function FilterDrawer({
               <SelectContent>
                 <SelectItem value='all'>All Conditions</SelectItem>
                 {CONDITIONS.map((condition) => (
-                  <SelectItem key={condition.value} value={condition.value}>
+                  <SelectItem
+                    key={condition.value}
+                    value={condition.value}
+                  >
                     {condition.label}
                   </SelectItem>
                 ))}
@@ -264,12 +332,38 @@ export default function FilterDrawer({
               <MapPin className='w-4 h-4' />
               Location
             </Label>
-            <Input
-              value={filters.location}
-              onChange={(e) => updateFilter('location', e.target.value)}
-              placeholder='Enter location...'
-              className='w-full'
-            />
+            <div className='flex flex-col gap-2'>
+              {!showCustomCity && (
+                <CityAutocomplete
+                  value={filters.cityId}
+                  onChange={(cityId) => {
+                    updateFilter('cityId', cityId)
+                    // Optionally store cityLabel for display, but do not touch customCity
+                  }}
+                  onCantFindCity={() => setShowCustomCity(true)}
+                />
+              )}
+              {showCustomCity && (
+                <>
+                  <label className='block  text-sm font-medium'>City</label>
+                  <Input
+                    placeholder='Enter your city...'
+                    value={filters.customCity || ''}
+                    onChange={(e) => updateFilter('customCity', e.target.value)}
+                  />
+                </>
+              )}
+              {showCustomCity && (
+                <Button
+                  variant='link'
+                  size='sm'
+                  type='button'
+                  onClick={() => setShowCustomCity(false)}
+                >
+                  Cancel custom city
+                </Button>
+              )}
+            </div>
           </div>
 
           {/* Price Range */}
@@ -279,14 +373,24 @@ export default function FilterDrawer({
               <Input
                 type='number'
                 value={filters.minPrice || ''}
-                onChange={(e) => updateFilter('minPrice', e.target.value ? parseFloat(e.target.value) : undefined)}
+                onChange={(e) =>
+                  updateFilter(
+                    'minPrice',
+                    e.target.value ? parseFloat(e.target.value) : undefined
+                  )
+                }
                 placeholder='Min'
                 className='flex-1'
               />
               <Input
                 type='number'
                 value={filters.maxPrice || ''}
-                onChange={(e) => updateFilter('maxPrice', e.target.value ? parseFloat(e.target.value) : undefined)}
+                onChange={(e) =>
+                  updateFilter(
+                    'maxPrice',
+                    e.target.value ? parseFloat(e.target.value) : undefined
+                  )
+                }
                 placeholder='Max'
                 className='flex-1'
               />
@@ -331,27 +435,51 @@ export default function FilterDrawer({
                 </SelectTrigger>
                 <SelectContent>
                   {SORT_OPTIONS.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
+                    <SelectItem
+                      key={option.value}
+                      value={option.value}
+                    >
                       {option.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
               <Button
-                variant="outline"
-                size="icon"
-                onClick={() => updateFilter('sortOrder', filters.sortOrder === 'asc' ? 'desc' : 'asc')}
+                variant='secondary'
+                size='icon'
+                className='max-h-[35px]'
+                onClick={() =>
+                  updateFilter(
+                    'sortOrder',
+                    filters.sortOrder === 'asc' ? 'desc' : 'asc'
+                  )
+                }
               >
-                {filters.sortOrder === 'asc' ? <SortAsc className='w-4 h-4' /> : <SortDesc className='w-4 h-4' />}
+                {filters.sortOrder === 'asc' ? (
+                  <SortAsc className='w-4 h-4' />
+                ) : (
+                  <SortDesc className='w-4 h-4' />
+                )}
               </Button>
             </div>
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div className='flex items-center gap-2 mt-6'>
-          <Button onClick={applyFilters} className='w-full'>Apply Filters</Button>
-          <Button variant='outline' onClick={onClose} className='w-full'>Close</Button>
+        <div className='flex items-center gap-2 mt-2'>
+          <Button
+            onClick={applyFilters}
+            className='w-full'
+          >
+            Apply Filters
+          </Button>
+          <Button
+            variant='outline'
+            onClick={onClose}
+            className='w-full'
+          >
+            Close
+          </Button>
         </div>
       </div>
     </Drawer>
