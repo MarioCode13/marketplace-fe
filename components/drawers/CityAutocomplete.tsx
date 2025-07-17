@@ -20,7 +20,6 @@ interface CityAutocompleteProps {
 }
 
 export default function CityAutocomplete({
-  value,
   onChange,
   onCantFindCity,
   label = 'City',
@@ -33,7 +32,8 @@ export default function CityAutocomplete({
 
   // If displayValue changes (e.g. on mount), update input only if user hasn't typed
   React.useEffect(() => {
-    if (displayValue !== undefined && displayValue !== input) setInput(displayValue)
+    if (displayValue !== undefined && displayValue !== input)
+      setInput(displayValue)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [displayValue])
 

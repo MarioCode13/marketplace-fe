@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { Star, Search, User, MapPin, X } from 'lucide-react'
+import { Star, Search, User, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { CREATE_TRANSACTION } from '@/lib/graphql/mutations/transactionMutations'
 import { SEARCH_USERS } from '@/lib/graphql/queries/getUsers'
