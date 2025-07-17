@@ -17,7 +17,6 @@ export default function Drawer({
 }: DrawerProps) {
   return (
     <>
-      {/* Overlay with fade-in/out */}
       <div
         className={`fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 z-[55] transition-opacity duration-300 ${
           isOpen
@@ -26,14 +25,13 @@ export default function Drawer({
         }`}
         onClick={onClose}
       />
-
-      {/* Sidebar with slide-in animation */}
       <div
-        className={`fixed top-0 left-0 h-full min-w-[26rem] bg-componentBackground dark:bg-componentBackground shadow-lg px-12 py-10 z-[60] transition-transform duration-300 ease-in-out overflow-y-auto ${
+        className={`fixed top-0 left-0 h-full min-w-[24rem] bg-componentBackground dark:bg-componentBackground shadow-lg px-10 py-6 z-[60] transition-transform duration-300 ease-in-out flex flex-col ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Header */}
         <div className='flex justify-between items-center mb-4'>
           {title && (
             <h2 className='text-lg font-semibold text-foreground dark:text-foregroundDark'>
@@ -52,8 +50,8 @@ export default function Drawer({
             />
           </Button>
         </div>
-
-        {children}
+        {/* Content (scrollable) */}
+        <div className='flex-1 min-h-0 overflow-y-auto'>{children}</div>
       </div>
     </>
   )

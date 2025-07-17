@@ -3,9 +3,10 @@
 import { useQuery } from '@apollo/client'
 import { useParams } from 'next/navigation'
 import { GET_SELLER_PROFILE } from '@/lib/graphql/queries/getSellerProfile'
+import { GET_USER_REVIEWS } from '@/lib/graphql/queries/getUserReviews'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Avatar, AvatarImage } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
 import { Star, Calendar, Phone, Shield, CheckCircle, Clock } from 'lucide-react'
 import Link from 'next/link'
@@ -19,9 +20,20 @@ export default function SellerProfilePage() {
   const userId = params.id as string
 
   const { data, loading, error } = useQuery(GET_SELLER_PROFILE, {
-    variables: { userId },
+    variables: { id: userId },
     fetchPolicy: 'cache-and-network',
   })
+
+  const user = data?.user
+
+  const { data: reviewsData, loading: reviewsLoading } = useQuery(
+    GET_USER_REVIEWS,
+    {
+      variables: { userId: user?.id },
+      skip: !user?.id,
+    }
+  )
+  const reviews = reviewsData?.getUserReviews || []
 
   if (loading) {
     return (
@@ -52,8 +64,6 @@ export default function SellerProfilePage() {
     )
   }
 
-  const { user, reviews, sellerListings } = data
-
   if (!user) {
     return (
       <div className='container mx-auto px-4 py-8'>
@@ -67,7 +77,7 @@ export default function SellerProfilePage() {
   }
 
   const activeListings =
-    sellerListings?.filter((listing: Listing) => !listing.sold) || []
+    user.listings?.filter((listing: Listing) => !listing.sold) || []
 
   return (
     <div className='container mx-auto px-4 py-8'>
@@ -131,10 +141,15 @@ export default function SellerProfilePage() {
                 )}
                 <div className='flex items-center gap-1'>
                   <Calendar className='h-4 w-4' />
-                  Member since {formatDistanceToNow(
-                    new Date(user.createdAt)
-                  )}{' '}
-                  ago
+                  {user.createdAt &&
+                  !isNaN(new Date(user.createdAt).getTime()) ? (
+                    <>
+                      Member since{' '}
+                      {formatDistanceToNow(new Date(user.createdAt))} ago
+                    </>
+                  ) : (
+                    <>Member since N/A</>
+                  )}
                 </div>
               </div>
             </div>
@@ -259,69 +274,33 @@ export default function SellerProfilePage() {
 
         {/* Reviews Section */}
         <div className='lg:col-span-2'>
-          <Card className='mb-6'>
+          <Card className='mb-5'>
             <CardHeader>
               <CardTitle className='flex items-center gap-2'>
                 <Star className='h-5 w-5' />
-                Reviews ({reviews?.length || 0})
+                Reviews ({reviews.length})
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {reviews && reviews.length > 0 ? (
+              {reviewsLoading ? (
+                <div>Loading reviews...</div>
+              ) : reviews.length > 0 ? (
                 <div className='space-y-4'>
                   {reviews.map((review: Review) => (
                     <div
                       key={review.id}
-                      className='border rounded-lg p-4'
+                      className='border-b pb-2 mb-2'
                     >
-                      <div className='flex items-start justify-between mb-2'>
-                        <div className='flex items-center gap-2'>
-                          <Avatar className='h-8 w-8'>
-                            {review.reviewer.profileImageUrl ? (
-                              <AvatarImage
-                                src={generateImageUrl(
-                                  review.reviewer.profileImageUrl
-                                )}
-                                alt={user.username}
-                                width={50}
-                                height={50}
-                              />
-                            ) : (
-                              <AvatarFallback>
-                                {review.reviewer.firstName?.[0]}
-                                {review.reviewer.lastName?.[0]}
-                              </AvatarFallback>
-                            )}
-                          </Avatar>
-                          <div>
-                            <div className='font-medium'>
-                              {review.reviewer.firstName &&
-                              review.reviewer.lastName
-                                ? `${review.reviewer.firstName} ${review.reviewer.lastName}`
-                                : review.reviewer.username}
-                            </div>
-                            <div className='text-sm text-gray-600'>
-                              {formatDistanceToNow(new Date(review.createdAt))}{' '}
-                              ago
-                            </div>
-                          </div>
-                        </div>
-                        <div className='flex items-center gap-1'>
-                          <Star className='h-4 w-4 fill-yellow-400 text-yellow-400' />
-                          <span className='font-medium'>{review.rating}</span>
-                        </div>
+                      <div className='font-semibold'>
+                        {review.reviewer?.username}
                       </div>
-                      <p className='text-gray-700'>{review.comment}</p>
-                      {review.transaction?.listing && (
-                        <div className='mt-2 text-sm text-gray-600'>
-                          For: {review.transaction.listing.title}
-                        </div>
-                      )}
+                      <div>Rating: {review.rating}</div>
+                      <div>{review.comment}</div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className='text-gray-500 text-center py-8'>No reviews yet</p>
+                <div>No reviews yet.</div>
               )}
             </CardContent>
           </Card>

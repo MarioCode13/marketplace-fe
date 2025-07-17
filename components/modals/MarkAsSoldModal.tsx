@@ -34,7 +34,6 @@ interface User {
   profileImageUrl?: string
   firstName?: string
   lastName?: string
-  location?: string
   trustRating?: {
     overallScore: number
     starRating: number
@@ -362,12 +361,6 @@ export default function MarkAsSoldModal({
                                 </div>
                               )}
                             </div>
-                            {user.location && (
-                              <div className='flex items-center gap-1 text-xs text-gray-500'>
-                                <MapPin className='h-3 w-3' />
-                                {user.location}
-                              </div>
-                            )}
                             {user.trustRating && (
                               <div className='text-xs text-gray-500'>
                                 {user.trustRating.totalTransactions}{' '}

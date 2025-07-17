@@ -22,7 +22,16 @@ export const CREATE_TRANSACTION = gql`
         description
         images
         price
-        location
+        city {
+        id
+        name
+        region {
+          name
+          country {
+            name
+          }
+        }
+      }
         condition
         user {
           id

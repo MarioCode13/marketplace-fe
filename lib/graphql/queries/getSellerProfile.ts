@@ -6,6 +6,11 @@ export const GET_SELLER_PROFILE = gql`
       id
       username
       email
+      createdAt
+      profileImageUrl
+      firstName
+      lastName
+      bio
       city {
         id
         name
@@ -17,7 +22,42 @@ export const GET_SELLER_PROFILE = gql`
         }
       }
       customCity
-      hasLocation: city { id } # or use a computed field in the backend if needed
+      contactNumber
+      trustRating {
+        overallScore
+        documentScore
+        profileScore
+        reviewScore
+        transactionScore
+        totalReviews
+        positiveReviews
+        starRating
+        trustLevel
+      }
+      profileCompletion {
+        hasProfilePhoto
+        hasVerifiedEmail
+        hasVerifiedPhone
+        hasIdVerification
+      }
+      subscription {
+        planType
+      }
+      storeBranding {
+        slug
+        logoUrl
+        bannerUrl
+        themeColor
+        about
+      }
+      listings {
+        id
+        title
+        price
+        images
+        sold
+        createdAt
+      }
     }
   }
 `; 

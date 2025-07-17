@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
 import { Upload, Check, Loader2 } from 'lucide-react'
+import CityAutocomplete from '@/components/drawers/CityAutocomplete'
 
 const GET_PROFILE = gql`
   query Me {
@@ -17,7 +18,18 @@ const GET_PROFILE = gql`
       firstName
       lastName
       bio
-      location
+      city {
+        id
+        name
+        region {
+          name
+          country {
+            name
+          }
+        }
+      }
+      customCity
+      contactNumber
       profileImageUrl
       idPhotoUrl
       driversLicenseUrl
@@ -32,14 +44,18 @@ const COMPLETE_PROFILE = gql`
     $firstName: String!
     $lastName: String!
     $bio: String
-    $location: String
+    $cityId: ID
+    $customCity: String
+    $contactNumber: String
   ) {
     updateUser(
       id: $id
       firstName: $firstName
       lastName: $lastName
       bio: $bio
-      location: $location
+      cityId: $cityId
+      customCity: $customCity
+      contactNumber: $contactNumber
     ) {
       id
     }
@@ -55,7 +71,12 @@ export default function CompleteProfilePage() {
     firstName: user?.firstName || '',
     lastName: user?.lastName || '',
     bio: user?.bio || '',
-    location: user?.location || '',
+    city: user?.city?.id || '', // store cityId
+    cityLabel: user?.city
+      ? `${user.city.name}, ${user.city.region.name}, ${user.city.region.country.name}`
+      : '',
+    customCity: user?.customCity || '',
+    contactNumber: user?.contactNumber || '',
   })
   const [uploading, setUploading] = useState({
     profile: false,
@@ -63,6 +84,7 @@ export default function CompleteProfilePage() {
     license: false,
     address: false,
   })
+  const [showCustomCity, setShowCustomCity] = useState(false)
 
   useEffect(() => {
     if (user) {
@@ -70,8 +92,14 @@ export default function CompleteProfilePage() {
         firstName: user.firstName || '',
         lastName: user.lastName || '',
         bio: user.bio || '',
-        location: user.location || '',
+        city: user.city?.id || '',
+        cityLabel: user.city
+          ? `${user.city.name}, ${user.city.region.name}, ${user.city.region.country.name}`
+          : '',
+        customCity: user.customCity || '',
+        contactNumber: user.contactNumber || '',
       })
+      setShowCustomCity(!!user.customCity)
     }
   }, [user])
 
@@ -79,11 +107,19 @@ export default function CompleteProfilePage() {
   if (error) return <p>Error loading profile</p>
 
   // Completion logic
+  // Debug log for location fields
+  console.log('form.city:', form.city, 'form.customCity:', form.customCity)
+  // Robust location check: true if city is a non-empty string or non-zero number, or customCity is a non-empty string
+  const hasLocation =
+    (typeof form.city === 'string' && form.city.trim() !== '') ||
+    (typeof form.city === 'number' && form.city !== 0) ||
+    (typeof form.customCity === 'string' && form.customCity.trim() !== '')
   const completionItems = [
     form.firstName,
     form.lastName,
     form.bio,
-    form.location,
+    form.contactNumber,
+    hasLocation,
     user?.profileImageUrl,
     user?.idPhotoUrl,
     user?.driversLicenseUrl,
@@ -146,7 +182,12 @@ export default function CompleteProfilePage() {
       await completeProfile({
         variables: {
           id: user.id,
-          ...form,
+          firstName: form.firstName,
+          lastName: form.lastName,
+          bio: form.bio,
+          cityId: form.city ? Number(form.city) : undefined,
+          customCity: form.customCity || undefined,
+          contactNumber: form.contactNumber || undefined,
         },
       })
       toast.success('Profile updated successfully')
@@ -203,14 +244,48 @@ export default function CompleteProfilePage() {
               required
             />
           </div>
+          {/* City Autocomplete and Custom City fallback */}
           <div>
-            <Label htmlFor='location'>Location</Label>
-            <Input
-              id='location'
-              name='location'
-              value={form.location}
-              onChange={handleChange}
+            <CityAutocomplete
+              value={form.city}
+              displayValue={form.cityLabel}
+              onChange={(cityId, cityLabel) => {
+                setForm((prev) => ({
+                  ...prev,
+                  city: cityId || '',
+                  cityLabel: cityLabel || '',
+                  customCity: '',
+                }))
+                setShowCustomCity(false)
+              }}
+              onCantFindCity={() => {
+                setForm((prev) => ({ ...prev, city: '', cityLabel: '' }))
+                setShowCustomCity(true)
+              }}
+              label={undefined}
             />
+            {showCustomCity && (
+              <div className='mt-2'>
+                <Label htmlFor='customCity'>Custom City</Label>
+                <Input
+                  id='customCity'
+                  name='customCity'
+                  value={form.customCity}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, customCity: e.target.value }))
+                  }
+                  placeholder='Enter your city'
+                />
+                <Button
+                  type='button'
+                  variant='ghost'
+                  className='mt-1 text-xs text-blue-600 underline'
+                  onClick={() => setShowCustomCity(false)}
+                >
+                  Back to city search
+                </Button>
+              </div>
+            )}
           </div>
           <div>
             <Label htmlFor='bio'>Bio</Label>
@@ -220,6 +295,17 @@ export default function CompleteProfilePage() {
               value={form.bio}
               onChange={handleChange}
               placeholder='Tell us a bit about yourself'
+            />
+          </div>
+          <div>
+            <Label htmlFor='contactNumber'>Contact Number</Label>
+            <Input
+              id='contactNumber'
+              name='contactNumber'
+              value={form.contactNumber}
+              onChange={handleChange}
+              placeholder='Enter your contact number'
+              required
             />
           </div>
           {/* Upload fields */}

@@ -19,7 +19,7 @@ export const GET_USERS = gql`
       customCity
     }
   }
-`;
+`
 
 export const SEARCH_USERS = gql`
   query SearchUsers($searchTerm: String!) {
@@ -30,7 +30,16 @@ export const SEARCH_USERS = gql`
       profileImageUrl
       firstName
       lastName
-      location
+      city {
+        id
+        name
+        region {
+          name
+          country {
+            name
+          }
+        }
+      }
       trustRating {
         overallScore
         starRating

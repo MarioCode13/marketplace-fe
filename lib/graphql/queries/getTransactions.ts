@@ -10,7 +10,16 @@ export const GET_MY_PURCHASES = gql`
         description
         images
         price
-        location
+        city {
+          name
+          region {
+            name
+            country {
+              name
+            }
+          }
+        }
+        customCity
         condition
         user {
           id
@@ -49,7 +58,16 @@ export const GET_MY_SALES = gql`
         description
         images
         price
-        location
+        city {
+          name
+          region {
+            name
+            country {
+              name
+            }
+          }
+        }
+        customCity
         condition
         user {
           id
@@ -88,7 +106,16 @@ export const GET_MY_COMPLETED_PURCHASES = gql`
         description
         images
         price
-        location
+        city {
+          name
+          region {
+            name
+            country {
+              name
+            }
+          }
+        }
+        customCity
         condition
         user {
           id
@@ -127,7 +154,16 @@ export const GET_MY_COMPLETED_SALES = gql`
         description
         images
         price
-        location
+        city {
+          name
+          region {
+            name
+            country {
+              name
+            }
+          }
+        }
+        customCity
         condition
         user {
           id
@@ -166,7 +202,16 @@ export const GET_TRANSACTION = gql`
         description
         images
         price
-        location
+        city {
+          name
+          region {
+            name
+            country {
+              name
+            }
+          }
+        }
+        customCity
         condition
         user {
           id

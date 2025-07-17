@@ -200,14 +200,25 @@ const Page = () => {
 
                   <div className='flex-1'>
                     <p className='text-gray-500 text-sm'>Seller</p>
-                    <Link
-                      href={`/seller/${listing.user.id}`}
-                      className='hover:underline'
-                    >
-                      <h2 className='text-lg font-semibold'>
-                        {listing.user.username}
-                      </h2>
-                    </Link>
+                    {listing.user.storeBranding?.slug ? (
+                      <Link
+                        href={`/store/${listing.user.storeBranding.slug}`}
+                        className='hover:underline'
+                      >
+                        <h2 className='text-lg font-semibold'>
+                          {listing.user.username}
+                        </h2>
+                      </Link>
+                    ) : (
+                      <Link
+                        href={`/seller/${listing.user.id}`}
+                        className='hover:underline'
+                      >
+                        <h2 className='text-lg font-semibold'>
+                          {listing.user.username}
+                        </h2>
+                      </Link>
+                    )}
                   </div>
                   {isOwner ? (
                     <div className='flex gap-2'>
@@ -233,15 +244,27 @@ const Page = () => {
                     </div>
                   ) : (
                     <div className='flex gap-2'>
-                      <Link href={`/seller/${listing.user.id}`}>
-                        <Button
-                          variant='outline'
-                          className='flex items-center gap-2'
-                        >
-                          <User className='w-4 h-4' />
-                          View Profile
-                        </Button>
-                      </Link>
+                      {listing.user.storeBranding?.slug ? (
+                        <Link href={`/store/${listing.user.storeBranding.slug}`}>
+                          <Button
+                            variant='outline'
+                            className='flex items-center gap-2'
+                          >
+                            <User className='w-4 h-4' />
+                            View Store
+                          </Button>
+                        </Link>
+                      ) : (
+                        <Link href={`/seller/${listing.user.id}`}>
+                          <Button
+                            variant='outline'
+                            className='flex items-center gap-2'
+                          >
+                            <User className='w-4 h-4' />
+                            View Profile
+                          </Button>
+                        </Link>
+                      )}
                       <Button
                         onClick={() => setModalOpen(true)}
                         variant='secondary'

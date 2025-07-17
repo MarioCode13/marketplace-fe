@@ -30,7 +30,15 @@ const GET_LISTING_BY_ID = gql`
       description
       images
       price
-      location
+      city {
+        name
+        region {
+          name
+          country {
+            name
+          }
+        }
+      }
       condition
       category {
         id
@@ -112,7 +120,7 @@ export default function EditListingPage() {
     title: '',
     description: '',
     price: '',
-    location: '',
+    city: '',
     categoryId: '',
     condition: 'NEW',
   })
@@ -159,7 +167,7 @@ export default function EditListingPage() {
         title: listing.title,
         description: listing.description,
         price: listing.price.toString(),
-        location: listing.location,
+        city: listing.city,
         categoryId: listing.category?.id || '',
         condition: listing.condition,
       })
@@ -172,18 +180,7 @@ export default function EditListingPage() {
     if (listingData?.getListingById && (userId || meData?.me?.id)) {
       const listing = listingData.getListingById
       const currentUserId = meData?.me?.id || userId
-      console.log(
-        'Listing user ID:',
-        listing.user.id,
-        'Type:',
-        typeof listing.user.id
-      )
-      console.log(
-        'Current user ID:',
-        currentUserId,
-        'Type:',
-        typeof currentUserId
-      )
+
       if (String(listing.user.id) !== String(currentUserId)) {
         toast.error('You can only edit your own listings')
         router.push('/my-listings')
@@ -396,11 +393,11 @@ export default function EditListingPage() {
               </div>
 
               <div>
-                <Label htmlFor='location'>Location</Label>
+                <Label htmlFor='city'>City</Label>
                 <Input
-                  id='location'
-                  name='location'
-                  value={form.location}
+                  id='city'
+                  name='city'
+                  value={form.city}
                   onChange={handleChange}
                   required
                   className='mt-1'

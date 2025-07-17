@@ -168,315 +168,322 @@ export default function FilterDrawer({
     <Drawer
       isOpen={isOpen}
       onClose={onClose}
-      title='Advanced Filters'
+      title='Filters'
     >
-      <div className='flex flex-col gap-6 max-w-96'>
-        {/* Active Filters Display */}
-        {hasActiveFilters() && (
-          <div className='flex flex-wrap gap-2 p-3 bg-muted rounded-lg'>
-            <span className='text-sm font-medium text-muted-foreground'>
-              Active filters:
-            </span>
-            {filters.categoryId && (
-              <Badge
-                variant='secondary'
-                className='flex items-center gap-1'
-              >
-                Category:{' '}
-                {categories.find((c) => c.id === filters.categoryId)?.name}
-                <X
-                  className='w-3 h-3 cursor-pointer'
-                  onClick={() => clearFilter('categoryId')}
-                />
-              </Badge>
-            )}
-            {filters.condition && (
-              <Badge
-                variant='secondary'
-                className='flex items-center gap-1'
-              >
-                Condition:{' '}
-                {CONDITIONS.find((c) => c.value === filters.condition)?.label}
-                <X
-                  className='w-3 h-3 cursor-pointer'
-                  onClick={() => clearFilter('condition')}
-                />
-              </Badge>
-            )}
-            {(filters.minPrice || filters.maxPrice) && (
-              <Badge
-                variant='secondary'
-                className='flex items-center gap-1'
-              >
-                Price: ${filters.minPrice || 0} - ${filters.maxPrice || '∞'}
-                <X
-                  className='w-3 h-3 cursor-pointer'
-                  onClick={() => {
-                    clearFilter('minPrice')
-                    clearFilter('maxPrice')
-                  }}
-                />
-              </Badge>
-            )}
-            {filters.cityId || filters.customCity.trim() ? (
-              <Badge
-                variant='secondary'
-                className='flex items-center gap-1'
-              >
-                Location: {filters.customCity || 'City'}
-                <X
-                  className='w-3 h-3 cursor-pointer'
-                  onClick={() => {
-                    setFilters((prev) => ({
-                      ...prev,
-                      cityId: undefined,
-                      customCity: '',
-                    }))
-                  }}
-                />
-              </Badge>
-            ) : null}
-            {filters.searchTerm.trim() && (
-              <Badge
-                variant='secondary'
-                className='flex items-center gap-1'
-              >
-                Search: {filters.searchTerm}
-                <X
-                  className='w-3 h-3 cursor-pointer'
-                  onClick={() => updateFilter('searchTerm', '')}
-                />
-              </Badge>
-            )}
-            <Button
-              variant='ghost'
-              size='sm'
-              onClick={clearAllFilters}
-              className='h-6 px-2 text-xs'
-            >
-              Clear All
-            </Button>
-          </div>
-        )}
-
-        <div className='flex-col space-y-6 '>
-          {/* Search */}
-          <div className='space-y-2'>
-            <Label className='flex items-center gap-2'>
-              <Search className='w-4 h-4' />
-              Search
-            </Label>
-            <Input
-              value={filters.searchTerm}
-              onChange={(e) => updateFilter('searchTerm', e.target.value)}
-              placeholder='Search titles and descriptions...'
-              className='w-full'
-            />
-          </div>
-
-          {/* Category */}
-          <div className='space-y-2'>
-            <Label>Category</Label>
-            <Select
-              value={filters.categoryId ?? 'all'}
-              onValueChange={(value) =>
-                updateFilter('categoryId', value === 'all' ? undefined : value)
-              }
-            >
-              <SelectTrigger className='w-full'>
-                <SelectValue placeholder='Select a Category' />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value='all'>All Categories</SelectItem>
-                {categories.map((category) => (
-                  <SelectItem
-                    key={category.id}
-                    value={category.id}
-                  >
-                    {category.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Condition */}
-          <div className='space-y-2'>
-            <Label>Condition</Label>
-            <Select
-              value={filters.condition ?? 'all'}
-              onValueChange={(value) =>
-                updateFilter('condition', value === 'all' ? undefined : value)
-              }
-            >
-              <SelectTrigger className='w-full'>
-                <SelectValue placeholder='Select Condition' />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value='all'>All Conditions</SelectItem>
-                {CONDITIONS.map((condition) => (
-                  <SelectItem
-                    key={condition.value}
-                    value={condition.value}
-                  >
-                    {condition.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Location */}
-          <div className='space-y-2'>
-            <Label className='flex items-center gap-2'>
-              <MapPin className='w-4 h-4' />
-              Location
-            </Label>
-            <div className='flex flex-col gap-2'>
-              {!showCustomCity && (
-                <CityAutocomplete
-                  value={filters.cityId}
-                  onChange={(cityId) => {
-                    updateFilter('cityId', cityId)
-                    // Optionally store cityLabel for display, but do not touch customCity
-                  }}
-                  onCantFindCity={() => setShowCustomCity(true)}
-                />
-              )}
-              {showCustomCity && (
-                <>
-                  <label className='block  text-sm font-medium'>City</label>
-                  <Input
-                    placeholder='Enter your city...'
-                    value={filters.customCity || ''}
-                    onChange={(e) => updateFilter('customCity', e.target.value)}
-                  />
-                </>
-              )}
-              {showCustomCity && (
-                <Button
-                  variant='link'
-                  size='sm'
-                  type='button'
-                  onClick={() => setShowCustomCity(false)}
+      <div className='flex flex-col max-w-80 h-full'>
+        {/* Filter content */}
+        <div className='flex-1'>
+          {/* Active Filters Display */}
+          {hasActiveFilters() && (
+            <div className='flex flex-wrap gap-2 p-2 bg-muted rounded-lg'>
+              <span className='text-sm font-medium text-muted-foreground'>
+                Active filters:
+              </span>
+              {filters.categoryId && (
+                <Badge
+                  variant='secondary'
+                  className='flex items-center gap-1'
                 >
-                  Cancel custom city
-                </Button>
+                  Category:{' '}
+                  {categories.find((c) => c.id === filters.categoryId)?.name}
+                  <X
+                    className='w-3 h-3 cursor-pointer'
+                    onClick={() => clearFilter('categoryId')}
+                  />
+                </Badge>
               )}
-            </div>
-          </div>
-
-          {/* Price Range */}
-          <div className='space-y-2'>
-            <Label>Price Range</Label>
-            <div className='flex gap-2'>
-              <Input
-                type='number'
-                value={filters.minPrice || ''}
-                onChange={(e) =>
-                  updateFilter(
-                    'minPrice',
-                    e.target.value ? parseFloat(e.target.value) : undefined
-                  )
-                }
-                placeholder='Min'
-                className='flex-1'
-              />
-              <Input
-                type='number'
-                value={filters.maxPrice || ''}
-                onChange={(e) =>
-                  updateFilter(
-                    'maxPrice',
-                    e.target.value ? parseFloat(e.target.value) : undefined
-                  )
-                }
-                placeholder='Max'
-                className='flex-1'
-              />
-            </div>
-          </div>
-
-          {/* Date Range */}
-          <div className='space-y-2'>
-            <Label className='flex items-center gap-2'>
-              <Calendar className='w-4 h-4' />
-              Date Posted
-            </Label>
-            <div className='flex gap-2'>
-              <Input
-                type='date'
-                value={filters.minDate}
-                onChange={(e) => updateFilter('minDate', e.target.value)}
-                className='flex-1'
-              />
-              <Input
-                type='date'
-                value={filters.maxDate}
-                onChange={(e) => updateFilter('maxDate', e.target.value)}
-                className='flex-1'
-              />
-            </div>
-          </div>
-
-          {/* Sort Options */}
-          <div className='space-y-2'>
-            <Label className='flex items-center gap-2'>
-              <SortAsc className='w-4 h-4' />
-              Sort By
-            </Label>
-            <div className='flex gap-2'>
-              <Select
-                value={filters.sortBy}
-                onValueChange={(value) => updateFilter('sortBy', value)}
+              {filters.condition && (
+                <Badge
+                  variant='secondary'
+                  className='flex items-center gap-1'
+                >
+                  Condition:{' '}
+                  {CONDITIONS.find((c) => c.value === filters.condition)?.label}
+                  <X
+                    className='w-3 h-3 cursor-pointer'
+                    onClick={() => clearFilter('condition')}
+                  />
+                </Badge>
+              )}
+              {(filters.minPrice || filters.maxPrice) && (
+                <Badge
+                  variant='secondary'
+                  className='flex items-center gap-1'
+                >
+                  Price: ${filters.minPrice || 0} - ${filters.maxPrice || '∞'}
+                  <X
+                    className='w-3 h-3 cursor-pointer'
+                    onClick={() => {
+                      clearFilter('minPrice')
+                      clearFilter('maxPrice')
+                    }}
+                  />
+                </Badge>
+              )}
+              {filters.cityId || filters.customCity.trim() ? (
+                <Badge
+                  variant='secondary'
+                  className='flex items-center gap-1'
+                >
+                  Location: {filters.customCity || 'City'}
+                  <X
+                    className='w-3 h-3 cursor-pointer'
+                    onClick={() => {
+                      setFilters((prev) => ({
+                        ...prev,
+                        cityId: undefined,
+                        customCity: '',
+                      }))
+                    }}
+                  />
+                </Badge>
+              ) : null}
+              {filters.searchTerm.trim() && (
+                <Badge
+                  variant='secondary'
+                  className='flex items-center gap-1'
+                >
+                  Search: {filters.searchTerm}
+                  <X
+                    className='w-3 h-3 cursor-pointer'
+                    onClick={() => updateFilter('searchTerm', '')}
+                  />
+                </Badge>
+              )}
+              <Button
+                variant='ghost'
+                size='sm'
+                onClick={clearAllFilters}
+                className='h-6 px-2 text-xs'
               >
-                <SelectTrigger className='flex-1'>
-                  <SelectValue />
+                Clear All
+              </Button>
+            </div>
+          )}
+
+          <div className='flex-col space-y-6 '>
+            {/* Search */}
+            <div className='space-y-2'>
+              <Label className='flex items-center gap-2'>
+                <Search className='w-4 h-4' />
+                Search
+              </Label>
+              <Input
+                value={filters.searchTerm}
+                onChange={(e) => updateFilter('searchTerm', e.target.value)}
+                placeholder='Search titles and descriptions...'
+                className='w-full'
+              />
+            </div>
+
+            {/* Category */}
+            <div className='space-y-2'>
+              <Label>Category</Label>
+              <Select
+                value={filters.categoryId ?? 'all'}
+                onValueChange={(value) =>
+                  updateFilter(
+                    'categoryId',
+                    value === 'all' ? undefined : value
+                  )
+                }
+              >
+                <SelectTrigger className='w-full'>
+                  <SelectValue placeholder='Select a Category' />
                 </SelectTrigger>
                 <SelectContent>
-                  {SORT_OPTIONS.map((option) => (
+                  <SelectItem value='all'>All Categories</SelectItem>
+                  {categories.map((category) => (
                     <SelectItem
-                      key={option.value}
-                      value={option.value}
+                      key={category.id}
+                      value={category.id}
                     >
-                      {option.label}
+                      {category.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              <Button
-                variant='secondary'
-                size='icon'
-                className='max-h-[35px]'
-                onClick={() =>
-                  updateFilter(
-                    'sortOrder',
-                    filters.sortOrder === 'asc' ? 'desc' : 'asc'
-                  )
+            </div>
+
+            {/* Condition */}
+            <div className='space-y-2'>
+              <Label>Condition</Label>
+              <Select
+                value={filters.condition ?? 'all'}
+                onValueChange={(value) =>
+                  updateFilter('condition', value === 'all' ? undefined : value)
                 }
               >
-                {filters.sortOrder === 'asc' ? (
-                  <SortAsc className='w-4 h-4' />
-                ) : (
-                  <SortDesc className='w-4 h-4' />
+                <SelectTrigger className='w-full'>
+                  <SelectValue placeholder='Select Condition' />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value='all'>All Conditions</SelectItem>
+                  {CONDITIONS.map((condition) => (
+                    <SelectItem
+                      key={condition.value}
+                      value={condition.value}
+                    >
+                      {condition.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Location */}
+            <div className='space-y-2'>
+              <Label className='flex items-center gap-2'>
+                <MapPin className='w-4 h-4' />
+                Location
+              </Label>
+              <div className='flex flex-col gap-2'>
+                {!showCustomCity && (
+                  <CityAutocomplete
+                    value={filters.cityId}
+                    onChange={(cityId) => {
+                      updateFilter('cityId', cityId)
+                      // Optionally store cityLabel for display, but do not touch customCity
+                    }}
+                    onCantFindCity={() => setShowCustomCity(true)}
+                  />
                 )}
-              </Button>
+                {showCustomCity && (
+                  <>
+                    <label className='block  text-sm font-medium'>City</label>
+                    <Input
+                      placeholder='Enter your city...'
+                      value={filters.customCity || ''}
+                      onChange={(e) =>
+                        updateFilter('customCity', e.target.value)
+                      }
+                    />
+                  </>
+                )}
+                {showCustomCity && (
+                  <Button
+                    variant='link'
+                    size='sm'
+                    type='button'
+                    onClick={() => setShowCustomCity(false)}
+                  >
+                    Cancel custom city
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            {/* Price Range */}
+            <div className='space-y-2'>
+              <Label>Price Range</Label>
+              <div className='flex gap-2'>
+                <Input
+                  type='number'
+                  value={filters.minPrice || ''}
+                  onChange={(e) =>
+                    updateFilter(
+                      'minPrice',
+                      e.target.value ? parseFloat(e.target.value) : undefined
+                    )
+                  }
+                  placeholder='Min'
+                  className='flex-1'
+                />
+                <Input
+                  type='number'
+                  value={filters.maxPrice || ''}
+                  onChange={(e) =>
+                    updateFilter(
+                      'maxPrice',
+                      e.target.value ? parseFloat(e.target.value) : undefined
+                    )
+                  }
+                  placeholder='Max'
+                  className='flex-1'
+                />
+              </div>
+            </div>
+
+            {/* Date Range */}
+            <div className='space-y-2'>
+              <Label className='flex items-center gap-2'>
+                <Calendar className='w-4 h-4' />
+                Date Posted
+              </Label>
+              <div className='flex gap-2'>
+                <Input
+                  type='date'
+                  value={filters.minDate}
+                  onChange={(e) => updateFilter('minDate', e.target.value)}
+                  className='flex-1'
+                />
+                <Input
+                  type='date'
+                  value={filters.maxDate}
+                  onChange={(e) => updateFilter('maxDate', e.target.value)}
+                  className='flex-1'
+                />
+              </div>
+            </div>
+
+            {/* Sort Options */}
+            <div className='space-y-2'>
+              <Label className='flex items-center gap-2'>
+                <SortAsc className='w-4 h-4' />
+                Sort By
+              </Label>
+              <div className='flex gap-2'>
+                <Select
+                  value={filters.sortBy}
+                  onValueChange={(value) => updateFilter('sortBy', value)}
+                >
+                  <SelectTrigger className='flex-1'>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SORT_OPTIONS.map((option) => (
+                      <SelectItem
+                        key={option.value}
+                        value={option.value}
+                      >
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button
+                  variant='secondary'
+                  size='icon'
+                  className='max-h-[35px]'
+                  onClick={() =>
+                    updateFilter(
+                      'sortOrder',
+                      filters.sortOrder === 'asc' ? 'desc' : 'asc'
+                    )
+                  }
+                >
+                  {filters.sortOrder === 'asc' ? (
+                    <SortAsc className='w-4 h-4' />
+                  ) : (
+                    <SortDesc className='w-4 h-4' />
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
         </div>
-
-        {/* Action Buttons */}
-        <div className='flex items-center gap-2 mt-2'>
+        {/* Bottom Action Buttons */}
+        <div className='flex gap-2 mt-2 mb-1 px-1'>
           <Button
             onClick={applyFilters}
-            className='w-full'
+            className='w-1/2'
           >
             Apply Filters
           </Button>
           <Button
             variant='outline'
             onClick={onClose}
-            className='w-full'
+            className='w-1/2'
           >
             Close
           </Button>

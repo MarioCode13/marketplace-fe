@@ -25,6 +25,9 @@ interface ListingCardProps {
         totalReviews: number
         positiveReviews: number
       }
+      storeBranding?: {
+        slug: string
+      }
     }
   }
   showMenu?: boolean // If true, show the ellipsis menu for actions
@@ -57,10 +60,14 @@ export default function ListingCard({
             </div>
           )}
           <Image
-            src={listing.images && listing.images.length > 0 ? generateImageUrl(listing.images[0]) : '/logo.png'}
+            src={
+              listing.images && listing.images.length > 0
+                ? generateImageUrl(listing.images[0])
+                : '/logo.png'
+            }
             alt={listing.title}
-            width={100}
-            height={100}
+            width={300}
+            height={300}
             className='w-full h-40 object-cover rounded-md'
             onError={(e) => {
               const target = e.target as HTMLImageElement
@@ -82,7 +89,7 @@ export default function ListingCard({
           </p>
           <div className='mt-2 space-y-1'>
             <p className='text-sm text-gray-600'>
-              Seller: {listing.user?.username || 'Unknown'}
+              Seller: {listing.user ? listing.user.username : 'Unknown'}
             </p>
             {listing.user?.trustRating && (
               <div className='flex items-center gap-2'>
@@ -101,13 +108,11 @@ export default function ListingCard({
               </div>
             )}
           </div>
-
           <p className='text-sm text-gray-500 mt-2'>
             {dayjs(listing.createdAt).format('DD MMM YYYY')}
           </p>
         </div>
       </Link>
-
       {/* Actions Menu */}
       {showMenu && (
         <div className='absolute top-2 right-2'>

@@ -20,7 +20,16 @@ interface Listing {
     name: string
   }
   condition: string
-  location: string
+  city?: {
+    name: string
+    region: {
+      name: string
+      country: {
+        name: string
+      }
+    }
+  }
+  customCity?: string
   user: {
     id: string
     username: string
@@ -53,7 +62,7 @@ interface Filters {
 export default function ListingsPage() {
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [filters, setFilters] = useState<Filters>({})
-  const [limit] = useState(9)
+  const [limit] = useState(8)
   const [offset, setOffset] = useState(0)
 
   const { loading, error, data } = useQuery(GET_LISTINGS, {

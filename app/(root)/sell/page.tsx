@@ -34,7 +34,8 @@ const CREATE_LISTING = gql`
     $images: [String!]!
     $categoryId: ID!
     $price: Float!
-    $location: String!
+    $customCity: String
+    $cityId: ID
     $condition: Condition!
     $userId: ID!
   ) {
@@ -44,7 +45,8 @@ const CREATE_LISTING = gql`
       images: $images
       categoryId: $categoryId
       price: $price
-      location: $location
+      customCity: $customCity
+      cityId: $cityId
       condition: $condition
       userId: $userId
     ) {
@@ -83,7 +85,6 @@ export default function SellPage() {
     title: '',
     description: '',
     price: '',
-    location: '',
     categoryId: '',
     condition: 'NEW',
   })
@@ -159,7 +160,6 @@ export default function SellPage() {
         title: '',
         description: '',
         price: '',
-        location: '',
         categoryId: '',
         condition: 'NEW',
       })
@@ -257,22 +257,6 @@ export default function SellPage() {
               id='price'
               name='price'
               value={form.price}
-              onChange={handleChange}
-              required
-            />
-          </div>
-
-          <div className='flex flex-col'>
-            <Label
-              htmlFor='location'
-              className='mb-2'
-            >
-              Location
-            </Label>
-            <Input
-              id='location'
-              name='location'
-              value={form.location}
               onChange={handleChange}
               required
             />

@@ -16,17 +16,26 @@ interface CityAutocompleteProps {
   onCantFindCity?: () => void
   label?: string
   placeholder?: string
+  displayValue?: string // new prop for input label
 }
 
 export default function CityAutocomplete({
+  value,
   onChange,
   onCantFindCity,
   label = 'City',
   placeholder = 'Type to search cities...',
+  displayValue,
 }: CityAutocompleteProps) {
-  const [input, setInput] = useState('')
+  const [input, setInput] = useState(displayValue || '')
   const [searchCities, { data, loading }] = useLazyQuery(SEARCH_CITIES)
   const [showDropdown, setShowDropdown] = useState(false)
+
+  // If displayValue changes (e.g. on mount), update input only if user hasn't typed
+  React.useEffect(() => {
+    if (displayValue !== undefined && displayValue !== input) setInput(displayValue)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [displayValue])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value
