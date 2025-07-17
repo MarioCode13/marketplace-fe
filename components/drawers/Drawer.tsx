@@ -26,17 +26,19 @@ export default function Drawer({
         onClick={onClose}
       />
       <div
-        className={`fixed top-0 left-0 h-full min-w-[24rem] bg-componentBackground dark:bg-componentBackground shadow-lg px-10 py-6 z-[60] transition-transform duration-300 ease-in-out flex flex-col ${
+        className={`fixed top-0 left-0 h-full w-full max-w-sm sm:min-w-[24rem] bg-componentBackground dark:bg-componentBackground shadow-lg px-6 py-6 z-[60] transition-transform duration-300 ease-in-out flex flex-col ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className='flex justify-between items-center mb-4'>
-          {title && (
+          {title ? (
             <h2 className='text-lg font-semibold text-foreground dark:text-foregroundDark'>
               {title}
             </h2>
+          ) : (
+            <div></div>
           )}
           <Button
             variant={'ghost'}
@@ -45,7 +47,7 @@ export default function Drawer({
             className='text-foreground dark:text-foregroundDark rounded-full'
           >
             <X
-              className='!w-5 !h-5'
+              className='!w-7 !h-7'
               strokeWidth={3}
             />
           </Button>
