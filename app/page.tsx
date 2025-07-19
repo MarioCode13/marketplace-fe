@@ -12,8 +12,8 @@ export default function Home() {
           <Image
             src='/marketplace-banner2.jpg'
             alt='Marketplace Banner'
-            width={1500}
-            height={1500}
+            width={1900}
+            height={1900}
             className='shadow-lg object-cover object-center w-full h-64 sm:h-[30rem] [filter:hue-rotate(330deg)]'
             priority
           />

@@ -1,0 +1,14 @@
+{
+  "graphql.useSchemaFileDefinitions": true,
+  "graphql.schemas": [
+    {
+      "url": "http://localhost:8080/graphql",
+      "introspect": true
+    }
+  ],
+  "graphql.documents": [
+    "**/*.{ts,tsx}",
+    "**/*.graphql",
+    "**/*.gql"
+  ]
+} 

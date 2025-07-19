@@ -1,0 +1,8 @@
+schema: lib/graphql/schema.json
+documents: '**/*.{ts,tsx}'
+extensions:
+  endpoints:
+    Default GraphQL Endpoint:
+      url: http://localhost:8080/graphql
+      headers:
+        Authorization: Bearer ${env:GRAPHQL_TOKEN} 

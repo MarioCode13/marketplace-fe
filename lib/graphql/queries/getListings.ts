@@ -13,7 +13,8 @@ export const GET_LISTINGS = gql`
     $minDate: String,
     $maxDate: String,
     $sortBy: String,
-    $sortOrder: String
+    $sortOrder: String,
+    $userId: ID
   ) {
     getListings(
       limit: $limit, 
@@ -27,7 +28,9 @@ export const GET_LISTINGS = gql`
       minDate: $minDate,
       maxDate: $maxDate,
       sortBy: $sortBy,
-      sortOrder: $sortOrder
+      sortOrder: $sortOrder,
+      userId: $userId
+    
     ) {
       listings {
         id
@@ -59,4 +62,4 @@ export const GET_LISTINGS = gql`
       totalCount
     }
   }
-`;
+`

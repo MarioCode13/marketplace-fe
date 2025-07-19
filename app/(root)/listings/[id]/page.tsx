@@ -2,7 +2,6 @@
 
 import { GET_LISTING_BY_ID } from '@/lib/graphql/queries'
 import { useQuery } from '@apollo/client'
-import { gql } from '@apollo/client'
 import Image from 'next/image'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -25,16 +24,7 @@ import {
 import { useSelector } from 'react-redux'
 import { RootState } from '@/store/store'
 import { generateImageUrl } from '@/lib/utils'
-
-const GET_ME = gql`
-  query Me {
-    me {
-      id
-      username
-      email
-    }
-  }
-`
+import { GET_ME } from '@/lib/graphql/queries/getMe'
 
 const Page = () => {
   const params = useParams()
@@ -178,7 +168,11 @@ const Page = () => {
                 ${listing.price}
               </p>
               <p className='text-sm text-gray-500'>
-                Location: {listing.customCity || (listing.city ? `${listing.city.name}, ${listing.city.region.name}, ${listing.city.region.country.name}` : '')}
+                Location:{' '}
+                {listing.customCity ||
+                  (listing.city
+                    ? `${listing.city.name}, ${listing.city.region.name}, ${listing.city.region.country.name}`
+                    : '')}
               </p>
               <Badge className='w-fit'>{listing.condition}</Badge>
             </div>
@@ -245,7 +239,9 @@ const Page = () => {
                   ) : (
                     <div className='flex gap-2'>
                       {listing.user.storeBranding?.slug ? (
-                        <Link href={`/store/${listing.user.storeBranding.slug}`}>
+                        <Link
+                          href={`/store/${listing.user.storeBranding.slug}`}
+                        >
                           <Button
                             variant='outline'
                             className='flex items-center gap-2'

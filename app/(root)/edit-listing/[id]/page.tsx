@@ -21,60 +21,10 @@ import { Category } from '@/lib/graphql/types/category'
 import { ImagePreview } from '@/components/ImagePreview'
 import { ImageUploadArea } from '@/components/ImageUploadArea'
 import { ArrowLeft, Loader2 } from 'lucide-react'
-
-const GET_LISTING_BY_ID = gql`
-  query GetListingById($id: ID!) {
-    getListingById(id: $id) {
-      id
-      title
-      description
-      images
-      price
-      city {
-        name
-        region {
-          name
-          country {
-            name
-          }
-        }
-      }
-      condition
-      category {
-        id
-        name
-      }
-      user {
-        id
-      }
-    }
-  }
-`
-
-const GET_CONDITIONS = gql`
-  query GetConditions {
-    getConditions
-  }
-`
-
-const GET_CATEGORIES = gql`
-  query GetCategories {
-    getCategories {
-      id
-      name
-    }
-  }
-`
-
-const GET_ME = gql`
-  query Me {
-    me {
-      id
-      username
-      email
-    }
-  }
-`
+import { GET_LISTING_BY_ID } from '@/lib/graphql/queries/getListingById'
+import { GET_CONDITIONS } from '@/lib/graphql/queries/getConditions'
+import { GET_CATEGORIES } from '@/lib/graphql/queries/getCategories'
+import { GET_ME } from '@/lib/graphql/queries/getMe'
 
 const UPDATE_LISTING_TITLE = gql`
   mutation UpdateListingTitle($listingId: ID!, $newTitle: String!) {

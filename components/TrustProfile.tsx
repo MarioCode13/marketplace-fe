@@ -131,7 +131,7 @@ export default function TrustProfile({ userId, user }: TrustProfileProps) {
               </div>
               <div className='text-center'>
                 <div className='text-2xl font-bold text-green-600'>
-                  {trustRating.documentScore.toFixed(1)}
+                  {trustRating.verificationScore.toFixed(1)}
                 </div>
                 <div className='text-sm text-gray-600'>Document Score</div>
               </div>

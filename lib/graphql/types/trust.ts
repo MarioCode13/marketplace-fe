@@ -25,7 +25,7 @@ export interface TrustRating {
   id: string;
   userId: string;
   overallScore: number;
-  documentScore: number;
+  verificationScore: number;
   profileScore: number;
   reviewScore: number;
   transactionScore: number;
@@ -129,10 +129,9 @@ export interface ProfileCompletion {
   hasBio: boolean
   hasContactNumber: boolean
   hasLocation: boolean
-  hasVerifiedEmail: boolean
-  hasVerifiedPhone: boolean
-  hasIdVerification: boolean
-  hasAddressVerification: boolean
+  hasIdDocument: boolean
+  hasDriversLicense: boolean
+  hasProofOfAddress: boolean
   completionPercentage: number
   createdAt: string
   updatedAt: string

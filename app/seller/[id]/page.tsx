@@ -183,9 +183,9 @@ export default function SellerProfilePage() {
 
                   <div className='space-y-2'>
                     <div className='flex justify-between'>
-                      <span className='text-sm'>Document Score</span>
+                      <span className='text-sm'>Verification Score</span>
                       <span className='text-sm font-medium'>
-                        {user.trustRating.documentScore}%
+                        {user.trustRating.verificationScore}%
                       </span>
                     </div>
                     <div className='flex justify-between'>

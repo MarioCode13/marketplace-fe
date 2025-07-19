@@ -120,11 +120,11 @@ export const TrustRatingDisplay: React.FC<TrustRatingDisplayProps> = ({
               <div className='flex items-center justify-between'>
                 <span className='text-sm'>Document Verification</span>
                 <span className='text-sm font-medium'>
-                  {trustRating.documentScore.toFixed(1)}%
+                  {trustRating.verificationScore.toFixed(1)}%
                 </span>
               </div>
               <Progress
-                value={trustRating.documentScore}
+                value={trustRating.verificationScore}
                 className='h-1'
               />
             </div>

@@ -9,34 +9,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
 import { Upload, Check, Loader2 } from 'lucide-react'
 import CityAutocomplete from '@/components/drawers/CityAutocomplete'
-
-const GET_PROFILE = gql`
-  query Me {
-    me {
-      id
-      username
-      firstName
-      lastName
-      bio
-      city {
-        id
-        name
-        region {
-          name
-          country {
-            name
-          }
-        }
-      }
-      customCity
-      contactNumber
-      profileImageUrl
-      idPhotoUrl
-      driversLicenseUrl
-      proofOfAddressUrl
-    }
-  }
-`
+import { GET_ME } from '@/lib/graphql/queries/getMe'
+import { useRouter } from 'next/navigation'
 
 const COMPLETE_PROFILE = gql`
   mutation CompleteProfile(
@@ -63,8 +37,8 @@ const COMPLETE_PROFILE = gql`
 `
 
 export default function CompleteProfilePage() {
-  //   const router = useRouter()
-  const { loading, error, data, refetch } = useQuery(GET_PROFILE)
+  const router = useRouter()
+  const { loading, error, data, refetch } = useQuery(GET_ME)
   const [completeProfile] = useMutation(COMPLETE_PROFILE)
   const user = data?.me
   const [form, setForm] = useState({
@@ -405,6 +379,7 @@ export default function CompleteProfilePage() {
           <Button
             type='submit'
             className='w-full'
+            onClick={() => router.push('/profile')}
           >
             Save & Continue
           </Button>

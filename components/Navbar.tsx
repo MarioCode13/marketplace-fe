@@ -18,18 +18,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { gql, useApolloClient, useQuery } from '@apollo/client'
-
-const GET_PROFILE = gql`
-  query Me {
-    me {
-      id
-      username
-      email
-      profileImageUrl
-    }
-  }
-`
+import { useApolloClient, useQuery } from '@apollo/client'
+import { GET_ME } from '@/lib/graphql/queries/getMe'
 
 export default function Navbar() {
   const dispatch = useDispatch()
@@ -37,11 +27,14 @@ export default function Navbar() {
   const client = useApolloClient()
   const token = useSelector((state: RootState) => state.auth.token)
   const { theme, setTheme } = useTheme()
-  const { data, loading } = useQuery(GET_PROFILE, {
+  const { data, loading } = useQuery(GET_ME, {
     skip: !token,
     fetchPolicy: 'no-cache',
   })
   const profileImageUrl = data?.me?.profileImageUrl
+  const user = data?.me
+  const isStoreUser =
+    user?.planType === 'RESELLER' || user?.planType === 'PRO_STORE'
   const [drawerOpen, setDrawerOpen] = useState(false)
 
   const handleLogout = () => {
@@ -74,6 +67,17 @@ export default function Navbar() {
               Browse
             </Link>
           </li>
+          {isStoreUser && user?.storeBranding?.slug && (
+            <li>
+              <Link
+                href={`/store/${user.storeBranding.slug}`}
+                className='hover:text-primary transition'
+              >
+                My Store
+              </Link>
+            </li>
+          )}
+
           {token && (
             <>
               <li>
@@ -214,6 +218,17 @@ export default function Navbar() {
                 Browse
               </Link>
             </li>
+            {isStoreUser && user?.storeBranding?.slug && (
+              <li>
+                <Link
+                  href={`/store/${user.storeBranding.slug}`}
+                  onClick={() => setDrawerOpen(false)}
+                  className='hover:text-primary transition'
+                >
+                  My Store
+                </Link>
+              </li>
+            )}
             {token && (
               <>
                 <li>

@@ -1,5 +1,5 @@
-import { gql } from '@apollo/client';
-import { TrustRating } from '../types/trust';
+import { gql } from '@apollo/client'
+import { TrustRating } from '../types/trust'
 
 export const GET_TRUST_RATING = gql`
   query GetTrustRating($userId: ID!) {
@@ -7,7 +7,7 @@ export const GET_TRUST_RATING = gql`
       id
       userId
       overallScore
-      documentScore
+      verificationScore
       profileScore
       reviewScore
       transactionScore
@@ -22,12 +22,12 @@ export const GET_TRUST_RATING = gql`
       trustLevel
     }
   }
-`;
+`
 
 export interface GetTrustRatingData {
-  getTrustRating: TrustRating;
+  getTrustRating: TrustRating
 }
 
 export interface GetTrustRatingVars {
-  userId: string;
+  userId: string
 } 

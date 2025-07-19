@@ -34,8 +34,8 @@ const CREATE_LISTING = gql`
     $images: [String!]!
     $categoryId: ID!
     $price: Float!
-    $customCity: String
-    $cityId: ID
+    $customCity: String!
+    $cityId: ID!
     $condition: Condition!
     $userId: ID!
   ) {
