@@ -124,10 +124,9 @@ export default function StorePage() {
       : null
 
   const isOwner = currentUserId && store.id == currentUserId
-  const bgColor = branding?.lightOrDark === 'dark' ? '#121212' : '#dde2e8'
+  const bgColor = branding?.lightOrDark === 'light' ? '#dde2e8' : '#121212'
   const textColor = getTextColor(bgColor)
 
-  // Pagination handlers
   const handleNext = () => {
     if (offset + limit < totalCount) setOffset(offset + limit)
   }
@@ -186,7 +185,6 @@ export default function StorePage() {
           currentFilters={filters}
         />
 
-        {/* Banner (Pro Store only) */}
         {showBanner && (
           <div className='w-full h-48 rounded-lg overflow-hidden mb-4'>
             <Image

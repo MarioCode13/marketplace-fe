@@ -34,6 +34,7 @@ export type Category = {
   __typename?: 'Category';
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
+  parentId?: Maybe<Scalars['String']['output']>;
 };
 
 export type City = {
@@ -136,9 +137,9 @@ export type MutationCreateCheckoutSessionArgs = {
 
 export type MutationCreateListingArgs = {
   categoryId: Scalars['ID']['input'];
-  cityId: Scalars['ID']['input'];
+  cityId?: InputMaybe<Scalars['ID']['input']>;
   condition: Condition;
-  customCity: Scalars['String']['input'];
+  customCity?: InputMaybe<Scalars['String']['input']>;
   description: Scalars['String']['input'];
   images: Array<Scalars['String']['input']>;
   price: Scalars['Float']['input'];
@@ -732,11 +733,6 @@ export type GetConditionsQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type GetConditionsQuery = { __typename?: 'Query', getConditions?: Array<Condition | null> | null };
 
-export type GetCategoriesQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type GetCategoriesQuery = { __typename?: 'Query', getCategories?: Array<{ __typename?: 'Category', id: string, name: string } | null> | null };
-
 export type GetAllUsersQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -801,6 +797,11 @@ export type CancelTransactionMutationVariables = Exact<{
 
 export type CancelTransactionMutation = { __typename?: 'Mutation', cancelTransaction: { __typename?: 'Transaction', id: string, status: TransactionStatus, notes?: string | null, updatedAt: string } };
 
+export type GetCategoriesQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetCategoriesQuery = { __typename?: 'Query', getCategories?: Array<{ __typename?: 'Category', id: string, name: string, parentId?: string | null } | null> | null };
+
 export type GetListingByIdQueryVariables = Exact<{
   id: Scalars['ID']['input'];
 }>;
@@ -830,7 +831,7 @@ export type GetListingsQuery = { __typename?: 'Query', getListings: { __typename
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type MeQuery = { __typename?: 'Query', me?: { __typename?: 'User', id: string, username: string, email: string, firstName?: string | null, lastName?: string | null, bio?: string | null, profileImageUrl?: string | null, planType?: string | null, role: string, customCity?: string | null, contactNumber?: string | null, idPhotoUrl?: string | null, driversLicenseUrl?: string | null, proofOfAddressUrl?: string | null, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, storeBranding?: { __typename?: 'StoreBranding', slug?: string | null } | null } | null };
+export type MeQuery = { __typename?: 'Query', me?: { __typename?: 'User', id: string, username: string, email: string, firstName?: string | null, lastName?: string | null, bio?: string | null, profileImageUrl?: string | null, planType?: string | null, role: string, customCity?: string | null, contactNumber?: string | null, idPhotoUrl?: string | null, driversLicenseUrl?: string | null, proofOfAddressUrl?: string | null, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, storeBranding?: { __typename?: 'StoreBranding', slug?: string | null } | null, subscription?: { __typename?: 'Subscription', status: SubscriptionStatus, planType: PlanType } | null } | null };
 
 export type GetSellerProfileQueryVariables = Exact<{
   id: Scalars['ID']['input'];
@@ -844,7 +845,7 @@ export type GetMyStoreBrandingQueryVariables = Exact<{
 }>;
 
 
-export type GetMyStoreBrandingQuery = { __typename?: 'Query', user?: { __typename?: 'User', id: string, storeBranding?: { __typename?: 'StoreBranding', slug?: string | null, logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, primaryColor?: string | null, secondaryColor?: string | null, lightOrDark?: string | null, about?: string | null, storeName?: string | null } | null } | null };
+export type GetMyStoreBrandingQuery = { __typename?: 'Query', user?: { __typename?: 'User', id: string, planType?: string | null, storeBranding?: { __typename?: 'StoreBranding', slug?: string | null, logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, primaryColor?: string | null, secondaryColor?: string | null, lightOrDark?: string | null, about?: string | null, storeName?: string | null } | null } | null };
 
 export type UpdateStoreBrandingMutationVariables = Exact<{
   id: Scalars['ID']['input'];
@@ -862,12 +863,19 @@ export type UpdateStoreBrandingMutationVariables = Exact<{
 
 export type UpdateStoreBrandingMutation = { __typename?: 'Mutation', updateStoreBranding?: { __typename?: 'User', storeBranding?: { __typename?: 'StoreBranding', slug?: string | null, logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, primaryColor?: string | null, secondaryColor?: string | null, lightOrDark?: string | null, about?: string | null, storeName?: string | null } | null } | null };
 
-export type GetStoreBySlugQueryVariables = Exact<{
+export type GetStoreBySlugFullQueryVariables = Exact<{
   slug: Scalars['String']['input'];
 }>;
 
 
-export type GetStoreBySlugQuery = { __typename?: 'Query', storeBySlug?: { __typename?: 'User', id: string, username: string, planType?: string | null, storeBranding?: { __typename?: 'StoreBranding', slug?: string | null, logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, lightOrDark?: string | null, about?: string | null, storeName?: string | null } | null, trustRating?: { __typename?: 'TrustRating', starRating: number, trustLevel: string } | null, listings: Array<{ __typename?: 'Listing', id: string, title: string, price: number, images: Array<string>, condition: Condition, customCity?: string | null, createdAt: string, city?: { __typename?: 'City', name: string } | null }> } | null };
+export type GetStoreBySlugFullQuery = { __typename?: 'Query', storeBySlug?: { __typename?: 'User', id: string, username: string, planType?: string | null, storeBranding?: { __typename?: 'StoreBranding', slug?: string | null, logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, lightOrDark?: string | null, primaryColor?: string | null, secondaryColor?: string | null, about?: string | null, storeName?: string | null } | null, trustRating?: { __typename?: 'TrustRating', starRating: number, trustLevel: string, overallScore: number, totalReviews: number, positiveReviews: number } | null, listings: Array<{ __typename?: 'Listing', id: string, title: string, description: string, price: number, images: Array<string>, condition: Condition, customCity?: string | null, createdAt: string, expiresAt: string, sold: boolean, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null }> } | null };
+
+export type GetStoreBySlugMinimalQueryVariables = Exact<{
+  slug: Scalars['String']['input'];
+}>;
+
+
+export type GetStoreBySlugMinimalQuery = { __typename?: 'Query', storeBySlug?: { __typename?: 'User', id: string, username: string, planType?: string | null, storeBranding?: { __typename?: 'StoreBranding', slug?: string | null, storeName?: string | null, logoUrl?: string | null } | null } | null };
 
 export type GetMyPurchasesQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -993,20 +1001,6 @@ export type LoginMutationVariables = Exact<{
 
 
 export type LoginMutation = { __typename?: 'Mutation', login: { __typename?: 'AuthResponse', token: string, email: string, role?: string | null, userId: string } };
-
-export type GetStoreBySlugFullQueryVariables = Exact<{
-  slug: Scalars['String']['input'];
-}>;
-
-
-export type GetStoreBySlugFullQuery = { __typename?: 'Query', storeBySlug?: { __typename?: 'User', id: string, username: string, planType?: string | null, storeBranding?: { __typename?: 'StoreBranding', slug?: string | null, logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, lightOrDark?: string | null, primaryColor?: string | null, secondaryColor?: string | null, about?: string | null, storeName?: string | null } | null, trustRating?: { __typename?: 'TrustRating', starRating: number, trustLevel: string, overallScore: number, totalReviews: number, positiveReviews: number } | null, listings: Array<{ __typename?: 'Listing', id: string, title: string, description: string, price: number, images: Array<string>, condition: Condition, customCity?: string | null, createdAt: string, expiresAt: string, sold: boolean, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null }> } | null };
-
-export type GetStoreBySlugMinimalQueryVariables = Exact<{
-  slug: Scalars['String']['input'];
-}>;
-
-
-export type GetStoreBySlugMinimalQuery = { __typename?: 'Query', storeBySlug?: { __typename?: 'User', id: string, username: string, planType?: string | null, storeBranding?: { __typename?: 'StoreBranding', slug?: string | null, storeName?: string | null, logoUrl?: string | null } | null } | null };
 
 
 export const UpdateListingTitleDocument = gql`
@@ -1327,46 +1321,6 @@ export type GetConditionsQueryHookResult = ReturnType<typeof useGetConditionsQue
 export type GetConditionsLazyQueryHookResult = ReturnType<typeof useGetConditionsLazyQuery>;
 export type GetConditionsSuspenseQueryHookResult = ReturnType<typeof useGetConditionsSuspenseQuery>;
 export type GetConditionsQueryResult = Apollo.QueryResult<GetConditionsQuery, GetConditionsQueryVariables>;
-export const GetCategoriesDocument = gql`
-    query GetCategories {
-  getCategories {
-    id
-    name
-  }
-}
-    `;
-
-/**
- * __useGetCategoriesQuery__
- *
- * To run a query within a React component, call `useGetCategoriesQuery` and pass it any options that fit your needs.
- * When your component renders, `useGetCategoriesQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useGetCategoriesQuery({
- *   variables: {
- *   },
- * });
- */
-export function useGetCategoriesQuery(baseOptions?: Apollo.QueryHookOptions<GetCategoriesQuery, GetCategoriesQueryVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<GetCategoriesQuery, GetCategoriesQueryVariables>(GetCategoriesDocument, options);
-      }
-export function useGetCategoriesLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetCategoriesQuery, GetCategoriesQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<GetCategoriesQuery, GetCategoriesQueryVariables>(GetCategoriesDocument, options);
-        }
-export function useGetCategoriesSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GetCategoriesQuery, GetCategoriesQueryVariables>) {
-          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
-          return Apollo.useSuspenseQuery<GetCategoriesQuery, GetCategoriesQueryVariables>(GetCategoriesDocument, options);
-        }
-export type GetCategoriesQueryHookResult = ReturnType<typeof useGetCategoriesQuery>;
-export type GetCategoriesLazyQueryHookResult = ReturnType<typeof useGetCategoriesLazyQuery>;
-export type GetCategoriesSuspenseQueryHookResult = ReturnType<typeof useGetCategoriesSuspenseQuery>;
-export type GetCategoriesQueryResult = Apollo.QueryResult<GetCategoriesQuery, GetCategoriesQueryVariables>;
 export const GetAllUsersDocument = gql`
     query GetAllUsers {
   getAllUsers {
@@ -1749,6 +1703,47 @@ export function useCancelTransactionMutation(baseOptions?: Apollo.MutationHookOp
 export type CancelTransactionMutationHookResult = ReturnType<typeof useCancelTransactionMutation>;
 export type CancelTransactionMutationResult = Apollo.MutationResult<CancelTransactionMutation>;
 export type CancelTransactionMutationOptions = Apollo.BaseMutationOptions<CancelTransactionMutation, CancelTransactionMutationVariables>;
+export const GetCategoriesDocument = gql`
+    query GetCategories {
+  getCategories {
+    id
+    name
+    parentId
+  }
+}
+    `;
+
+/**
+ * __useGetCategoriesQuery__
+ *
+ * To run a query within a React component, call `useGetCategoriesQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetCategoriesQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetCategoriesQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useGetCategoriesQuery(baseOptions?: Apollo.QueryHookOptions<GetCategoriesQuery, GetCategoriesQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetCategoriesQuery, GetCategoriesQueryVariables>(GetCategoriesDocument, options);
+      }
+export function useGetCategoriesLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetCategoriesQuery, GetCategoriesQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetCategoriesQuery, GetCategoriesQueryVariables>(GetCategoriesDocument, options);
+        }
+export function useGetCategoriesSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GetCategoriesQuery, GetCategoriesQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<GetCategoriesQuery, GetCategoriesQueryVariables>(GetCategoriesDocument, options);
+        }
+export type GetCategoriesQueryHookResult = ReturnType<typeof useGetCategoriesQuery>;
+export type GetCategoriesLazyQueryHookResult = ReturnType<typeof useGetCategoriesLazyQuery>;
+export type GetCategoriesSuspenseQueryHookResult = ReturnType<typeof useGetCategoriesSuspenseQuery>;
+export type GetCategoriesQueryResult = Apollo.QueryResult<GetCategoriesQuery, GetCategoriesQueryVariables>;
 export const GetListingByIdDocument = gql`
     query GetListingById($id: ID!) {
   getListingById(id: $id) {
@@ -1939,6 +1934,10 @@ export const MeDocument = gql`
     storeBranding {
       slug
     }
+    subscription {
+      status
+      planType
+    }
   }
 }
     `;
@@ -2079,6 +2078,7 @@ export const GetMyStoreBrandingDocument = gql`
     query GetMyStoreBranding($userId: ID!) {
   user(id: $userId) {
     id
+    planType
     storeBranding {
       slug
       logoUrl
@@ -2189,8 +2189,8 @@ export function useUpdateStoreBrandingMutation(baseOptions?: Apollo.MutationHook
 export type UpdateStoreBrandingMutationHookResult = ReturnType<typeof useUpdateStoreBrandingMutation>;
 export type UpdateStoreBrandingMutationResult = Apollo.MutationResult<UpdateStoreBrandingMutation>;
 export type UpdateStoreBrandingMutationOptions = Apollo.BaseMutationOptions<UpdateStoreBrandingMutation, UpdateStoreBrandingMutationVariables>;
-export const GetStoreBySlugDocument = gql`
-    query GetStoreBySlug($slug: String!) {
+export const GetStoreBySlugFullDocument = gql`
+    query GetStoreBySlugFull($slug: String!) {
   storeBySlug(slug: $slug) {
     id
     username
@@ -2201,61 +2201,123 @@ export const GetStoreBySlugDocument = gql`
       bannerUrl
       themeColor
       lightOrDark
+      primaryColor
+      secondaryColor
       about
       storeName
     }
     trustRating {
       starRating
       trustLevel
+      overallScore
+      totalReviews
+      positiveReviews
     }
     listings {
       id
       title
+      description
       price
       images
       condition
       city {
+        id
         name
+        region {
+          name
+          country {
+            name
+          }
+        }
       }
       customCity
       createdAt
+      expiresAt
+      sold
     }
   }
 }
     `;
 
 /**
- * __useGetStoreBySlugQuery__
+ * __useGetStoreBySlugFullQuery__
  *
- * To run a query within a React component, call `useGetStoreBySlugQuery` and pass it any options that fit your needs.
- * When your component renders, `useGetStoreBySlugQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * To run a query within a React component, call `useGetStoreBySlugFullQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetStoreBySlugFullQuery` returns an object from Apollo Client that contains loading, error, and data properties
  * you can use to render your UI.
  *
  * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
  *
  * @example
- * const { data, loading, error } = useGetStoreBySlugQuery({
+ * const { data, loading, error } = useGetStoreBySlugFullQuery({
  *   variables: {
  *      slug: // value for 'slug'
  *   },
  * });
  */
-export function useGetStoreBySlugQuery(baseOptions: Apollo.QueryHookOptions<GetStoreBySlugQuery, GetStoreBySlugQueryVariables> & ({ variables: GetStoreBySlugQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+export function useGetStoreBySlugFullQuery(baseOptions: Apollo.QueryHookOptions<GetStoreBySlugFullQuery, GetStoreBySlugFullQueryVariables> & ({ variables: GetStoreBySlugFullQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
         const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<GetStoreBySlugQuery, GetStoreBySlugQueryVariables>(GetStoreBySlugDocument, options);
+        return Apollo.useQuery<GetStoreBySlugFullQuery, GetStoreBySlugFullQueryVariables>(GetStoreBySlugFullDocument, options);
       }
-export function useGetStoreBySlugLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetStoreBySlugQuery, GetStoreBySlugQueryVariables>) {
+export function useGetStoreBySlugFullLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetStoreBySlugFullQuery, GetStoreBySlugFullQueryVariables>) {
           const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<GetStoreBySlugQuery, GetStoreBySlugQueryVariables>(GetStoreBySlugDocument, options);
+          return Apollo.useLazyQuery<GetStoreBySlugFullQuery, GetStoreBySlugFullQueryVariables>(GetStoreBySlugFullDocument, options);
         }
-export function useGetStoreBySlugSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GetStoreBySlugQuery, GetStoreBySlugQueryVariables>) {
+export function useGetStoreBySlugFullSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GetStoreBySlugFullQuery, GetStoreBySlugFullQueryVariables>) {
           const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
-          return Apollo.useSuspenseQuery<GetStoreBySlugQuery, GetStoreBySlugQueryVariables>(GetStoreBySlugDocument, options);
+          return Apollo.useSuspenseQuery<GetStoreBySlugFullQuery, GetStoreBySlugFullQueryVariables>(GetStoreBySlugFullDocument, options);
         }
-export type GetStoreBySlugQueryHookResult = ReturnType<typeof useGetStoreBySlugQuery>;
-export type GetStoreBySlugLazyQueryHookResult = ReturnType<typeof useGetStoreBySlugLazyQuery>;
-export type GetStoreBySlugSuspenseQueryHookResult = ReturnType<typeof useGetStoreBySlugSuspenseQuery>;
-export type GetStoreBySlugQueryResult = Apollo.QueryResult<GetStoreBySlugQuery, GetStoreBySlugQueryVariables>;
+export type GetStoreBySlugFullQueryHookResult = ReturnType<typeof useGetStoreBySlugFullQuery>;
+export type GetStoreBySlugFullLazyQueryHookResult = ReturnType<typeof useGetStoreBySlugFullLazyQuery>;
+export type GetStoreBySlugFullSuspenseQueryHookResult = ReturnType<typeof useGetStoreBySlugFullSuspenseQuery>;
+export type GetStoreBySlugFullQueryResult = Apollo.QueryResult<GetStoreBySlugFullQuery, GetStoreBySlugFullQueryVariables>;
+export const GetStoreBySlugMinimalDocument = gql`
+    query GetStoreBySlugMinimal($slug: String!) {
+  storeBySlug(slug: $slug) {
+    id
+    username
+    planType
+    storeBranding {
+      slug
+      storeName
+      logoUrl
+    }
+  }
+}
+    `;
+
+/**
+ * __useGetStoreBySlugMinimalQuery__
+ *
+ * To run a query within a React component, call `useGetStoreBySlugMinimalQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetStoreBySlugMinimalQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetStoreBySlugMinimalQuery({
+ *   variables: {
+ *      slug: // value for 'slug'
+ *   },
+ * });
+ */
+export function useGetStoreBySlugMinimalQuery(baseOptions: Apollo.QueryHookOptions<GetStoreBySlugMinimalQuery, GetStoreBySlugMinimalQueryVariables> & ({ variables: GetStoreBySlugMinimalQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetStoreBySlugMinimalQuery, GetStoreBySlugMinimalQueryVariables>(GetStoreBySlugMinimalDocument, options);
+      }
+export function useGetStoreBySlugMinimalLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetStoreBySlugMinimalQuery, GetStoreBySlugMinimalQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetStoreBySlugMinimalQuery, GetStoreBySlugMinimalQueryVariables>(GetStoreBySlugMinimalDocument, options);
+        }
+export function useGetStoreBySlugMinimalSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GetStoreBySlugMinimalQuery, GetStoreBySlugMinimalQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<GetStoreBySlugMinimalQuery, GetStoreBySlugMinimalQueryVariables>(GetStoreBySlugMinimalDocument, options);
+        }
+export type GetStoreBySlugMinimalQueryHookResult = ReturnType<typeof useGetStoreBySlugMinimalQuery>;
+export type GetStoreBySlugMinimalLazyQueryHookResult = ReturnType<typeof useGetStoreBySlugMinimalLazyQuery>;
+export type GetStoreBySlugMinimalSuspenseQueryHookResult = ReturnType<typeof useGetStoreBySlugMinimalSuspenseQuery>;
+export type GetStoreBySlugMinimalQueryResult = Apollo.QueryResult<GetStoreBySlugMinimalQuery, GetStoreBySlugMinimalQueryVariables>;
 export const GetMyPurchasesDocument = gql`
     query GetMyPurchases {
   myPurchases {
@@ -3394,132 +3456,3 @@ export function useLoginMutation(baseOptions?: Apollo.MutationHookOptions<LoginM
 export type LoginMutationHookResult = ReturnType<typeof useLoginMutation>;
 export type LoginMutationResult = Apollo.MutationResult<LoginMutation>;
 export type LoginMutationOptions = Apollo.BaseMutationOptions<LoginMutation, LoginMutationVariables>;
-export const GetStoreBySlugFullDocument = gql`
-    query GetStoreBySlugFull($slug: String!) {
-  storeBySlug(slug: $slug) {
-    id
-    username
-    planType
-    storeBranding {
-      slug
-      logoUrl
-      bannerUrl
-      themeColor
-      lightOrDark
-      primaryColor
-      secondaryColor
-      about
-      storeName
-    }
-    trustRating {
-      starRating
-      trustLevel
-      overallScore
-      totalReviews
-      positiveReviews
-    }
-    listings {
-      id
-      title
-      description
-      price
-      images
-      condition
-      city {
-        id
-        name
-        region {
-          name
-          country {
-            name
-          }
-        }
-      }
-      customCity
-      createdAt
-      expiresAt
-      sold
-    }
-  }
-}
-    `;
-
-/**
- * __useGetStoreBySlugFullQuery__
- *
- * To run a query within a React component, call `useGetStoreBySlugFullQuery` and pass it any options that fit your needs.
- * When your component renders, `useGetStoreBySlugFullQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useGetStoreBySlugFullQuery({
- *   variables: {
- *      slug: // value for 'slug'
- *   },
- * });
- */
-export function useGetStoreBySlugFullQuery(baseOptions: Apollo.QueryHookOptions<GetStoreBySlugFullQuery, GetStoreBySlugFullQueryVariables> & ({ variables: GetStoreBySlugFullQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<GetStoreBySlugFullQuery, GetStoreBySlugFullQueryVariables>(GetStoreBySlugFullDocument, options);
-      }
-export function useGetStoreBySlugFullLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetStoreBySlugFullQuery, GetStoreBySlugFullQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<GetStoreBySlugFullQuery, GetStoreBySlugFullQueryVariables>(GetStoreBySlugFullDocument, options);
-        }
-export function useGetStoreBySlugFullSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GetStoreBySlugFullQuery, GetStoreBySlugFullQueryVariables>) {
-          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
-          return Apollo.useSuspenseQuery<GetStoreBySlugFullQuery, GetStoreBySlugFullQueryVariables>(GetStoreBySlugFullDocument, options);
-        }
-export type GetStoreBySlugFullQueryHookResult = ReturnType<typeof useGetStoreBySlugFullQuery>;
-export type GetStoreBySlugFullLazyQueryHookResult = ReturnType<typeof useGetStoreBySlugFullLazyQuery>;
-export type GetStoreBySlugFullSuspenseQueryHookResult = ReturnType<typeof useGetStoreBySlugFullSuspenseQuery>;
-export type GetStoreBySlugFullQueryResult = Apollo.QueryResult<GetStoreBySlugFullQuery, GetStoreBySlugFullQueryVariables>;
-export const GetStoreBySlugMinimalDocument = gql`
-    query GetStoreBySlugMinimal($slug: String!) {
-  storeBySlug(slug: $slug) {
-    id
-    username
-    planType
-    storeBranding {
-      slug
-      storeName
-      logoUrl
-    }
-  }
-}
-    `;
-
-/**
- * __useGetStoreBySlugMinimalQuery__
- *
- * To run a query within a React component, call `useGetStoreBySlugMinimalQuery` and pass it any options that fit your needs.
- * When your component renders, `useGetStoreBySlugMinimalQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useGetStoreBySlugMinimalQuery({
- *   variables: {
- *      slug: // value for 'slug'
- *   },
- * });
- */
-export function useGetStoreBySlugMinimalQuery(baseOptions: Apollo.QueryHookOptions<GetStoreBySlugMinimalQuery, GetStoreBySlugMinimalQueryVariables> & ({ variables: GetStoreBySlugMinimalQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<GetStoreBySlugMinimalQuery, GetStoreBySlugMinimalQueryVariables>(GetStoreBySlugMinimalDocument, options);
-      }
-export function useGetStoreBySlugMinimalLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetStoreBySlugMinimalQuery, GetStoreBySlugMinimalQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<GetStoreBySlugMinimalQuery, GetStoreBySlugMinimalQueryVariables>(GetStoreBySlugMinimalDocument, options);
-        }
-export function useGetStoreBySlugMinimalSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GetStoreBySlugMinimalQuery, GetStoreBySlugMinimalQueryVariables>) {
-          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
-          return Apollo.useSuspenseQuery<GetStoreBySlugMinimalQuery, GetStoreBySlugMinimalQueryVariables>(GetStoreBySlugMinimalDocument, options);
-        }
-export type GetStoreBySlugMinimalQueryHookResult = ReturnType<typeof useGetStoreBySlugMinimalQuery>;
-export type GetStoreBySlugMinimalLazyQueryHookResult = ReturnType<typeof useGetStoreBySlugMinimalLazyQuery>;
-export type GetStoreBySlugMinimalSuspenseQueryHookResult = ReturnType<typeof useGetStoreBySlugMinimalSuspenseQuery>;
-export type GetStoreBySlugMinimalQueryResult = Apollo.QueryResult<GetStoreBySlugMinimalQuery, GetStoreBySlugMinimalQueryVariables>;

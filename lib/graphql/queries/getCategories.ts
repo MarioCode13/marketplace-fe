@@ -5,6 +5,7 @@ export const GET_CATEGORIES = gql`
     getCategories {
       id
       name
+      parentId
     }
   }
 `

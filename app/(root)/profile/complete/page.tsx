@@ -81,8 +81,6 @@ export default function CompleteProfilePage() {
   if (error) return <p>Error loading profile</p>
 
   // Completion logic
-  // Debug log for location fields
-  console.log('form.city:', form.city, 'form.customCity:', form.customCity)
   // Robust location check: true if city is a non-empty string or non-zero number, or customCity is a non-empty string
   const hasLocation =
     (typeof form.city === 'string' && form.city.trim() !== '') ||

@@ -23,8 +23,8 @@ import { ImageUploadArea } from '@/components/ImageUploadArea'
 import { ArrowLeft, Loader2 } from 'lucide-react'
 import { GET_LISTING_BY_ID } from '@/lib/graphql/queries/getListingById'
 import { GET_CONDITIONS } from '@/lib/graphql/queries/getConditions'
-import { GET_CATEGORIES } from '@/lib/graphql/queries/getCategories'
 import { GET_ME } from '@/lib/graphql/queries/getMe'
+import { useGetCategoriesQuery } from '@/lib/graphql/generated'
 
 const UPDATE_LISTING_TITLE = gql`
   mutation UpdateListingTitle($listingId: ID!, $newTitle: String!) {
@@ -91,7 +91,7 @@ export default function EditListingPage() {
   const { data: conditionsData, loading: conditionsLoading } =
     useQuery(GET_CONDITIONS)
   const { data: categoriesData, loading: categoriesLoading } =
-    useQuery(GET_CATEGORIES)
+    useGetCategoriesQuery()
 
   // Fetch current user data
   const { data: meData } = useQuery(GET_ME, {

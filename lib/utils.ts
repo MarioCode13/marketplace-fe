@@ -56,3 +56,44 @@ export function isLightColor(hexColor: string): boolean {
 export function getTextColor(backgroundColor: string): string {
   return isLightColor(backgroundColor) ? '#000000' : '#ffffff'
 }
+
+export interface FlatCategory {
+  id: string;
+  name: string;
+  parentId?: string | null;
+  // ...other fields
+}
+
+export interface CategoryNode {
+  id: string;
+  name: string;
+  children?: CategoryNode[];
+}
+
+export function buildCategoryTree(flat: FlatCategory[]): CategoryNode[] {
+  const idToNode: Record<string, CategoryNode> = {};
+  const roots: CategoryNode[] = [];
+
+  // First, create a map of all nodes
+  flat.forEach(cat => {
+    idToNode[cat.id] = { id: cat.id, name: cat.name, children: [] };
+  });
+
+  // Then, assign children to parents
+  flat.forEach(cat => {
+    if (cat.parentId && idToNode[cat.parentId]) {
+      idToNode[cat.parentId].children!.push(idToNode[cat.id]);
+    } else {
+      roots.push(idToNode[cat.id]);
+    }
+  });
+
+  // Remove empty children arrays for leaf nodes
+  function clean(node: CategoryNode) {
+    if (node.children && node.children.length === 0) delete node.children;
+    else if (node.children) node.children.forEach(clean);
+  }
+  roots.forEach(clean);
+
+  return roots;
+}

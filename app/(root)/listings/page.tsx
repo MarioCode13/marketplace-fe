@@ -4,9 +4,11 @@ import { useQuery } from '@apollo/client'
 import SkeletonListingCard from '@/components/cards/SkeletonListingCard'
 import FilterDrawer from '@/components/drawers/FilterDrawer'
 import { Button } from '@/components/ui/button'
-import { GET_CATEGORIES, GET_LISTINGS } from '@/lib/graphql/queries'
+import { GET_LISTINGS } from '@/lib/graphql/queries'
+import { buildCategoryTree, CategoryNode, FlatCategory } from '@/lib/utils'
 import { ChevronLeft, ChevronRight, ListFilter, Search } from 'lucide-react'
 import ListingCard from '@/components/cards/ListingCard'
+import { useGetCategoriesQuery } from '@/lib/graphql/generated'
 
 interface Listing {
   id: string
@@ -74,7 +76,7 @@ export default function ListingsPage() {
     fetchPolicy: 'cache-and-network',
   })
 
-  const { data: categoriesData } = useQuery(GET_CATEGORIES)
+  const { data: categoriesData } = useGetCategoriesQuery()
 
   const listings: Listing[] = data?.getListings?.listings || []
   const totalCount: number = data?.getListings?.totalCount || 0
@@ -109,13 +111,33 @@ export default function ListingsPage() {
     setOffset(0)
   }
 
+  const categoriesTree: CategoryNode[] = React.useMemo(() => {
+    if (!categoriesData?.getCategories) return []
+    // Assume getCategories returns flat array with id, name, parentId
+    return buildCategoryTree(categoriesData.getCategories as FlatCategory[])
+  }, [categoriesData])
+
+  function findCategoryNameById(
+    categories: CategoryNode[],
+    id: string
+  ): string | undefined {
+    for (const category of categories) {
+      if (category.id === id) return category.name
+      if (category.children) {
+        const found = findCategoryNameById(category.children, id)
+        if (found) return found
+      }
+    }
+    return undefined
+  }
+
   return (
     <div className='w-full flex justify-center'>
       <FilterDrawer
         isOpen={isFilterOpen}
         onClose={() => setIsFilterOpen(false)}
         onApply={handleApplyFilters}
-        categories={categoriesData?.getCategories || []}
+        categories={categoriesTree}
         currentFilters={filters}
       />
 
@@ -150,14 +172,11 @@ export default function ListingsPage() {
               {filters.categoryId && (
                 <span className='bg-background px-2 py-1 rounded text-xs'>
                   Category:{' '}
-                  {
-                    categoriesData?.getCategories?.find(
-                      (c: { id: string; name: string }) =>
-                        c.id === filters.categoryId
-                    )?.name
-                  }
+                  {findCategoryNameById(categoriesTree, filters.categoryId) ||
+                    'Unknown'}
                 </span>
               )}
+
               {filters.condition && (
                 <span className='bg-background px-2 py-1 rounded text-xs'>
                   Condition: {filters.condition}

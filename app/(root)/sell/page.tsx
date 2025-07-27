@@ -1,7 +1,7 @@
 'use client'
 
 import { gql, useMutation, useQuery } from '@apollo/client'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -17,15 +17,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Category } from '@/lib/graphql/types/category'
 import { ImagePreview } from '@/components/ImagePreview'
 import { ImageUploadArea } from '@/components/ImageUploadArea'
-
-// const UPLOAD_IMAGE = gql`
-//   mutation UploadListingImage($image: String!) {
-//     uploadListingImage(image: $image)
-//   }
-// `
+import { useGetCategoriesQuery } from '@/lib/graphql/generated'
+import CityAutocomplete from '@/components/drawers/CityAutocomplete'
+import { GET_ME } from '@/lib/graphql/queries/getMe'
+import CategoryCascader, {
+  CategoryNode,
+} from '@/components/drawers/CategoryCascader'
+import { buildCategoryTree, FlatCategory } from '@/lib/utils'
 
 const CREATE_LISTING = gql`
   mutation CreateListing(
@@ -34,8 +34,8 @@ const CREATE_LISTING = gql`
     $images: [String!]!
     $categoryId: ID!
     $price: Float!
-    $customCity: String!
-    $cityId: ID!
+    $customCity: String
+    $cityId: ID
     $condition: Condition!
     $userId: ID!
   ) {
@@ -55,6 +55,9 @@ const CREATE_LISTING = gql`
       description
       price
       createdAt
+      city {
+        name
+      }
     }
   }
 `
@@ -65,20 +68,12 @@ const GET_CONDITIONS = gql`
   }
 `
 
-const GET_CATEGORIES = gql`
-  query GetCategories {
-    getCategories {
-      id
-      name
-    }
-  }
-`
-
 export default function SellPage() {
   const router = useRouter()
   const token = useSelector((state: RootState) => state.auth.token)
   const userId = useSelector((state: RootState) => state.auth.user?.userId)
-
+  const { data } = useQuery(GET_ME)
+  const user = data?.me
   const [uploading, setUploading] = useState(false)
 
   const [form, setForm] = useState({
@@ -87,7 +82,13 @@ export default function SellPage() {
     price: '',
     categoryId: '',
     condition: 'NEW',
+    city: user?.city?.id || '',
+    cityLabel: user?.city
+      ? `${user.city.name}, ${user.city.region.name}, ${user.city.region.country.name}`
+      : '',
+    customCity: user?.customCity || '',
   })
+  const [showCustomCity, setShowCustomCity] = useState(false)
 
   const [images, setImages] = useState<string[]>([])
 
@@ -138,8 +139,7 @@ export default function SellPage() {
       setImages([...images, data[0]])
       toast.success('Image uploaded successfully!')
     } catch (err) {
-      toast.error('Image upload failed')
-      console.error('❌ Upload error:', err)
+      toast.error('Image upload failed: ' + err)
     }
     setUploading(false)
   }
@@ -153,6 +153,7 @@ export default function SellPage() {
           price: parseFloat(form.price),
           images,
           userId: userId,
+          cityId: form.city,
         },
       })
       toast.success('Listing created successfully!')
@@ -162,6 +163,9 @@ export default function SellPage() {
         price: '',
         categoryId: '',
         condition: 'NEW',
+        city: '',
+        cityLabel: '',
+        customCity: '',
       })
       setImages([])
       router.push('/')
@@ -180,7 +184,13 @@ export default function SellPage() {
     data: categoriesData,
     loading: categoriesLoading,
     error: categoriesError,
-  } = useQuery(GET_CATEGORIES)
+  } = useGetCategoriesQuery()
+
+  const categoriesTree: CategoryNode[] = useMemo(() => {
+    if (!categoriesData?.getCategories) return []
+    // Assume getCategories returns flat array with id, name, parentId
+    return buildCategoryTree(categoriesData.getCategories as FlatCategory[])
+  }, [categoriesData])
 
   if (!token) {
     return (
@@ -262,18 +272,9 @@ export default function SellPage() {
             />
           </div>
 
-          <div className='flex flex-col'>
-            <Label
-              htmlFor='categoryId'
-              className='mb-2'
-            >
-              Category
-            </Label>
-            {categoriesLoading ? (
-              <p>Loading categories...</p>
-            ) : categoriesError ? (
-              <p>Error loading categories</p>
-            ) : (
+          {/* <div className='flex flex-col'>
+             
+             (
               <Select
                 value={form.categoryId}
                 onValueChange={(value) =>
@@ -296,7 +297,22 @@ export default function SellPage() {
                 </SelectContent>
               </Select>
             )}
-          </div>
+          </div> */}
+          {categoriesLoading ? (
+            <p>Loading categories...</p>
+          ) : categoriesError ? (
+            <p>Error loading categories</p>
+          ) : (
+            <div className='space-y-2'>
+              <Label>Category</Label>
+              <CategoryCascader
+                categories={categoriesTree as CategoryNode[]}
+                value={form.categoryId}
+                onChange={(id) => setForm({ ...form, categoryId: id })}
+                placeholder='Select a Category'
+              />
+            </div>
+          )}
 
           <div className='flex flex-col mb-1'>
             <Label
@@ -331,6 +347,48 @@ export default function SellPage() {
                   ))}
                 </SelectContent>
               </Select>
+            )}
+          </div>
+          <div>
+            <CityAutocomplete
+              value={form.city}
+              displayValue={form.cityLabel}
+              onChange={(cityId, cityLabel) => {
+                setForm((prev) => ({
+                  ...prev,
+                  city: cityId || '',
+                  cityLabel: cityLabel || '',
+                  customCity: '',
+                }))
+                setShowCustomCity(false)
+              }}
+              onCantFindCity={() => {
+                setForm((prev) => ({ ...prev, city: '', cityLabel: '' }))
+                setShowCustomCity(true)
+              }}
+              label={undefined}
+            />
+            {showCustomCity && (
+              <div className='mt-2'>
+                <Label htmlFor='customCity'>Custom City</Label>
+                <Input
+                  id='customCity'
+                  name='customCity'
+                  value={form.customCity}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, customCity: e.target.value }))
+                  }
+                  placeholder='Enter your city'
+                />
+                <Button
+                  type='button'
+                  variant='ghost'
+                  className='mt-1 text-xs text-blue-600 underline'
+                  onClick={() => setShowCustomCity(false)}
+                >
+                  Back to city search
+                </Button>
+              </div>
             )}
           </div>
 

@@ -30,6 +30,10 @@ export const GET_ME = gql`
       storeBranding {
         slug
       }
+      subscription {
+        status
+        planType
+      }
     }
   }
 ` 

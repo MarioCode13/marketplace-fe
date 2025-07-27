@@ -16,7 +16,7 @@ interface CityAutocompleteProps {
   onCantFindCity?: () => void
   label?: string
   placeholder?: string
-  displayValue?: string // new prop for input label
+  displayValue?: string
 }
 
 export default function CityAutocomplete({

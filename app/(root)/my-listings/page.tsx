@@ -118,7 +118,6 @@ export default function MyListingsPage() {
                 <div className='text-sm text-gray-600'>
                   {Math.floor(offset / limit) + 1} of{' '}
                   {Math.ceil(totalCount / limit)}
-                  <span className='ml-2 text-gray-400'></span>
                 </div>
 
                 <Button

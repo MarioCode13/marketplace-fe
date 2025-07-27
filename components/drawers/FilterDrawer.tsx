@@ -13,6 +13,7 @@ import { Input } from '../ui/input'
 import { Badge } from '../ui/badge'
 import { X, Search, MapPin, Calendar, SortAsc, SortDesc } from 'lucide-react'
 import CityAutocomplete from './CityAutocomplete'
+import CategoryCascader, { CategoryNode } from './CategoryCascader'
 
 interface FilterDrawerProps {
   isOpen: boolean
@@ -279,30 +280,12 @@ export default function FilterDrawer({
             {/* Category */}
             <div className='space-y-2'>
               <Label>Category</Label>
-              <Select
-                value={filters.categoryId ?? 'all'}
-                onValueChange={(value) =>
-                  updateFilter(
-                    'categoryId',
-                    value === 'all' ? undefined : value
-                  )
-                }
-              >
-                <SelectTrigger className='w-full'>
-                  <SelectValue placeholder='Select a Category' />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value='all'>All Categories</SelectItem>
-                  {categories.map((category) => (
-                    <SelectItem
-                      key={category.id}
-                      value={category.id}
-                    >
-                      {category.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <CategoryCascader
+                categories={categories as CategoryNode[]}
+                value={filters.categoryId}
+                onChange={(id) => updateFilter('categoryId', id)}
+                placeholder='Select a Category'
+              />
             </div>
 
             {/* Condition */}
