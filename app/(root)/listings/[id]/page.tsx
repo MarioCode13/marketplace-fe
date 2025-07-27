@@ -44,7 +44,6 @@ const Page = () => {
     skip: !id,
   })
 
-  // Keyboard navigation for image gallery
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (
@@ -93,7 +92,6 @@ const Page = () => {
   return (
     <div className='w-full flex justify-center'>
       <div className='w-full max-w-5xl py-8 px-6'>
-        {/* Image Gallery & Details */}
         <div className='flex flex-col md:flex-row gap-6'>
           <div className='md:w-1/2 relative'>
             <div className='relative w-full h-[460px] rounded-lg shadow-lg overflow-hidden'>
@@ -108,33 +106,31 @@ const Page = () => {
                 className='object-cover'
                 sizes='(max-width: 768px) 100vw, 50vw'
               />
+              {listing.images && listing.images.length > 1 && (
+                <>
+                  <button
+                    onClick={() =>
+                      setSelectedImageIndex((prev) =>
+                        prev === 0 ? listing.images.length - 1 : prev - 1
+                      )
+                    }
+                    className='absolute left-3 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all z-10'
+                  >
+                    <ChevronLeft className='w-5 h-5' />
+                  </button>
+                  <button
+                    onClick={() =>
+                      setSelectedImageIndex((prev) =>
+                        prev === listing.images.length - 1 ? 0 : prev + 1
+                      )
+                    }
+                    className='absolute right-3 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all z-10'
+                  >
+                    <ChevronRight className='w-5 h-5' />
+                  </button>
+                </>
+              )}
             </div>
-
-            {/* Navigation arrows - only show if there are multiple images */}
-            {listing.images && listing.images.length > 1 && (
-              <>
-                <button
-                  onClick={() =>
-                    setSelectedImageIndex((prev) =>
-                      prev === 0 ? listing.images.length - 1 : prev - 1
-                    )
-                  }
-                  className='absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all z-10'
-                >
-                  <ChevronLeft className='w-5 h-5' />
-                </button>
-                <button
-                  onClick={() =>
-                    setSelectedImageIndex((prev) =>
-                      prev === listing.images.length - 1 ? 0 : prev + 1
-                    )
-                  }
-                  className='absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all z-10'
-                >
-                  <ChevronRight className='w-5 h-5' />
-                </button>
-              </>
-            )}
 
             <div className='flex gap-2 mt-4 overflow-x-auto'>
               {listing.images &&

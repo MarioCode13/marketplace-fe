@@ -1,7 +1,7 @@
 'use client'
 
 import { gql, useMutation, useQuery } from '@apollo/client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -17,7 +17,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Category } from '@/lib/graphql/types/category'
 import { ImagePreview } from '@/components/ImagePreview'
 import { ImageUploadArea } from '@/components/ImageUploadArea'
 import { ArrowLeft, Loader2 } from 'lucide-react'
@@ -25,6 +24,10 @@ import { GET_LISTING_BY_ID } from '@/lib/graphql/queries/getListingById'
 import { GET_CONDITIONS } from '@/lib/graphql/queries/getConditions'
 import { GET_ME } from '@/lib/graphql/queries/getMe'
 import { useGetCategoriesQuery } from '@/lib/graphql/generated'
+import CategoryCascader, {
+  CategoryNode,
+} from '@/components/drawers/CategoryCascader'
+import { buildCategoryTree, FlatCategory } from '@/lib/utils'
 
 const UPDATE_LISTING_TITLE = gql`
   mutation UpdateListingTitle($listingId: ID!, $newTitle: String!) {
@@ -98,7 +101,11 @@ export default function EditListingPage() {
     skip: !token,
   })
 
-  // Mutations
+  const categoriesTree: CategoryNode[] = useMemo(() => {
+    if (!categoriesData?.getCategories) return []
+    return buildCategoryTree(categoriesData.getCategories as FlatCategory[])
+  }, [categoriesData])
+
   const [updateTitle] = useMutation(UPDATE_LISTING_TITLE, {
     context: { headers: { Authorization: `Bearer ${token}` } },
   })
@@ -356,7 +363,16 @@ export default function EditListingPage() {
             </div>
 
             <div className='grid grid-cols-2 gap-4'>
-              <div>
+              <div className='space-y-2'>
+                <Label>Category</Label>
+                <CategoryCascader
+                  categories={categoriesTree as CategoryNode[]}
+                  value={form.categoryId}
+                  onChange={(id) => setForm({ ...form, categoryId: id })}
+                  placeholder='Select a Category'
+                />
+              </div>
+              {/* <div>
                 <Label htmlFor='categoryId'>Category</Label>
                 <Select
                   name='categoryId'
@@ -381,7 +397,7 @@ export default function EditListingPage() {
                     )}
                   </SelectContent>
                 </Select>
-              </div>
+              </div> */}
 
               <div>
                 <Label htmlFor='condition'>Condition</Label>
