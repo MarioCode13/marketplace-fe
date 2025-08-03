@@ -28,6 +28,7 @@ import CategoryCascader, {
   CategoryNode,
 } from '@/components/drawers/CategoryCascader'
 import { buildCategoryTree, FlatCategory } from '@/lib/utils'
+import CityAutocomplete from '@/components/drawers/CityAutocomplete'
 
 const UPDATE_LISTING_TITLE = gql`
   mutation UpdateListingTitle($listingId: ID!, $newTitle: String!) {
@@ -74,8 +75,10 @@ export default function EditListingPage() {
     description: '',
     price: '',
     city: '',
+    cityLabel: '',
     categoryId: '',
     condition: 'NEW',
+    customCity: '',
   })
 
   const [images, setImages] = useState<string[]>([])
@@ -89,6 +92,8 @@ export default function EditListingPage() {
     variables: { id: listingId },
     skip: !listingId,
   })
+
+  const [showCustomCity, setShowCustomCity] = useState(false)
 
   // Fetch conditions and categories
   const { data: conditionsData, loading: conditionsLoading } =
@@ -116,21 +121,30 @@ export default function EditListingPage() {
     context: { headers: { Authorization: `Bearer ${token}` } },
   })
 
+  const [formKey, setFormKey] = useState('')
+
   // Initialize form with listing data
   useEffect(() => {
     if (listingData?.getListingById) {
       const listing = listingData.getListingById
+      console.log('Initializing form with listing data:', listing)
+
       setForm({
         title: listing.title,
         description: listing.description,
         price: listing.price.toString(),
-        city: listing.city,
+        city: listing.city.id || '',
+        cityLabel: listing.city.name || '',
         categoryId: listing.category?.id || '',
         condition: listing.condition,
+        customCity: listing?.customCity || '',
       })
+      setFormKey(listing.id)
       setImages(listing.images || [])
+    } else {
+      console.warn('No listing data found to initialize the form.')
     }
-  }, [listingData])
+  }, [listingData?.getListingById])
 
   // Check if user owns the listing
   useEffect(() => {
@@ -305,6 +319,7 @@ export default function EditListingPage() {
 
         <div className='bg-componentBackground rounded-lg p-6 shadow-lg'>
           <form
+            key={formKey}
             onSubmit={handleSubmit}
             className='space-y-6'
           >
@@ -335,12 +350,10 @@ export default function EditListingPage() {
 
             <div className='grid grid-cols-2 gap-4'>
               <div>
-                <Label htmlFor='price'>Price ($)</Label>
+                <Label htmlFor='price'>Price (R)</Label>
                 <Input
                   id='price'
                   name='price'
-                  type='number'
-                  step='0.01'
                   min='0'
                   value={form.price}
                   onChange={handleChange}
@@ -350,15 +363,50 @@ export default function EditListingPage() {
               </div>
 
               <div>
-                <Label htmlFor='city'>City</Label>
-                <Input
-                  id='city'
-                  name='city'
-                  value={form.city}
-                  onChange={handleChange}
-                  required
-                  className='mt-1'
-                />
+                {!showCustomCity ? (
+                  <CityAutocomplete
+                    value={form.city}
+                    displayValue={form.cityLabel}
+                    onChange={(cityId, cityLabel) => {
+                      setForm((prev) => ({
+                        ...prev,
+                        city: cityId || '',
+                        cityLabel: cityLabel || '',
+                        customCity: '',
+                      }))
+                      setShowCustomCity(false)
+                    }}
+                    onCantFindCity={() => {
+                      setForm((prev) => ({ ...prev, city: '', cityLabel: '' }))
+                      setShowCustomCity(true)
+                    }}
+                    label={undefined}
+                  />
+                ) : (
+                  <div className='mt-2'>
+                    <Label htmlFor='customCity'>Custom City</Label>
+                    <Input
+                      id='customCity'
+                      name='customCity'
+                      value={form.customCity}
+                      onChange={(e) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          customCity: e.target.value,
+                        }))
+                      }
+                      placeholder='Enter your city'
+                    />
+                    <Button
+                      type='button'
+                      variant='ghost'
+                      className='mt-1 text-xs text-blue-600 underline'
+                      onClick={() => setShowCustomCity(false)}
+                    >
+                      Back to city search
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -372,34 +420,8 @@ export default function EditListingPage() {
                   placeholder='Select a Category'
                 />
               </div>
-              {/* <div>
-                <Label htmlFor='categoryId'>Category</Label>
-                <Select
-                  name='categoryId'
-                  value={form.categoryId}
-                  onValueChange={(value) =>
-                    setForm({ ...form, categoryId: value })
-                  }
-                >
-                  <SelectTrigger className='mt-1'>
-                    <SelectValue placeholder='Select category' />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categoriesData?.getCategories?.map(
-                      (category: Category) => (
-                        <SelectItem
-                          key={category.id}
-                          value={category.id}
-                        >
-                          {category.name}
-                        </SelectItem>
-                      )
-                    )}
-                  </SelectContent>
-                </Select>
-              </div> */}
 
-              <div>
+              <div className='space-y-2'>
                 <Label htmlFor='condition'>Condition</Label>
                 <Select
                   name='condition'
