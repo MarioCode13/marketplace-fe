@@ -84,6 +84,8 @@ function renderMenu(
       return (
         <DropdownMenuItem
           key={cat.id}
+          role='menuitem'
+          data-testid={`category-item-${cat.id}`}
           onSelect={() => onSelect(cat, path)}
           className={
             selectedId === cat.id ? 'bg-secondary text-primary-foreground' : ''
@@ -122,7 +124,10 @@ const CategoryCascader: React.FC<CategoryCascaderProps> = ({
           <ChevronDown className='w-4 h-4 ml-2' />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className='min-w-[220px] max-h-96 overflow-auto bg-secondary'>
+      <DropdownMenuContent
+        className='min-w-[220px] max-h-96 overflow-auto bg-secondary'
+        aria-label='Category selection menu'
+      >
         {renderMenu(
           categories,
           (cat, path) => onChange(cat.id, path),

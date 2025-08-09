@@ -146,6 +146,7 @@ export default function ListingsPage() {
         <div className='flex items-center justify-between w-full mb-6'>
           <div className='flex items-center gap-4'>
             <Button
+              aria-label='Open filters'
               onClick={() => setIsFilterOpen(true)}
               variant={'outline'}
               size={'icon'}

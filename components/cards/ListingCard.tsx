@@ -50,7 +50,10 @@ export default function ListingCard({
   const textColor = getTextColor(themeColor || '')
   const [menuOpen, setMenuOpen] = useState(false)
   return (
-    <div className='relative  '>
+    <div
+      className='relative'
+      data-testid='listing-card'
+    >
       <Link
         href={`/listings/${listing.id}`}
         passHref
@@ -97,6 +100,7 @@ export default function ListingCard({
             className={`font-bold ${
               listing.sold ? 'text-gray-500 line-through' : 'text-green-500'
             }`}
+            data-testid='listing-price'
           >
             R{listing.price}
           </p>

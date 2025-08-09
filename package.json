@@ -8,7 +8,11 @@
     "start": "next start",
     "lint": "next lint",
     "codegen": "graphql-codegen",
-    "codegen:watch": "graphql-codegen --watch"
+    "codegen:watch": "graphql-codegen --watch",
+    "test": "playwright test --config=playwright.config.ts",
+    "test:ui": "playwright test --ui --config=playwright.config.ts",
+    "test:ui:debug": "playwright test --ui --debug --config=playwright.config.ts",
+    "test:coverage:report": "playwright show-report"
   },
   "dependencies": {
     "@apollo/client": "^3.13.8",
@@ -49,6 +53,7 @@
     "@graphql-codegen/typescript": "^4.1.6",
     "@graphql-codegen/typescript-operations": "^4.6.1",
     "@graphql-codegen/typescript-react-apollo": "^4.3.3",
+    "@playwright/test": "^1.54.2",
     "@types/node": "^20",
     "@types/react": "^18.3.20",
     "@types/react-dom": "^18.3.6",

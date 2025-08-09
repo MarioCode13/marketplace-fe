@@ -158,9 +158,17 @@ const Page = () => {
 
           <div className='md:w-1/2 space-y-6 flex flex-col justify-between'>
             <div>
-              <h1 className='text-3xl font-bold'>{listing.title}</h1>
+              <h1
+                className='text-3xl font-bold'
+                data-testid='listing-title'
+              >
+                {listing.title}
+              </h1>
               <p className='text-gray-600'>{listing.description}</p>
-              <p className='text-2xl font-semibold text-green-600'>
+              <p
+                className='text-2xl font-semibold text-green-600'
+                data-testid='listing-price'
+              >
                 ${listing.price}
               </p>
               <p className='text-sm text-gray-500'>
