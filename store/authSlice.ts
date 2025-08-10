@@ -1,7 +1,10 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import { gql } from '@apollo/client'
 import { jwtDecode } from 'jwt-decode'
-import client from '@/context/apollo-client'
+import { getApolloClient } from '@/lib/apollo/client'
+
+// Get the Apollo Client instance
+const getClient = () => getApolloClient()
 
 
 const LOGIN_MUTATION = gql`
@@ -28,7 +31,7 @@ export const loginUser = createAsyncThunk(
     'auth/loginUser',
     async ({ emailOrUsername, password }: { emailOrUsername: string; password: string }, { rejectWithValue }) => {
         try {
-            const { data } = await client.mutate({
+            const { data } = await getClient().mutate({
                 mutation: LOGIN_MUTATION,
                 variables: { emailOrUsername, password },
             })
@@ -45,7 +48,7 @@ export const loginUser = createAsyncThunk(
             if (error.graphQLErrors && error.graphQLErrors.length > 0) {
                 const graphQLError = error.graphQLErrors[0]
                 const errorCode = graphQLError.extensions?.code
-                
+
                 switch (errorCode) {
                     case 'INVALID_CREDENTIALS':
                         return rejectWithValue('Invalid email/username or password')
@@ -102,7 +105,7 @@ const authSlice = createSlice({
             state.token = null
             state.user = null
             localStorage.removeItem('token')
-            client.clearStore()
+            getClient().clearStore()
 
         },
     },

@@ -53,6 +53,10 @@ export const GET_LISTINGS = gql`
         condition
         createdAt
         expiresAt
+        category {
+          id
+          name
+        }
         user {
           id
           username
