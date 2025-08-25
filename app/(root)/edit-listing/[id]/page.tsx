@@ -1,6 +1,6 @@
 'use client'
 
-import { gql, useMutation, useQuery } from '@apollo/client'
+import { useMutation, useQuery } from '@apollo/client'
 import { useState, useEffect, useMemo } from 'react'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
@@ -23,42 +23,16 @@ import { ArrowLeft, Loader2 } from 'lucide-react'
 import { GET_LISTING_BY_ID } from '@/lib/graphql/queries/getListingById'
 import { GET_CONDITIONS } from '@/lib/graphql/queries/getConditions'
 import { GET_ME } from '@/lib/graphql/queries/getMe'
-import { useGetCategoriesQuery } from '@/lib/graphql/generated'
+import { UPDATE_LISTING } from '@/lib/graphql/mutations/listingMutations'
+import {
+  UpdateListingInput,
+  useGetCategoriesQuery,
+} from '@/lib/graphql/generated'
 import CategoryCascader, {
   CategoryNode,
 } from '@/components/drawers/CategoryCascader'
 import { buildCategoryTree, FlatCategory } from '@/lib/utils'
 import CityAutocomplete from '@/components/drawers/CityAutocomplete'
-
-const UPDATE_LISTING_TITLE = gql`
-  mutation UpdateListingTitle($listingId: ID!, $newTitle: String!) {
-    updateListingTitle(listingId: $listingId, newTitle: $newTitle) {
-      id
-      title
-    }
-  }
-`
-
-const UPDATE_LISTING_DESCRIPTION = gql`
-  mutation UpdateListingDescription($listingId: ID!, $newDescription: String!) {
-    updateListingDescription(
-      listingId: $listingId
-      newDescription: $newDescription
-    ) {
-      id
-      description
-    }
-  }
-`
-
-const UPDATE_LISTING_PRICE = gql`
-  mutation UpdateListingPrice($listingId: ID!, $newPrice: Float!) {
-    updateListingPrice(listingId: $listingId, newPrice: $newPrice) {
-      id
-      price
-    }
-  }
-`
 
 export default function EditListingPage() {
   const router = useRouter()
@@ -111,13 +85,7 @@ export default function EditListingPage() {
     return buildCategoryTree(categoriesData.getCategories as FlatCategory[])
   }, [categoriesData])
 
-  const [updateTitle] = useMutation(UPDATE_LISTING_TITLE, {
-    context: { headers: { Authorization: `Bearer ${token}` } },
-  })
-  const [updateDescription] = useMutation(UPDATE_LISTING_DESCRIPTION, {
-    context: { headers: { Authorization: `Bearer ${token}` } },
-  })
-  const [updatePrice] = useMutation(UPDATE_LISTING_PRICE, {
+  const [updateListing] = useMutation(UPDATE_LISTING, {
     context: { headers: { Authorization: `Bearer ${token}` } },
   })
 
@@ -209,35 +177,22 @@ export default function EditListingPage() {
     setSaving(true)
 
     try {
-      // Update title if changed
-      if (form.title !== listingData.getListingById.title) {
-        await updateTitle({
-          variables: {
-            listingId: listingId,
-            newTitle: form.title,
-          },
-        })
+      const input: UpdateListingInput = {
+        id: listingId,
+        title: form.title,
+        description: form.description,
+        price: parseFloat(form.price),
+        images,
+        // TODO: fix to use Input
+        // condition: form.condition,
+        categoryId: form.categoryId,
+        cityId: form.city || null,
+        customCity: form.customCity || null,
       }
 
-      // Update description if changed
-      if (form.description !== listingData.getListingById.description) {
-        await updateDescription({
-          variables: {
-            listingId: listingId,
-            newDescription: form.description,
-          },
-        })
-      }
-
-      // Update price if changed
-      if (parseFloat(form.price) !== listingData.getListingById.price) {
-        await updatePrice({
-          variables: {
-            listingId: listingId,
-            newPrice: parseFloat(form.price),
-          },
-        })
-      }
+      await updateListing({
+        variables: { input },
+      })
 
       toast.success('Listing updated successfully!')
       router.push(`/listings/${listingId}`)
@@ -245,6 +200,7 @@ export default function EditListingPage() {
       console.error(err)
       toast.error('Failed to update listing')
     }
+
     setSaving(false)
   }
 

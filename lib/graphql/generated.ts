@@ -107,6 +107,7 @@ export type Mutation = {
   markListingAsSold: Listing;
   reactivateSubscription: Subscription;
   register: AuthResponse;
+  updateListing: Listing;
   updateListingDescription: Listing;
   updateListingPrice: Listing;
   updateListingTitle: Listing;
@@ -190,6 +191,11 @@ export type MutationRegisterArgs = {
   email: Scalars['String']['input'];
   password: Scalars['String']['input'];
   username: Scalars['String']['input'];
+};
+
+
+export type MutationUpdateListingArgs = {
+  input: UpdateListingInput;
 };
 
 
@@ -614,6 +620,18 @@ export type TrustRating = {
   verificationScore: Scalars['Float']['output'];
 };
 
+export type UpdateListingInput = {
+  categoryId?: InputMaybe<Scalars['ID']['input']>;
+  cityId?: InputMaybe<Scalars['ID']['input']>;
+  condition?: InputMaybe<Condition>;
+  customCity?: InputMaybe<Scalars['String']['input']>;
+  description?: InputMaybe<Scalars['String']['input']>;
+  id: Scalars['ID']['input'];
+  images?: InputMaybe<Array<Scalars['String']['input']>>;
+  price?: InputMaybe<Scalars['Float']['input']>;
+  title?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type User = {
   __typename?: 'User';
   bio?: Maybe<Scalars['String']['output']>;
@@ -719,14 +737,14 @@ export type CreateListingMutationVariables = Exact<{
   images: Array<Scalars['String']['input']> | Scalars['String']['input'];
   categoryId: Scalars['ID']['input'];
   price: Scalars['Float']['input'];
-  customCity: Scalars['String']['input'];
-  cityId: Scalars['ID']['input'];
+  customCity?: InputMaybe<Scalars['String']['input']>;
+  cityId?: InputMaybe<Scalars['ID']['input']>;
   condition: Condition;
   userId: Scalars['ID']['input'];
 }>;
 
 
-export type CreateListingMutation = { __typename?: 'Mutation', createListing: { __typename?: 'Listing', id: string, title: string, description: string, price: number, createdAt: string } };
+export type CreateListingMutation = { __typename?: 'Mutation', createListing: { __typename?: 'Listing', id: string, title: string, description: string, price: number, createdAt: string, city?: { __typename?: 'City', name: string } | null } };
 
 export type GetConditionsQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -744,6 +762,13 @@ export type DeleteListingMutationVariables = Exact<{
 
 
 export type DeleteListingMutation = { __typename?: 'Mutation', deleteListing: boolean };
+
+export type UpdateListingMutationVariables = Exact<{
+  input: UpdateListingInput;
+}>;
+
+
+export type UpdateListingMutation = { __typename?: 'Mutation', updateListing: { __typename?: 'Listing', id: string, title: string, description: string, price: number, images: Array<string>, condition: Condition, customCity?: string | null, category?: { __typename?: 'Category', id: string, name: string } | null, city?: { __typename?: 'City', id: string, name: string } | null } };
 
 export type CreateReviewMutationVariables = Exact<{
   transactionId: Scalars['ID']['input'];
@@ -807,7 +832,7 @@ export type GetListingByIdQueryVariables = Exact<{
 }>;
 
 
-export type GetListingByIdQuery = { __typename?: 'Query', getListingById?: { __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, sold: boolean, customCity?: string | null, condition: Condition, createdAt: string, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, user: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null, email: string, storeBranding?: { __typename?: 'StoreBranding', slug?: string | null } | null } } | null };
+export type GetListingByIdQuery = { __typename?: 'Query', getListingById?: { __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, sold: boolean, customCity?: string | null, condition: Condition, createdAt: string, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, category?: { __typename?: 'Category', id: string, name: string, parentId?: string | null } | null, user: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null, email: string, storeBranding?: { __typename?: 'StoreBranding', slug?: string | null } | null } } | null };
 
 export type GetListingsQueryVariables = Exact<{
   limit: Scalars['Int']['input'];
@@ -826,7 +851,7 @@ export type GetListingsQueryVariables = Exact<{
 }>;
 
 
-export type GetListingsQuery = { __typename?: 'Query', getListings: { __typename?: 'ListingPageResponse', totalCount: number, listings: Array<{ __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, sold: boolean, customCity?: string | null, condition: Condition, createdAt: string, expiresAt: string, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, user: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } }> } };
+export type GetListingsQuery = { __typename?: 'Query', getListings: { __typename?: 'ListingPageResponse', totalCount: number, listings: Array<{ __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, sold: boolean, customCity?: string | null, condition: Condition, createdAt: string, expiresAt: string, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, category?: { __typename?: 'Category', id: string, name: string } | null, user: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } }> } };
 
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1230,7 +1255,7 @@ export type RegisterMutationHookResult = ReturnType<typeof useRegisterMutation>;
 export type RegisterMutationResult = Apollo.MutationResult<RegisterMutation>;
 export type RegisterMutationOptions = Apollo.BaseMutationOptions<RegisterMutation, RegisterMutationVariables>;
 export const CreateListingDocument = gql`
-    mutation CreateListing($title: String!, $description: String!, $images: [String!]!, $categoryId: ID!, $price: Float!, $customCity: String!, $cityId: ID!, $condition: Condition!, $userId: ID!) {
+    mutation CreateListing($title: String!, $description: String!, $images: [String!]!, $categoryId: ID!, $price: Float!, $customCity: String, $cityId: ID, $condition: Condition!, $userId: ID!) {
   createListing(
     title: $title
     description: $description
@@ -1247,6 +1272,9 @@ export const CreateListingDocument = gql`
     description
     price
     createdAt
+    city {
+      name
+    }
   }
 }
     `;
@@ -1393,6 +1421,53 @@ export function useDeleteListingMutation(baseOptions?: Apollo.MutationHookOption
 export type DeleteListingMutationHookResult = ReturnType<typeof useDeleteListingMutation>;
 export type DeleteListingMutationResult = Apollo.MutationResult<DeleteListingMutation>;
 export type DeleteListingMutationOptions = Apollo.BaseMutationOptions<DeleteListingMutation, DeleteListingMutationVariables>;
+export const UpdateListingDocument = gql`
+    mutation UpdateListing($input: UpdateListingInput!) {
+  updateListing(input: $input) {
+    id
+    title
+    description
+    price
+    images
+    condition
+    category {
+      id
+      name
+    }
+    city {
+      id
+      name
+    }
+    customCity
+  }
+}
+    `;
+export type UpdateListingMutationFn = Apollo.MutationFunction<UpdateListingMutation, UpdateListingMutationVariables>;
+
+/**
+ * __useUpdateListingMutation__
+ *
+ * To run a mutation, you first call `useUpdateListingMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateListingMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateListingMutation, { data, loading, error }] = useUpdateListingMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useUpdateListingMutation(baseOptions?: Apollo.MutationHookOptions<UpdateListingMutation, UpdateListingMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpdateListingMutation, UpdateListingMutationVariables>(UpdateListingDocument, options);
+      }
+export type UpdateListingMutationHookResult = ReturnType<typeof useUpdateListingMutation>;
+export type UpdateListingMutationResult = Apollo.MutationResult<UpdateListingMutation>;
+export type UpdateListingMutationOptions = Apollo.BaseMutationOptions<UpdateListingMutation, UpdateListingMutationVariables>;
 export const CreateReviewDocument = gql`
     mutation CreateReview($transactionId: ID!, $reviewedUserId: ID!, $rating: Float!, $comment: String) {
   createReview(
@@ -1763,6 +1838,11 @@ export const GetListingByIdDocument = gql`
         }
       }
     }
+    category {
+      id
+      name
+      parentId
+    }
     customCity
     condition
     createdAt
@@ -1849,6 +1929,10 @@ export const GetListingsDocument = gql`
       condition
       createdAt
       expiresAt
+      category {
+        id
+        name
+      }
       user {
         id
         username

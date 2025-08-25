@@ -2,14 +2,16 @@ import { getServerApolloClient } from '@/lib/apollo/server'
 import { GET_LISTINGS } from '@/lib/graphql/queries'
 import Listings from './Listings'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default async function Page({ searchParams }: any) {
+interface ListingsPageProps {
+  searchParams?: Record<string, string | string[] | undefined>
+}
+
+export default async function Page({ searchParams }: ListingsPageProps) {
   const client = getServerApolloClient()
   const pageParam = searchParams?.page
   const page = Number(Array.isArray(pageParam) ? pageParam[0] : pageParam) || 1
-  // Fetch more items for client-side filtering
-  const limit = 100 // Increased limit for client-side filtering
-  const offset = 0 // Start from beginning since we're handling pagination client-side
+  const limit = 100
+  const offset = 0
 
   const { data } = await client.query({
     query: GET_LISTINGS,
