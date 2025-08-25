@@ -6,6 +6,7 @@ export default async function Page({
   searchParams,
 }: {
   searchParams?: Record<string, string | string[] | undefined>
+  params?: object
 }) {
   const client = getServerApolloClient()
   const pageParam = searchParams?.page
