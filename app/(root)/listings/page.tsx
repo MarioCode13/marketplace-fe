@@ -2,12 +2,11 @@ import { getServerApolloClient } from '@/lib/apollo/server'
 import { GET_LISTINGS } from '@/lib/graphql/queries'
 import Listings from './Listings'
 
-interface ListingsPageProps {
+export default async function Page({
+  searchParams,
+}: {
   searchParams?: Record<string, string | string[] | undefined>
-  params?: Record<string, string | string[]>
-}
-
-export default async function Page({ searchParams }: ListingsPageProps) {
+}) {
   const client = getServerApolloClient()
   const pageParam = searchParams?.page
   const page = Number(Array.isArray(pageParam) ? pageParam[0] : pageParam) || 1
