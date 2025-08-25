@@ -4,6 +4,7 @@ import Listings from './Listings'
 
 interface ListingsPageProps {
   searchParams?: Record<string, string | string[] | undefined>
+  params?: Record<string, string | string[]>
 }
 
 export default async function Page({ searchParams }: ListingsPageProps) {
