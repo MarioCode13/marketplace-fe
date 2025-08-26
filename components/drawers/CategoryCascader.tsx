@@ -70,7 +70,7 @@ function renderMenu(
           {/* Expandable submenu for children (arrow only) */}
           <DropdownMenuSub>
             <DropdownMenuSubTrigger
-              className='px-2  flex items-center'
+              className='px-2 flex items-center'
               style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
               tabIndex={-1} // prevent focus on arrow
             ></DropdownMenuSubTrigger>
@@ -116,12 +116,18 @@ const CategoryCascader: React.FC<CategoryCascaderProps> = ({
       <DropdownMenuTrigger asChild>
         <Button
           variant={'outline'}
-          className={`w-full justify-between bg-transparent ${className || ''}`}
+          className={`w-full justify-between bg-transparent px-3 ${
+            className || ''
+          }`}
         >
-          <span className={selectedPath.length ? '' : 'text-muted-foreground'}>
+          <span
+            className={`block truncate ${
+              selectedPath.length ? '' : 'text-muted-foreground'
+            }`}
+          >
             {display}
           </span>
-          <ChevronDown className='w-4 h-4 ml-2' />
+          <ChevronDown className='w-4 h-4' />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent

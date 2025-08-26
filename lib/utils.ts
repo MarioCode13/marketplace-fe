@@ -39,12 +39,12 @@ export function isValidUrl(string: string): boolean {
 export function isLightColor(hexColor: string): boolean {
   // Remove # if present
   const hex = hexColor.replace('#', '')
-  
+
   // Convert hex to RGB
   const r = parseInt(hex.slice(0, 2), 16)
   const g = parseInt(hex.slice(2, 4), 16)
   const b = parseInt(hex.slice(4, 6), 16)
-  
+
   // Calculate brightness using human eye sensitivity
   const brightness = (r * 299 + g * 587 + b * 114) / 1000
   return brightness > 128
@@ -58,42 +58,50 @@ export function getTextColor(backgroundColor: string): string {
 }
 
 export interface FlatCategory {
-  id: string;
-  name: string;
-  parentId?: string | null;
+  id: string
+  name: string
+  parentId?: string | null
   // ...other fields
 }
 
 export interface CategoryNode {
-  id: string;
-  name: string;
-  children?: CategoryNode[];
+  id: string
+  name: string
+  children?: CategoryNode[]
 }
 
 export function buildCategoryTree(flat: FlatCategory[]): CategoryNode[] {
-  const idToNode: Record<string, CategoryNode> = {};
-  const roots: CategoryNode[] = [];
+  const idToNode: Record<string, CategoryNode> = {}
+  const roots: CategoryNode[] = []
 
   // First, create a map of all nodes
   flat.forEach(cat => {
-    idToNode[cat.id] = { id: cat.id, name: cat.name, children: [] };
-  });
+    idToNode[cat.id] = { id: cat.id, name: cat.name, children: [] }
+  })
 
   // Then, assign children to parents
   flat.forEach(cat => {
     if (cat.parentId && idToNode[cat.parentId]) {
-      idToNode[cat.parentId].children!.push(idToNode[cat.id]);
+      idToNode[cat.parentId].children!.push(idToNode[cat.id])
     } else {
-      roots.push(idToNode[cat.id]);
+      roots.push(idToNode[cat.id])
     }
-  });
+  })
 
   // Remove empty children arrays for leaf nodes
   function clean(node: CategoryNode) {
-    if (node.children && node.children.length === 0) delete node.children;
-    else if (node.children) node.children.forEach(clean);
+    if (node.children && node.children.length === 0) delete node.children
+    else if (node.children) node.children.forEach(clean)
   }
-  roots.forEach(clean);
+  roots.forEach(clean)
 
-  return roots;
+  return roots
+}
+
+export function formatEnum(value: string) {
+  return value
+    .toLowerCase()              // new, like_new, excellent
+    .split('_')                 // ["like", "new"]
+    .map(word => word[0].toUpperCase() + word.slice(1)) // ["Like", "New"]
+    .join(' ')                  // "Like New"
 }

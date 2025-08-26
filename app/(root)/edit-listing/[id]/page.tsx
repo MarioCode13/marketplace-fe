@@ -25,13 +25,14 @@ import { GET_CONDITIONS } from '@/lib/graphql/queries/getConditions'
 import { GET_ME } from '@/lib/graphql/queries/getMe'
 import { UPDATE_LISTING } from '@/lib/graphql/mutations/listingMutations'
 import {
+  Condition,
   UpdateListingInput,
   useGetCategoriesQuery,
 } from '@/lib/graphql/generated'
 import CategoryCascader, {
   CategoryNode,
 } from '@/components/drawers/CategoryCascader'
-import { buildCategoryTree, FlatCategory } from '@/lib/utils'
+import { buildCategoryTree, FlatCategory, formatEnum } from '@/lib/utils'
 import CityAutocomplete from '@/components/drawers/CityAutocomplete'
 
 export default function EditListingPage() {
@@ -93,7 +94,10 @@ export default function EditListingPage() {
 
   // Initialize form with listing data
   useEffect(() => {
-    if (listingData?.getListingById) {
+    if (!listingData?.getListingById) return
+
+    // Only initialize if formKey is empty (not yet initialized)
+    if (!formKey) {
       const listing = listingData.getListingById
       console.log('Initializing form with listing data:', listing)
 
@@ -101,18 +105,18 @@ export default function EditListingPage() {
         title: listing.title,
         description: listing.description,
         price: listing.price.toString(),
-        city: listing.city.id || '',
-        cityLabel: listing.city.name || '',
+        city: listing.city?.id || '',
+        cityLabel: listing.city?.name || '',
         categoryId: listing.category?.id || '',
         condition: listing.condition,
         customCity: listing?.customCity || '',
       })
       setFormKey(listing.id)
       setImages(listing.images || [])
-    } else {
-      console.warn('No listing data found to initialize the form.')
+
+      setShowCustomCity(!!listing.customCity)
     }
-  }, [listingData?.getListingById])
+  }, [listingData?.getListingById, formKey])
 
   // Check if user owns the listing
   useEffect(() => {
@@ -176,6 +180,8 @@ export default function EditListingPage() {
     e.preventDefault()
     setSaving(true)
 
+    console.log('Form state on submit:', form)
+
     try {
       const input: UpdateListingInput = {
         id: listingId,
@@ -183,12 +189,12 @@ export default function EditListingPage() {
         description: form.description,
         price: parseFloat(form.price),
         images,
-        // TODO: fix to use Input
-        // condition: form.condition,
-        categoryId: form.categoryId,
+        condition: form.condition as Condition,
+        categoryId: form.categoryId.toString(),
         cityId: form.city || null,
         customCity: form.customCity || null,
       }
+      console.log('Mutation input:', input)
 
       await updateListing({
         variables: { input },
@@ -339,11 +345,12 @@ export default function EditListingPage() {
                     label={undefined}
                   />
                 ) : (
-                  <div className='mt-2'>
+                  <div>
                     <Label htmlFor='customCity'>Custom City</Label>
                     <Input
                       id='customCity'
                       name='customCity'
+                      className='mt-1'
                       value={form.customCity}
                       onChange={(e) =>
                         setForm((prev) => ({
@@ -356,7 +363,8 @@ export default function EditListingPage() {
                     <Button
                       type='button'
                       variant='ghost'
-                      className='mt-1 text-xs text-blue-600 underline'
+                      size={'sm'}
+                      className='  text-xs mt-2'
                       onClick={() => setShowCustomCity(false)}
                     >
                       Back to city search
@@ -395,7 +403,7 @@ export default function EditListingPage() {
                         key={condition}
                         value={condition}
                       >
-                        {condition.replace('_', ' ')}
+                        {formatEnum(condition)}
                       </SelectItem>
                     ))}
                   </SelectContent>

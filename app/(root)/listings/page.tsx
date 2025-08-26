@@ -2,10 +2,14 @@ import { getServerApolloClient } from '@/lib/apollo/server'
 import { GET_LISTINGS } from '@/lib/graphql/queries'
 import Listings from './Listings'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default async function Page({ searchParams }: any) {
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[]>>
+}) {
   const client = getServerApolloClient()
-  const pageParam = searchParams?.page
+  const params = await searchParams
+  const pageParam = params?.page
   const page = Number(Array.isArray(pageParam) ? pageParam[0] : pageParam) || 1
   const limit = 100
   const offset = 0

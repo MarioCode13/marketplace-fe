@@ -85,11 +85,11 @@ export default function CityAutocomplete({
         !loading &&
         data?.searchCities?.length === 0 &&
         input.length > 1 && (
-          <div className='absolute z-10 w-full bg-white border rounded shadow mt-1 px-4 py-2 text-gray-500 flex flex-col gap-2'>
-            <span>No cities found.</span>
+          <div className='absolute z-10 w-full bg-secondary  border rounded-md shadow-md mt-1 px-4 py-2  flex flex-col gap-2'>
+            <p className='text-sm text-gray-500'>No cities found.</p>
             {onCantFindCity && (
               <Button
-                variant='outline'
+                color='primary'
                 size='sm'
                 onClick={() => {
                   onCantFindCity()
