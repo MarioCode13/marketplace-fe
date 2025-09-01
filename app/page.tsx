@@ -23,7 +23,7 @@ export default function Home() {
   }
 
   const staggerContainer = {
-    animate: { transition: { staggerChildren: 0.1 } },
+    animate: { transition: { staggerChildren: 0.15 } },
   }
 
   const features = [
@@ -177,8 +177,9 @@ export default function Home() {
         <div className='max-w-6xl mx-auto px-6'>
           <motion.div
             initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
+            whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
             className='text-center mb-16'
           >
             <h2 className='text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4'>
@@ -193,7 +194,8 @@ export default function Home() {
           <motion.div
             variants={staggerContainer}
             initial='initial'
-            animate='animate'
+            whileInView='animate'
+            viewport={{ once: true, amount: 0.2 }}
             className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8'
           >
             {features.map((feature, i) => {
