@@ -103,6 +103,7 @@ const Page = () => {
                 }
                 alt={listing.title}
                 fill
+                quality={90}
                 className='object-cover'
                 sizes='(max-width: 768px) 100vw, 50vw'
               />

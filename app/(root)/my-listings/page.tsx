@@ -2,14 +2,24 @@
 import React, { useState } from 'react'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/store/store'
-import { useQuery } from '@apollo/client'
+import { useQuery, useMutation } from '@apollo/client'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import SkeletonListingCard from '@/components/cards/SkeletonListingCard'
 import { Button } from '@/components/ui/button'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { MY_LISTINGS } from '@/lib/graphql/queries/myListings'
+import { DELETE_LISTING } from '@/lib/graphql/mutations/listingMutations'
 import ListingCard from '@/components/cards/ListingCard'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { toast } from 'sonner'
 
 interface Listing {
   id: string
@@ -33,14 +43,25 @@ interface Listing {
 }
 
 export default function MyListingsPage() {
-  const token = useSelector((state: RootState) => state.auth.token)
-  const router = useRouter()
-  const [limit] = useState(3)
+  const [limit] = useState(9)
   const [offset, setOffset] = useState(0)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [listingToDelete, setListingToDelete] = useState<string | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
-  const { loading, error, data } = useQuery(MY_LISTINGS, {
+  const router = useRouter()
+  const token = useSelector((state: RootState) => state.auth.token)
+
+  const { loading, error, data, refetch } = useQuery(MY_LISTINGS, {
     variables: { limit, offset },
-    fetchPolicy: 'cache-and-network',
+    context: {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  })
+
+  const [deleteListing] = useMutation(DELETE_LISTING, {
     context: {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -57,6 +78,39 @@ export default function MyListingsPage() {
 
   const handlePrev = () => {
     if (offset - limit >= 0) setOffset(offset - limit)
+  }
+
+  const handleDeleteClick = (listingId: string) => {
+    setListingToDelete(listingId)
+    setDeleteDialogOpen(true)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!listingToDelete) return
+
+    setIsDeleting(true)
+    try {
+      await deleteListing({
+        variables: { listingId: listingToDelete },
+      })
+
+      toast.success('Listing deleted successfully')
+      setDeleteDialogOpen(false)
+      setListingToDelete(null)
+
+      // Refetch the listings to update the UI
+      await refetch()
+    } catch (error) {
+      console.error('Error deleting listing:', error)
+      toast.error('Failed to delete listing. Please try again.')
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
+  const handleDeleteCancel = () => {
+    setDeleteDialogOpen(false)
+    setListingToDelete(null)
   }
 
   return (
@@ -90,7 +144,7 @@ export default function MyListingsPage() {
                     listing={listing}
                     showMenu
                     onEdit={() => router.push(`/edit-listing/${listing.id}`)}
-                    onDelete={() => console.log('Delete clicked')}
+                    onDelete={() => handleDeleteClick(listing.id)}
                   />
                 ))}
               </div>
@@ -145,6 +199,38 @@ export default function MyListingsPage() {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Listing</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this listing? This action cannot
+              be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant='outline'
+              onClick={handleDeleteCancel}
+              disabled={isDeleting}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant='destructive'
+              onClick={handleDeleteConfirm}
+              disabled={isDeleting}
+            >
+              {isDeleting ? 'Deleting...' : 'Delete'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

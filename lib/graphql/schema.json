@@ -1178,7 +1178,7 @@
             "description": null,
             "args": [
               {
-                "name": "id",
+                "name": "listingId",
                 "description": null,
                 "type": {
                   "kind": "NON_NULL",

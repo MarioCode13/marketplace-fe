@@ -167,7 +167,7 @@ export type MutationCreateTransactionArgs = {
 
 
 export type MutationDeleteListingArgs = {
-  id: Scalars['ID']['input'];
+  listingId: Scalars['ID']['input'];
 };
 
 
@@ -676,30 +676,6 @@ export enum VerificationStatus {
   Rejected = 'REJECTED'
 }
 
-export type UpdateListingTitleMutationVariables = Exact<{
-  listingId: Scalars['ID']['input'];
-  newTitle: Scalars['String']['input'];
-}>;
-
-
-export type UpdateListingTitleMutation = { __typename?: 'Mutation', updateListingTitle: { __typename?: 'Listing', id: string, title: string } };
-
-export type UpdateListingDescriptionMutationVariables = Exact<{
-  listingId: Scalars['ID']['input'];
-  newDescription: Scalars['String']['input'];
-}>;
-
-
-export type UpdateListingDescriptionMutation = { __typename?: 'Mutation', updateListingDescription: { __typename?: 'Listing', id: string, description: string } };
-
-export type UpdateListingPriceMutationVariables = Exact<{
-  listingId: Scalars['ID']['input'];
-  newPrice: Scalars['Float']['input'];
-}>;
-
-
-export type UpdateListingPriceMutation = { __typename?: 'Mutation', updateListingPrice: { __typename?: 'Listing', id: string, price: number } };
-
 export type CompleteProfileMutationVariables = Exact<{
   id: Scalars['ID']['input'];
   firstName: Scalars['String']['input'];
@@ -757,7 +733,7 @@ export type GetAllUsersQueryVariables = Exact<{ [key: string]: never; }>;
 export type GetAllUsersQuery = { __typename?: 'Query', getAllUsers: Array<{ __typename?: 'User', id: string, username: string, email: string }> };
 
 export type DeleteListingMutationVariables = Exact<{
-  id: Scalars['ID']['input'];
+  listingId: Scalars['ID']['input'];
 }>;
 
 
@@ -1028,111 +1004,6 @@ export type LoginMutationVariables = Exact<{
 export type LoginMutation = { __typename?: 'Mutation', login: { __typename?: 'AuthResponse', token: string, email: string, role?: string | null, userId: string } };
 
 
-export const UpdateListingTitleDocument = gql`
-    mutation UpdateListingTitle($listingId: ID!, $newTitle: String!) {
-  updateListingTitle(listingId: $listingId, newTitle: $newTitle) {
-    id
-    title
-  }
-}
-    `;
-export type UpdateListingTitleMutationFn = Apollo.MutationFunction<UpdateListingTitleMutation, UpdateListingTitleMutationVariables>;
-
-/**
- * __useUpdateListingTitleMutation__
- *
- * To run a mutation, you first call `useUpdateListingTitleMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useUpdateListingTitleMutation` returns a tuple that includes:
- * - A mutate function that you can call at any time to execute the mutation
- * - An object with fields that represent the current status of the mutation's execution
- *
- * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
- *
- * @example
- * const [updateListingTitleMutation, { data, loading, error }] = useUpdateListingTitleMutation({
- *   variables: {
- *      listingId: // value for 'listingId'
- *      newTitle: // value for 'newTitle'
- *   },
- * });
- */
-export function useUpdateListingTitleMutation(baseOptions?: Apollo.MutationHookOptions<UpdateListingTitleMutation, UpdateListingTitleMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<UpdateListingTitleMutation, UpdateListingTitleMutationVariables>(UpdateListingTitleDocument, options);
-      }
-export type UpdateListingTitleMutationHookResult = ReturnType<typeof useUpdateListingTitleMutation>;
-export type UpdateListingTitleMutationResult = Apollo.MutationResult<UpdateListingTitleMutation>;
-export type UpdateListingTitleMutationOptions = Apollo.BaseMutationOptions<UpdateListingTitleMutation, UpdateListingTitleMutationVariables>;
-export const UpdateListingDescriptionDocument = gql`
-    mutation UpdateListingDescription($listingId: ID!, $newDescription: String!) {
-  updateListingDescription(listingId: $listingId, newDescription: $newDescription) {
-    id
-    description
-  }
-}
-    `;
-export type UpdateListingDescriptionMutationFn = Apollo.MutationFunction<UpdateListingDescriptionMutation, UpdateListingDescriptionMutationVariables>;
-
-/**
- * __useUpdateListingDescriptionMutation__
- *
- * To run a mutation, you first call `useUpdateListingDescriptionMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useUpdateListingDescriptionMutation` returns a tuple that includes:
- * - A mutate function that you can call at any time to execute the mutation
- * - An object with fields that represent the current status of the mutation's execution
- *
- * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
- *
- * @example
- * const [updateListingDescriptionMutation, { data, loading, error }] = useUpdateListingDescriptionMutation({
- *   variables: {
- *      listingId: // value for 'listingId'
- *      newDescription: // value for 'newDescription'
- *   },
- * });
- */
-export function useUpdateListingDescriptionMutation(baseOptions?: Apollo.MutationHookOptions<UpdateListingDescriptionMutation, UpdateListingDescriptionMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<UpdateListingDescriptionMutation, UpdateListingDescriptionMutationVariables>(UpdateListingDescriptionDocument, options);
-      }
-export type UpdateListingDescriptionMutationHookResult = ReturnType<typeof useUpdateListingDescriptionMutation>;
-export type UpdateListingDescriptionMutationResult = Apollo.MutationResult<UpdateListingDescriptionMutation>;
-export type UpdateListingDescriptionMutationOptions = Apollo.BaseMutationOptions<UpdateListingDescriptionMutation, UpdateListingDescriptionMutationVariables>;
-export const UpdateListingPriceDocument = gql`
-    mutation UpdateListingPrice($listingId: ID!, $newPrice: Float!) {
-  updateListingPrice(listingId: $listingId, newPrice: $newPrice) {
-    id
-    price
-  }
-}
-    `;
-export type UpdateListingPriceMutationFn = Apollo.MutationFunction<UpdateListingPriceMutation, UpdateListingPriceMutationVariables>;
-
-/**
- * __useUpdateListingPriceMutation__
- *
- * To run a mutation, you first call `useUpdateListingPriceMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useUpdateListingPriceMutation` returns a tuple that includes:
- * - A mutate function that you can call at any time to execute the mutation
- * - An object with fields that represent the current status of the mutation's execution
- *
- * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
- *
- * @example
- * const [updateListingPriceMutation, { data, loading, error }] = useUpdateListingPriceMutation({
- *   variables: {
- *      listingId: // value for 'listingId'
- *      newPrice: // value for 'newPrice'
- *   },
- * });
- */
-export function useUpdateListingPriceMutation(baseOptions?: Apollo.MutationHookOptions<UpdateListingPriceMutation, UpdateListingPriceMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<UpdateListingPriceMutation, UpdateListingPriceMutationVariables>(UpdateListingPriceDocument, options);
-      }
-export type UpdateListingPriceMutationHookResult = ReturnType<typeof useUpdateListingPriceMutation>;
-export type UpdateListingPriceMutationResult = Apollo.MutationResult<UpdateListingPriceMutation>;
-export type UpdateListingPriceMutationOptions = Apollo.BaseMutationOptions<UpdateListingPriceMutation, UpdateListingPriceMutationVariables>;
 export const CompleteProfileDocument = gql`
     mutation CompleteProfile($id: ID!, $firstName: String!, $lastName: String!, $bio: String, $cityId: ID, $customCity: String, $contactNumber: String) {
   updateUser(
@@ -1391,8 +1262,8 @@ export type GetAllUsersLazyQueryHookResult = ReturnType<typeof useGetAllUsersLaz
 export type GetAllUsersSuspenseQueryHookResult = ReturnType<typeof useGetAllUsersSuspenseQuery>;
 export type GetAllUsersQueryResult = Apollo.QueryResult<GetAllUsersQuery, GetAllUsersQueryVariables>;
 export const DeleteListingDocument = gql`
-    mutation DeleteListing($id: ID!) {
-  deleteListing(id: $id)
+    mutation DeleteListing($listingId: ID!) {
+  deleteListing(listingId: $listingId)
 }
     `;
 export type DeleteListingMutationFn = Apollo.MutationFunction<DeleteListingMutation, DeleteListingMutationVariables>;
@@ -1410,7 +1281,7 @@ export type DeleteListingMutationFn = Apollo.MutationFunction<DeleteListingMutat
  * @example
  * const [deleteListingMutation, { data, loading, error }] = useDeleteListingMutation({
  *   variables: {
- *      id: // value for 'id'
+ *      listingId: // value for 'listingId'
  *   },
  * });
  */
