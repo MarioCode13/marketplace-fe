@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Heart, Shield, FileText, AlertTriangle } from 'lucide-react'
+import { Heart, Shield, FileText, AlertTriangle, Mail, MapPin } from 'lucide-react'
 
 export default function Footer() {
   return (
@@ -11,14 +11,27 @@ export default function Footer() {
           {/* Company Info */}
           <div className='space-y-4'>
             <h3 className='text-lg font-semibold text-foreground'>
-              Marketplace
+              Dealio
             </h3>
             <p className='text-sm text-muted-foreground'>
-              Connecting buyers and sellers in a safe, trusted environment.
+              South Africa&apos;s trusted marketplace for buying and selling secondhand items. 
+              Secure, transparent, and built on trust.
             </p>
             <div className='flex items-center gap-2 text-sm text-muted-foreground'>
               <Heart className='w-4 h-4' />
-              <span>Made with care for our community</span>
+              <span>Made with care for South Africans</span>
+            </div>
+            <div className='space-y-2 text-sm text-muted-foreground'>
+              <div className='flex items-center gap-2'>
+                <MapPin className='w-4 h-4' />
+                <span>South Africa</span>
+              </div>
+              <div className='flex items-center gap-2'>
+                <Mail className='w-4 h-4' />
+                <a href='mailto:support@dealio.org.za' className='hover:text-foreground transition-colors'>
+                  support@dealio.org.za
+                </a>
+              </div>
             </div>
           </div>
 
@@ -60,6 +73,14 @@ export default function Footer() {
                   My Transactions
                 </Link>
               </li>
+              <li>
+                <Link
+                  href='/verification'
+                  className='text-muted-foreground hover:text-foreground transition-colors'
+                >
+                  Get Verified
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -94,6 +115,14 @@ export default function Footer() {
                   Verification Disclosure
                 </Link>
               </li>
+              <li>
+                <Link
+                  href='/refund-policy'
+                  className='text-muted-foreground hover:text-foreground transition-colors'
+                >
+                  Refund Policy
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -106,7 +135,7 @@ export default function Footer() {
             <ul className='space-y-2 text-sm'>
               <li>
                 <a
-                  href='mailto:support@marketplace.com'
+                  href='mailto:support@dealio.org.za'
                   className='text-muted-foreground hover:text-foreground transition-colors'
                 >
                   Contact Support
@@ -114,7 +143,7 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href='mailto:fraud@marketplace.com'
+                  href='mailto:fraud@dealio.org.za'
                   className='text-muted-foreground hover:text-foreground transition-colors'
                 >
                   Report Fraud
@@ -122,11 +151,19 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href='mailto:verification@marketplace.com'
+                  href='mailto:verification@dealio.org.za'
                   className='text-muted-foreground hover:text-foreground transition-colors'
                 >
                   Verification Help
                 </a>
+              </li>
+              <li>
+                <Link
+                  href='/help'
+                  className='text-muted-foreground hover:text-foreground transition-colors'
+                >
+                  Help Center
+                </Link>
               </li>
             </ul>
           </div>
@@ -139,11 +176,11 @@ export default function Footer() {
               <AlertTriangle className='w-4 h-4' />
               <span>
                 Users transact at their own risk. Always verify items and users
-                independently.
+                independently. Dealio provides a platform but does not guarantee transactions.
               </span>
             </div>
             <div className='text-sm text-muted-foreground'>
-              © {new Date().getFullYear()} Marketplace. All rights reserved.
+              © {new Date().getFullYear()} Dealio (dealio.org.za). All rights reserved.
             </div>
           </div>
         </div>
