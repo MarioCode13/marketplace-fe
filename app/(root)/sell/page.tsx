@@ -203,7 +203,7 @@ export default function SellPage() {
             You need to be logged in to sell items.
           </p>
           <Button
-            variant='secondary'
+            btnColor='secondary'
             className='w-full'
             onClick={() => router.push('/login')}
           >

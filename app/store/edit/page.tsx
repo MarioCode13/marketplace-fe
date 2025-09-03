@@ -326,7 +326,7 @@ export default function EditStorePage() {
           </Button>
           <Button
             type='button'
-            variant='secondary'
+            btnColor='secondary'
             onClick={() => router.push(`/store/${branding.slug}`)}
           >
             Cancel
