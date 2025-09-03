@@ -118,7 +118,7 @@ export default function Navbar() {
         <div className='items-center gap-4 hidden md:flex'>
           <Button
             onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-            variant='secondary'
+            btnColor='secondary'
             size='lg'
             className='p-2 w-10 h-10 rounded-full'
           >
@@ -131,7 +131,7 @@ export default function Navbar() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
-                variant='secondary'
+                btnColor='secondary'
                 size='icon'
                 className='rounded-full w-12 h-12'
               >
@@ -258,7 +258,7 @@ export default function Navbar() {
           <div className='flex flex-col gap-4 mt-8'>
             <Button
               onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-              variant='secondary'
+              btnColor='secondary'
               className='w-12 h-12 rounded-full self-center mb-8'
             >
               {theme === 'light' ? (
@@ -273,7 +273,7 @@ export default function Navbar() {
                   setDrawerOpen(false)
                   handleLogout()
                 }}
-                variant='secondary'
+                btnColor='secondary'
                 className='w-full'
               >
                 Logout
@@ -282,7 +282,7 @@ export default function Navbar() {
               <>
                 <Button
                   asChild
-                  variant='secondary'
+                  btnColor='secondary'
                   className='w-full'
                   onClick={() => setDrawerOpen(false)}
                 >
@@ -290,7 +290,7 @@ export default function Navbar() {
                 </Button>
                 <Button
                   asChild
-                  variant='secondary'
+                  btnColor='secondary'
                   className='w-full'
                   onClick={() => setDrawerOpen(false)}
                 >

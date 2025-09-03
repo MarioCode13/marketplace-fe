@@ -286,6 +286,7 @@ const Listings: React.FC<ListingsProps> = ({
               aria-label='Open filters'
               onClick={() => setIsFilterOpen(true)}
               variant={'outline'}
+              btnColor={'outlineSecondary'}
               size={'icon'}
               className='rounded-full p-3'
             >
@@ -367,7 +368,7 @@ const Listings: React.FC<ListingsProps> = ({
               )}
             </div>
             <Button
-              variant='secondary'
+              btnColor='secondary'
               size='sm'
               onClick={clearAllFilters}
               className='text-sm mt-4'

@@ -126,7 +126,7 @@ export default function MyListingsPage() {
               </div>
               <div className='flex items-center gap-4'>
                 <Link href='/sell'>
-                  <Button>Sell New Item</Button>
+                  <Button btnColor={'secondary'}>Sell New Item</Button>
                 </Link>
               </div>
             </div>
@@ -215,6 +215,7 @@ export default function MyListingsPage() {
           </DialogHeader>
           <DialogFooter>
             <Button
+              btnColor={'outlinePrimary'}
               variant='outline'
               onClick={handleDeleteCancel}
               disabled={isDeleting}
@@ -222,7 +223,6 @@ export default function MyListingsPage() {
               Cancel
             </Button>
             <Button
-              variant='destructive'
               onClick={handleDeleteConfirm}
               disabled={isDeleting}
             >

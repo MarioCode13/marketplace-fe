@@ -153,18 +153,19 @@ export default function Home() {
           >
             <Button
               onClick={() => router.push('/listings')}
-              className='px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105'
+              className='text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105'
               size='lg'
-              variant='gradient'
+              btnColor={'gradient'}
             >
               <ShoppingBag className='mr-2 w-5 h-5' /> Browse Listings{' '}
               <ArrowRight className='ml-2 w-5 h-5' />
             </Button>
             <Button
               onClick={() => router.push('/sell')}
-              className='px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105'
+              className=' text-lg font-semibold shadow-lg   hover:shadow-xl transition-all duration-300 transform hover:scale-105'
               size='lg'
               variant='outline'
+              btnColor='outlinePrimary'
             >
               <TrendingUp className='mr-2 w-5 h-5' /> Sell an Item
             </Button>
@@ -237,7 +238,7 @@ export default function Home() {
           <div className='flex flex-col sm:flex-row gap-4 justify-center'>
             <Button
               onClick={() => router.push('/listings')}
-              className='px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105'
+              className='px-8 py-4 text-lg font-semibold shadow-lg  hover:shadow-xl transition-all duration-300 transform hover:scale-105'
               size='lg'
             >
               <ShoppingBag className='mr-2 w-5 h-5' /> Start Browsing
@@ -247,6 +248,7 @@ export default function Home() {
               className='px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105'
               size='lg'
               variant='outline'
+              btnColor='outlinePrimary'
             >
               <TrendingUp className='mr-2 w-5 h-5' /> Start Selling
             </Button>

@@ -89,7 +89,7 @@ export default function CityAutocomplete({
             <p className='text-sm text-gray-500'>No cities found.</p>
             {onCantFindCity && (
               <Button
-                color='primary'
+                btnColor='primary'
                 size='sm'
                 onClick={() => {
                   onCantFindCity()

@@ -232,7 +232,7 @@ export default function Profile() {
           )}
           {!profileComplete && (
             <Button
-              variant={'secondary'}
+              btnColor={'secondary'}
               className='w-full mt-6'
               onClick={() => router.push('/profile/complete')}
             >
@@ -285,7 +285,8 @@ export default function Profile() {
           )}
 
           <Button
-            variant='destructive'
+            variant='outline'
+            btnColor='outlinePrimary'
             className='w-full mt-6'
             onClick={handleLogout}
           >

@@ -253,6 +253,7 @@ export default function FilterDrawer({
               )}
               <Button
                 variant='ghost'
+                btnColor='ghost'
                 size='sm'
                 onClick={clearAllFilters}
                 className='h-6 px-2 text-xs'
@@ -435,7 +436,7 @@ export default function FilterDrawer({
                   </SelectContent>
                 </Select>
                 <Button
-                  variant='secondary'
+                  btnColor='secondary'
                   size='icon'
                   className='max-h-[35px]'
                   onClick={() =>
@@ -465,6 +466,7 @@ export default function FilterDrawer({
           </Button>
           <Button
             variant='outline'
+            btnColor={'outlineSecondary'}
             onClick={onClose}
             className='w-1/2'
           >
