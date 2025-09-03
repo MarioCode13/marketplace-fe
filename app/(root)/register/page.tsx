@@ -32,12 +32,14 @@ export default function Register() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!acceptedTerms) {
-      toast.error('Please accept the Terms of Use and Privacy Policy to continue')
+      toast.error(
+        'Please accept the Terms of Use and Privacy Policy to continue'
+      )
       return
     }
-    
+
     try {
       await register({ variables: form })
       toast.success('Registration successful! You can now login')
@@ -144,7 +146,9 @@ export default function Register() {
             <Checkbox
               id='terms'
               checked={acceptedTerms}
-              onCheckedChange={(checked) => setAcceptedTerms(checked as boolean)}
+              onCheckedChange={(checked) =>
+                setAcceptedTerms(checked as boolean)
+              }
               className='mt-1'
             />
             <div className='grid gap-1.5 leading-none'>
@@ -153,11 +157,17 @@ export default function Register() {
                 className='text-sm text-muted-foreground'
               >
                 I agree to the{' '}
-                <Link href='/terms' className='text-blue-600 hover:underline'>
+                <Link
+                  href='/terms'
+                  className='text-blue-600 hover:underline'
+                >
                   Terms of Use
                 </Link>{' '}
                 and{' '}
-                <Link href='/privacy' className='text-blue-600 hover:underline'>
+                <Link
+                  href='/privacy'
+                  className='text-blue-600 hover:underline'
+                >
                   Privacy Policy
                 </Link>
               </Label>
@@ -180,7 +190,7 @@ export default function Register() {
 
             <Button
               type='button'
-              variant='secondary'
+              btnColor='secondary'
               className='w-full'
               onClick={() => router.push('/login')}
             >

@@ -221,7 +221,7 @@ export default function EditListingPage() {
             You need to be logged in to edit listings.
           </p>
           <Button
-            variant='secondary'
+            btnColor='secondary'
             className='w-full'
             onClick={() => router.push('/login')}
           >
@@ -252,7 +252,7 @@ export default function EditListingPage() {
             Failed to load listing: {listingError.message}
           </p>
           <Button
-            variant='secondary'
+            btnColor='secondary'
             className='w-full'
             onClick={() => router.push('/my-listings')}
           >

@@ -268,7 +268,7 @@ const Page = () => {
                       )}
                       <Button
                         onClick={() => setModalOpen(true)}
-                        variant='secondary'
+                        btnColor='secondary'
                       >
                         Contact Seller
                       </Button>

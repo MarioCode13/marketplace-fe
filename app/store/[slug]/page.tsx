@@ -314,7 +314,7 @@ export default function StorePage() {
               </div>
               {hasActiveFilters() && (
                 <Button
-                  variant='secondary'
+                  btnColor='secondary'
                   size='sm'
                   onClick={clearAllFilters}
                   className='text-sm mt-4'
@@ -366,7 +366,7 @@ export default function StorePage() {
               </p>
               {hasActiveFilters() && (
                 <Button
-                  variant='secondary'
+                  btnColor='secondary'
                   onClick={clearAllFilters}
                   className='mt-2 '
                 >

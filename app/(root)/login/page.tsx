@@ -88,7 +88,7 @@ export default function Login() {
 
             <Button
               type='button'
-              variant='secondary'
+              btnColor='secondary'
               className='w-full'
               onClick={() => router.push('/register')}
             >
