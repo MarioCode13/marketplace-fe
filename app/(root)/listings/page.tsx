@@ -11,45 +11,36 @@ export const revalidate = 0
 
 type SearchParams = { [key: string]: string | string[] | undefined }
 
-export default async function Page({
-  searchParams,
-}: {
-  searchParams: SearchParams
-}) {
+interface PageProps {
+  searchParams: SearchParams | Promise<SearchParams>
+}
+
+export default async function Page({ searchParams }: PageProps) {
+  // Ensure searchParams is resolved
+  const resolvedParams = await searchParams
   const client = getServerApolloClient()
 
   // Helper function to safely get a single value from search params
-  const getParamValue = async (key: string) => {
-    const value = searchParams[key]
+  const getParamValue = (key: string): string | undefined => {
+    const value = resolvedParams[key]
     return value ? (Array.isArray(value) ? value[0] : value) : undefined
   }
 
   // Extract page safely
-  const pageParam = await getParamValue('page')
+  const pageParam = getParamValue('page')
   const page = Number(pageParam) || 1
   const limit = 12
   const offset = (page - 1) * limit
 
   // Extract filters from URL params
-  const [
-    categoryId,
-    minPrice,
-    maxPrice,
-    condition,
-    searchTerm,
-    cityId,
-    sortBy,
-    sortOrder,
-  ] = await Promise.all([
-    getParamValue('categoryId'),
-    getParamValue('minPrice'),
-    getParamValue('maxPrice'),
-    getParamValue('condition'),
-    getParamValue('searchTerm'),
-    getParamValue('cityId'),
-    getParamValue('sortBy'),
-    getParamValue('sortOrder'),
-  ])
+  const categoryId = getParamValue('categoryId')
+  const minPrice = getParamValue('minPrice')
+  const maxPrice = getParamValue('maxPrice')
+  const condition = getParamValue('condition')
+  const searchTerm = getParamValue('searchTerm')
+  const cityId = getParamValue('cityId')
+  const sortBy = getParamValue('sortBy')
+  const sortOrder = getParamValue('sortOrder')
 
   // Build variables object
   const variables = {
