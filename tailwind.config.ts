@@ -12,6 +12,7 @@ export default {
 				background: "var(--background)",
 				componentBackground: "var(--secondary-background)",
 				popover: "var(--popover-background)",
+				contrast: "var(--contrast)",
 				foreground: "var(--foreground)",
 				mutedForeground: "var(--muted-foreground)",
 				primary: "var(--primary)",

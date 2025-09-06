@@ -3,15 +3,26 @@ import { Slot } from '@radix-ui/react-slot'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils'
 
-const variantCVA = cva(
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0',
+const buttonVariants = cva(
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0',
   {
     variants: {
       variant: {
-        default: 'shadow  active:scale-95',
-        outline: 'border active:scale-95 bg-transparent',
-        ghost: 'hover:bg-accent/10 active:scale-95 bg-transparent',
-        link: 'underline-offset-4 hover:underline',
+        contained: 'shadow active:scale-95',
+        outlined: 'border-[1px] active:scale-95 bg-transparent',
+        text: 'active:scale-95 bg-transparent hover:bg-secondary ',
+      },
+      color: {
+        primary:
+          'text-primary [&.contained]:bg-primary [&.contained]:hover:bg-primaryHover [&.contained]:text-white [&.outlined]:border-primary [&.outlined]:hover:border-primaryHover [&.outlined]:hover:text-primaryHover [&.text]:hover:bg-primary/10',
+        secondary:
+          'text-secondary [&.contained]:bg-secondary [&.contained]:hover:bg-secondaryHover [&.contained]:text-contrast [&.outlined]:border-secondary [&.outlined]:hover:border-secondaryHover [&.outlined]:hover:text-secondaryHover [&.text]:hover:bg-secondary/10',
+        destructive:
+          'text-destructive [&.contained]:bg-destructive [&.contained]:hover:bg-destructive/90 [&.contained]:text-white [&.outlined]:border-destructive [&.text]:hover:bg-destructive/10',
+        gradient:
+          '[&.contained]:bg-gradient-to-r [&.contained]:from-blue-600 [&.contained]:to-purple-600 [&.contained]:hover:from-blue-700 [&.contained]:hover:to-purple-700 [&.contained]:text-white [&.contained]:shadow-lg [&.contained]:hover:shadow-xl [&.outlined]:border-blue-600 [&.outlined]:text-contrast [&.text]:text-blue-600 [&.text]:hover:bg-blue-50',
+        input:
+          'bg-input text-foreground [&.contained]:hover:bg-accent [&.outlined]:border-input [&.text]:hover:bg-accent/10',
       },
       size: {
         default: 'h-9 px-4 py-2',
@@ -22,48 +33,27 @@ const variantCVA = cva(
       },
     },
     defaultVariants: {
-      variant: 'default',
+      variant: 'contained',
+      color: 'primary',
       size: 'default',
     },
   }
 )
 
-const colorCVA = cva('', {
-  variants: {
-    btnColor: {
-      gradient:
-        'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg hover:shadow-xl active:scale-95 hover:from-blue-700 hover:to-purple-700',
-      primary: 'bg-primary  hover:bg-primaryHover',
-      secondary: 'bg-secondary text-foreground hover:bg-secondaryHover',
-      destructive: 'bg-destructive text-white hover:bg-destructive/90',
-      outlinePrimary:
-        'border border-primary text-primary brightness-150 hover:brightness-100 hover:bg-primary hover:text-white hover:opacity-80',
-      outlineSecondary:
-        'border border-secondary brightness-200 text-white  hover:brightness-100  hover:bg-secondary',
-      ghost: 'text-foreground hover:bg-secondary transition-color duration-300',
-    },
-  },
-  defaultVariants: {
-    btnColor: 'primary',
-  },
-})
-
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof variantCVA>,
-    VariantProps<typeof colorCVA> {
-  // btnColor is included here
+  extends Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, 'color'>,
+    VariantProps<typeof buttonVariants> {
   asChild?: boolean
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, btnColor, size, asChild = false, ...props }, ref) => {
+  ({ className, variant, color, size, asChild = false, ...props }, ref) => {
     const Comp = asChild ? Slot : 'button'
     return (
       <Comp
         className={cn(
-          variantCVA({ variant, size }),
-          colorCVA({ btnColor }),
+          buttonVariants({ variant, color, size }),
+          variant,
           className
         )}
         ref={ref}

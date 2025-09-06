@@ -50,8 +50,8 @@ export const ImagePreview: React.FC<ImagePreviewProps> = ({
             {!loading && (
               <Button
                 type='button'
-                variant={'ghost'}
-                btnColor='ghost'
+                variant='text'
+                color='secondary'
                 size='sm'
                 className='absolute -top-2 -right-2 w-6 h-6 rounded-full p-0 opacity-0 group-hover:opacity-100 transition-opacity'
                 onClick={() => onRemoveImage(index)}

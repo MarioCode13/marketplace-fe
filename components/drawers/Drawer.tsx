@@ -41,8 +41,8 @@ export default function Drawer({
             <div></div>
           )}
           <Button
-            variant={'ghost'}
-            btnColor={'ghost'}
+            variant={'text'}
+            color={'primary'}
             size={'icon'}
             onClick={onClose}
             className='text-foreground dark:text-foregroundDark rounded-full'

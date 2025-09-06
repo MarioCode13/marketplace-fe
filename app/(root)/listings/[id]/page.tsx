@@ -225,7 +225,7 @@ const Page = () => {
                         onClick={() =>
                           router.push(`/edit-listing/${listing.id}`)
                         }
-                        variant='outline'
+                        variant='outlined'
                         className='flex items-center gap-2'
                         disabled={listing.sold}
                       >
@@ -233,6 +233,7 @@ const Page = () => {
                         Edit
                       </Button>
                       <Button
+                        variant='contained'
                         onClick={() => setMarkAsSoldModalOpen(true)}
                         className='flex items-center gap-2'
                         disabled={listing.sold}
@@ -248,7 +249,7 @@ const Page = () => {
                           href={`/store/${listing.user.storeBranding.slug}`}
                         >
                           <Button
-                            variant='outline'
+                            variant='outlined'
                             className='flex items-center gap-2'
                           >
                             <User className='w-4 h-4' />
@@ -258,7 +259,7 @@ const Page = () => {
                       ) : (
                         <Link href={`/seller/${listing.user.id}`}>
                           <Button
-                            variant='outline'
+                            variant='outlined'
                             className='flex items-center gap-2'
                           >
                             <User className='w-4 h-4' />
@@ -268,7 +269,7 @@ const Page = () => {
                       )}
                       <Button
                         onClick={() => setModalOpen(true)}
-                        btnColor='secondary'
+                        color='secondary'
                       >
                         Contact Seller
                       </Button>

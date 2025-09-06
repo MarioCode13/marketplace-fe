@@ -252,8 +252,7 @@ export default function FilterDrawer({
                 </Badge>
               )}
               <Button
-                variant='ghost'
-                btnColor='ghost'
+                variant='text'
                 size='sm'
                 onClick={clearAllFilters}
                 className='h-6 px-2 text-xs'
@@ -346,7 +345,6 @@ export default function FilterDrawer({
                 )}
                 {showCustomCity && (
                   <Button
-                    variant='link'
                     size='sm'
                     type='button'
                     onClick={() => setShowCustomCity(false)}
@@ -436,7 +434,8 @@ export default function FilterDrawer({
                   </SelectContent>
                 </Select>
                 <Button
-                  btnColor='secondary'
+                  variant={'outlined'}
+                  color='input'
                   size='icon'
                   className='max-h-[35px]'
                   onClick={() =>
@@ -459,14 +458,17 @@ export default function FilterDrawer({
         {/* Bottom Action Buttons */}
         <div className='flex gap-2 mt-2 mb-1 px-1'>
           <Button
+            variant={'contained'}
+            color='secondary'
             onClick={applyFilters}
             className='w-1/2'
+            data-filter-action='apply'
           >
             Apply Filters
           </Button>
           <Button
-            variant='outline'
-            btnColor={'outlineSecondary'}
+            variant='outlined'
+            color={'primary'}
             onClick={onClose}
             className='w-1/2'
           >

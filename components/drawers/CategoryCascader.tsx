@@ -115,7 +115,8 @@ const CategoryCascader: React.FC<CategoryCascaderProps> = ({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
-          variant={'outline'}
+          variant={'outlined'}
+          color={'input'}
           className={`w-full justify-between bg-transparent px-3 ${
             className || ''
           }`}

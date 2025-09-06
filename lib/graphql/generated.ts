@@ -30,6 +30,16 @@ export enum BillingCycle {
   Yearly = 'YEARLY'
 }
 
+export type Business = {
+  __typename?: 'Business';
+  activeUntil?: Maybe<Scalars['String']['output']>;
+  email: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  name: Scalars['String']['output'];
+  password: Scalars['String']['output'];
+  storeBranding?: Maybe<StoreBranding>;
+};
+
 export type Category = {
   __typename?: 'Category';
   id: Scalars['ID']['output'];
@@ -107,6 +117,7 @@ export type Mutation = {
   markListingAsSold: Listing;
   reactivateSubscription: Subscription;
   register: AuthResponse;
+  updateBusinessAndBranding?: Maybe<Business>;
   updateListing: Listing;
   updateListingDescription: Listing;
   updateListingPrice: Listing;
@@ -191,6 +202,12 @@ export type MutationRegisterArgs = {
   email: Scalars['String']['input'];
   password: Scalars['String']['input'];
   username: Scalars['String']['input'];
+};
+
+
+export type MutationUpdateBusinessAndBrandingArgs = {
+  branding: UpdateStoreBrandingInput;
+  business: UpdateBusinessInput;
 };
 
 
@@ -620,6 +637,12 @@ export type TrustRating = {
   verificationScore: Scalars['Float']['output'];
 };
 
+export type UpdateBusinessInput = {
+  businessId: Scalars['ID']['input'];
+  contactNumber?: InputMaybe<Scalars['String']['input']>;
+  email?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type UpdateListingInput = {
   categoryId?: InputMaybe<Scalars['ID']['input']>;
   cityId?: InputMaybe<Scalars['ID']['input']>;
@@ -630,6 +653,12 @@ export type UpdateListingInput = {
   images?: InputMaybe<Array<Scalars['String']['input']>>;
   price?: InputMaybe<Scalars['Float']['input']>;
   title?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type UpdateStoreBrandingInput = {
+  bannerUrl?: InputMaybe<Scalars['String']['input']>;
+  brandingUserId: Scalars['ID']['input'];
+  primaryColor?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type User = {

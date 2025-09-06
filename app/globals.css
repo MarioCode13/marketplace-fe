@@ -8,13 +8,14 @@
   --secondary-background: #82a8c6;
   --foreground: #092368; /* Deep blue */
   --muted-foreground: #0922684a;
-  --primary: #5ca9dc; /* Stronger blue */
-  --primary-hover: #66afebbb;
+  --primary: #347197; /* Stronger blue */
+  --primary-hover: #306189;
+  --contrast: #051235;
   --secondary: #d3ebfb; /* Pale sky blue */
-  --secondary-hover:#b9dff8;
+  --secondary-hover:#4db2f6;
   --accent: #15d0fa; /* Golden yellow */
   --popover-background:rgba(211, 235, 251, 1);
-  --radius-sm: 4px;
+  --radius-sm: 6px;
   --radius-md: 8px;
   --radius-lg: 12px;
   --radius-full: 50%;
@@ -28,6 +29,7 @@
   --muted-foreground: #d3ceef45;
   --primary: #376dae; /* Medium pale blue */
   --primary-hover: #376caebb;
+  --contrast: #e6e1ff;
   --secondary: #252e4d; /* Dark navy */
   --secondary-hover: #202946;
   --accent: #15d0fac5; /* Soft yellow */
