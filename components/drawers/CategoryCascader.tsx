@@ -117,7 +117,7 @@ const CategoryCascader: React.FC<CategoryCascaderProps> = ({
         <Button
           variant={'outlined'}
           color={'input'}
-          className={`w-full justify-between bg-transparent px-3 ${
+          className={`w-full justify-between bg-transparent px-3  ${
             className || ''
           }`}
         >
@@ -132,7 +132,7 @@ const CategoryCascader: React.FC<CategoryCascaderProps> = ({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        className='min-w-[220px] max-h-96 overflow-auto bg-secondary'
+        className='min-w-[220px] max-h-96 overflow-auto bg-popover'
         aria-label='Category selection menu'
       >
         {renderMenu(

@@ -377,6 +377,8 @@ export default function CompleteProfilePage() {
           <Button
             type='submit'
             className='w-full'
+            variant={'contained'}
+            color={'primary'}
             onClick={() => router.push('/profile')}
           >
             Save & Continue

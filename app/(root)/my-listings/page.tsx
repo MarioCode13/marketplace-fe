@@ -126,7 +126,12 @@ export default function MyListingsPage() {
               </div>
               <div className='flex items-center gap-4'>
                 <Link href='/sell'>
-                  <Button color={'secondary'}>Sell New Item</Button>
+                  <Button
+                    color={'secondary'}
+                    variant={'contained'}
+                  >
+                    Sell New Item
+                  </Button>
                 </Link>
               </div>
             </div>

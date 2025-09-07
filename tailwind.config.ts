@@ -20,6 +20,8 @@ export default {
 				secondary: "var(--secondary)",
 				secondaryHover: "var(--secondary-hover)",
 				accent: "var(--accent)",
+				success: "var(--success)",
+				font: "var(--font)",
 				dark: '#000000',
 				light: '#ffffff',
 				border: 'hsl(var(--border))',
@@ -53,6 +55,13 @@ export default {
 			},
 			animation: {
 				'pulse-fast': 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+			},
+			boxShadow: {
+				sm: "var(--shadow-sm)",
+				md: "var(--shadow-md)",
+				lg: "var(--shadow-lg)",
+				tab: "var(--shadow-tab-active)",
+				"tab-inactive": "var(--shadow-tab-inactive)",
 			},
 		}
 	},

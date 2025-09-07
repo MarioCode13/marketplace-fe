@@ -226,9 +226,9 @@ export default function TransactionsPage() {
 
         <Tabs
           defaultValue='purchases'
-          className='w-full'
+          className='w-full '
         >
-          <TabsList className='grid w-full grid-cols-2'>
+          <TabsList className='grid w-full grid-cols-2 gap-4'>
             <TabsTrigger
               value='purchases'
               className='flex items-center gap-2'

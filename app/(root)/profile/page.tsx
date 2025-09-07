@@ -130,7 +130,7 @@ export default function Profile() {
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <CheckCircle className='text-green-500 w-5 h-5 ml-2 cursor-pointer hover:scale-110' />
+                    <CheckCircle className='text-success w-5 h-5 ml-2 cursor-pointer hover:scale-110' />
                   </TooltipTrigger>
                   <TooltipContent side='top'>
                     <p>Profile complete</p>
@@ -210,6 +210,8 @@ export default function Profile() {
               <Button
                 type='submit'
                 className='w-full'
+                variant={'outlined'}
+                color={'primary'}
               >
                 Save Changes
               </Button>
@@ -223,6 +225,8 @@ export default function Profile() {
                 <strong>Email:</strong> {user.email}
               </p>
               <Button
+                variant={'contained'}
+                color={'primary'}
                 className='w-full mt-3'
                 onClick={handleEdit}
               >
@@ -233,6 +237,7 @@ export default function Profile() {
           {!profileComplete && (
             <Button
               color={'secondary'}
+              variant={'contained'}
               className='w-full mt-6'
               onClick={() => router.push('/profile/complete')}
             >

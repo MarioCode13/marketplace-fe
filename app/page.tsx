@@ -163,7 +163,7 @@ export default function Home() {
             </Button>
             <Button
               onClick={() => router.push('/sell')}
-              className=' text-lg font-semibold shadow-lg   hover:shadow-xl transition-all duration-300 transform hover:scale-105'
+              className=' text-lg  shadow-lg   hover:shadow-xl transition-all duration-300 transform hover:scale-105'
               size='lg'
               variant='outlined'
               color='gradient'
@@ -248,7 +248,7 @@ export default function Home() {
             </Button>
             <Button
               onClick={() => router.push('/sell')}
-              className='!text-[#e6e1ff] px-8 py-4 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105'
+              className='!text-[#e6e1ff] px-8 py-4 text-lg   shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105'
               size='lg'
               variant='outlined'
               color='gradient'

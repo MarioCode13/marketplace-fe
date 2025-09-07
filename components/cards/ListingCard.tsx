@@ -91,14 +91,14 @@ export default function ListingCard({
             {listing.title}
           </h2>
           <p
-            className='text-gray-600 line-clamp-2 min-h-[48px]'
-            style={{ color: textColor }}
+            className='text-foreground line-clamp-2 min-h-[48px]'
+            style={{ color: themeColor ? textColor : '' }}
           >
             {listing.description}
           </p>
           <p
             className={`font-bold ${
-              listing.sold ? 'text-gray-500 line-through' : 'text-green-500'
+              listing.sold ? 'text-gray-500 line-through' : 'text-success'
             }`}
             data-testid='listing-price'
           >
@@ -134,7 +134,7 @@ export default function ListingCard({
           </div>
           <p
             className='text-sm text-gray-500 mt-2'
-            style={{ color: textColor }}
+            style={{ color: themeColor ? textColor : '' }}
           >
             {dayjs(listing.createdAt).format('DD MMM YYYY')}
           </p>

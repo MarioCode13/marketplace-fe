@@ -328,6 +328,7 @@ export default function FilterDrawer({
                       updateFilter('cityId', cityId)
                       // Optionally store cityLabel for display, but do not touch customCity
                     }}
+                    noCustomCity
                     onCantFindCity={() => setShowCustomCity(true)}
                   />
                 )}

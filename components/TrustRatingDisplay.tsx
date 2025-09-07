@@ -174,7 +174,7 @@ export const TrustRatingDisplay: React.FC<TrustRatingDisplayProps> = ({
         )}
 
         {/* Stats */}
-        <div className='grid grid-cols-2 gap-4 pt-2 border-t'>
+        <div className='grid grid-cols-2 gap-4 pt-4 '>
           <div className='text-center'>
             <div className='text-lg font-semibold'>
               {trustRating.totalReviews}
@@ -182,7 +182,7 @@ export const TrustRatingDisplay: React.FC<TrustRatingDisplayProps> = ({
             <div className='text-xs text-muted-foreground'>Total Reviews</div>
           </div>
           <div className='text-center'>
-            <div className='text-lg font-semibold text-green-600'>
+            <div className='text-lg font-semibold text-success'>
               {trustRating.totalReviews > 0
                 ? Math.round(
                     (trustRating.positiveReviews / trustRating.totalReviews) *

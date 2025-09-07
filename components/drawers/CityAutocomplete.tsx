@@ -17,6 +17,7 @@ interface CityAutocompleteProps {
   label?: string
   placeholder?: string
   displayValue?: string
+  noCustomCity?: boolean
 }
 
 export default function CityAutocomplete({
@@ -25,6 +26,7 @@ export default function CityAutocomplete({
   label = 'City',
   placeholder = 'Type to search cities...',
   displayValue,
+  noCustomCity = false,
 }: CityAutocompleteProps) {
   const [input, setInput] = useState(displayValue || '')
   const [searchCities, { data, loading }] = useLazyQuery(SEARCH_CITIES)
@@ -85,11 +87,15 @@ export default function CityAutocomplete({
         !loading &&
         data?.searchCities?.length === 0 &&
         input.length > 1 && (
-          <div className='absolute z-10 w-full bg-secondary  border rounded-md shadow-md mt-1 px-4 py-2  flex flex-col gap-2'>
-            <p className='text-sm text-gray-500'>No cities found.</p>
-            {onCantFindCity && (
+          <div
+            onClick={() => setShowDropdown(false)}
+            className='absolute z-10 w-full bg-secondary border rounded-md shadow-md mt-1 px-4 py-2  flex flex-col gap-2'
+          >
+            <p className='text-sm text-constrast'>No cities found.</p>
+            {onCantFindCity && !noCustomCity && (
               <Button
                 color='primary'
+                variant={'contained'}
                 size='sm'
                 onClick={() => {
                   onCantFindCity()
