@@ -79,7 +79,7 @@ export default function Login() {
           <div className='space-y-3'>
             <Button
               type='submit'
-              variant={'default'}
+              variant={'contained'}
               className='w-full'
               disabled={loading}
             >
@@ -88,7 +88,7 @@ export default function Login() {
 
             <Button
               type='button'
-              btnColor='secondary'
+              color='secondary'
               className='w-full'
               onClick={() => router.push('/register')}
             >

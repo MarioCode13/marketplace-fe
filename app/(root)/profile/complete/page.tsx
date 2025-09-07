@@ -250,7 +250,7 @@ export default function CompleteProfilePage() {
                 />
                 <Button
                   type='button'
-                  variant='ghost'
+                  variant='text'
                   className='mt-1 text-xs text-blue-600 underline'
                   onClick={() => setShowCustomCity(false)}
                 >

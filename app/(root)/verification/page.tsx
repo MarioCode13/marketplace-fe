@@ -13,7 +13,7 @@ export default function VerificationDisclosurePage() {
         {/* Header */}
         <div className='flex items-center gap-4 mb-8'>
           <Button
-            variant='ghost'
+            variant='text'
             size='sm'
             onClick={() => router.back()}
           >

@@ -232,7 +232,7 @@ export default function Profile() {
           )}
           {!profileComplete && (
             <Button
-              btnColor={'secondary'}
+              color={'secondary'}
               className='w-full mt-6'
               onClick={() => router.push('/profile/complete')}
             >
@@ -274,7 +274,7 @@ export default function Profile() {
                 No trust rating available yet.
               </p>
               <Button
-                variant='outline'
+                variant='outlined'
                 size='sm'
                 className='mt-2'
                 onClick={() => router.push('/profile/complete')}
@@ -285,8 +285,8 @@ export default function Profile() {
           )}
 
           <Button
-            variant='outline'
-            btnColor='outlinePrimary'
+            variant='outlined'
+            color='primary'
             className='w-full mt-6'
             onClick={handleLogout}
           >

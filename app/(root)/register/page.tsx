@@ -181,7 +181,7 @@ export default function Register() {
           <div className='space-y-3'>
             <Button
               type='submit'
-              variant='default'
+              variant='contained'
               className='w-full'
               disabled={loading || !acceptedTerms}
             >
@@ -190,7 +190,7 @@ export default function Register() {
 
             <Button
               type='button'
-              btnColor='secondary'
+              color='secondary'
               className='w-full'
               onClick={() => router.push('/login')}
             >

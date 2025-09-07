@@ -223,7 +223,7 @@ export default function StorePage() {
               </h1>
               {isOwner && (
                 <Button
-                  variant={'ghost'}
+                  variant={'text'}
                   size={'icon'}
                   className='rounded-full '
                   title='Store Settings'
@@ -269,7 +269,7 @@ export default function StorePage() {
             <div className='flex items-center gap-4'>
               <Button
                 onClick={() => setIsFilterOpen(true)}
-                variant={'outline'}
+                variant={'outlined'}
                 size={'icon'}
                 className='rounded-full p-3'
               >
@@ -314,7 +314,7 @@ export default function StorePage() {
               </div>
               {hasActiveFilters() && (
                 <Button
-                  btnColor='secondary'
+                  color='secondary'
                   size='sm'
                   onClick={clearAllFilters}
                   className='text-sm mt-4'
@@ -366,7 +366,7 @@ export default function StorePage() {
               </p>
               {hasActiveFilters() && (
                 <Button
-                  btnColor='secondary'
+                  color='secondary'
                   onClick={clearAllFilters}
                   className='mt-2 '
                 >
@@ -389,7 +389,7 @@ export default function StorePage() {
                 onClick={handlePrev}
                 disabled={offset === 0}
                 size={'icon'}
-                variant={'outline'}
+                variant={'outlined'}
                 className='rounded-full disabled:opacity-50'
               >
                 <ChevronLeft />
@@ -406,7 +406,7 @@ export default function StorePage() {
               <Button
                 onClick={handleNext}
                 size={'icon'}
-                variant={'outline'}
+                variant={'outlined'}
                 disabled={offset + limit >= totalCount}
                 className='rounded-full disabled:opacity-50'
               >

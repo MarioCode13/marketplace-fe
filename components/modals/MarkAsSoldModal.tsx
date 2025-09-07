@@ -421,7 +421,7 @@ export default function MarkAsSoldModal({
                   </div>
                   <Button
                     type='button'
-                    variant='default'
+                    variant='contained'
                     size='sm'
                     onClick={handleChangeBuyer}
                   >
@@ -448,7 +448,7 @@ export default function MarkAsSoldModal({
           <div className='flex gap-3 justify-end'>
             <Button
               type='button'
-              variant='outline'
+              variant='outlined'
               onClick={onClose}
             >
               Cancel

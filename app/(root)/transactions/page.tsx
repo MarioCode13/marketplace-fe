@@ -181,7 +181,7 @@ export default function TransactionsPage() {
 
                 <Button
                   size='sm'
-                  variant='outline'
+                  variant='outlined'
                   onClick={() => {
                     /* TODO: Implement contact functionality */
                   }}

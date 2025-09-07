@@ -203,7 +203,7 @@ export default function SellPage() {
             You need to be logged in to sell items.
           </p>
           <Button
-            btnColor='secondary'
+            color='secondary'
             className='w-full'
             onClick={() => router.push('/login')}
           >
@@ -382,7 +382,7 @@ export default function SellPage() {
                 />
                 <Button
                   type='button'
-                  variant='ghost'
+                  variant='text'
                   className='mt-1 text-xs text-blue-600 underline'
                   onClick={() => setShowCustomCity(false)}
                 >
@@ -417,7 +417,7 @@ export default function SellPage() {
 
           <Button
             type='submit'
-            variant='default'
+            variant='contained'
             className='w-full'
             disabled={loading || uploading}
           >

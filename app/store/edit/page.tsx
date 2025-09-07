@@ -326,14 +326,14 @@ export default function EditStorePage() {
           </Button>
           <Button
             type='button'
-            btnColor='secondary'
+            color='secondary'
             onClick={() => router.push(`/store/${branding.slug}`)}
           >
             Cancel
           </Button>
           <Button
             type='button'
-            variant='outline'
+            variant='outlined'
             onClick={() => setShowPreview(true)}
           >
             Preview

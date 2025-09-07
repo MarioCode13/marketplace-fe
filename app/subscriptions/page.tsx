@@ -105,12 +105,12 @@ export default function SubscriptionsPage() {
           },
         }
       )
-      console.log('Fetch response:', res);
-      const url = await res.text();
-      console.log('PayFast URL:', url);
+      console.log('Fetch response:', res)
+      const url = await res.text()
+      console.log('PayFast URL:', url)
       window.location.href = url
     } catch (e) {
-      console.error('Failed to initiate payment:', e);
+      console.error('Failed to initiate payment:', e)
       alert('Failed to initiate payment. Please try again.')
     } finally {
       setLoadingTier(null)
@@ -187,7 +187,7 @@ export default function SubscriptionsPage() {
               </ul>
               <Button
                 disabled={!isPaid || loadingTier === tier.name}
-                variant={tier.highlight ? 'default' : 'outline'}
+                variant={tier.highlight ? 'contained' : 'outlined'}
                 className={`w-full py-2 text-base ${
                   tier.highlight
                     ? 'bg-blue-600 dark:bg-blue-700 text-white'

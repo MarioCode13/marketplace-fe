@@ -184,7 +184,7 @@ export default function ReviewModal({
           <div className='flex gap-2 pt-4'>
             <Button
               type='button'
-              variant='outline'
+              variant='outlined'
               onClick={onClose}
               className='flex-1'
               disabled={isSubmitting}

@@ -10,14 +10,15 @@ export const fetchCache = 'force-no-store'
 export const revalidate = 0
 
 type SearchParams = { [key: string]: string | string[] | undefined }
+type NextSearchParams = Promise<SearchParams> | undefined
 
-interface PageProps {
-  searchParams: SearchParams | Promise<SearchParams>
-}
-
-export default async function Page({ searchParams }: PageProps) {
-  // Ensure searchParams is resolved
-  const resolvedParams = await searchParams
+export default async function Page({
+  searchParams,
+}: {
+  searchParams?: NextSearchParams
+}) {
+  // Ensure searchParams is resolved and defaulted to empty object if undefined
+  const resolvedParams = (await searchParams) || {}
   const client = getServerApolloClient()
 
   // Helper function to safely get a single value from search params

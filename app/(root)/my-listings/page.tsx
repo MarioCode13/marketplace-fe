@@ -126,7 +126,7 @@ export default function MyListingsPage() {
               </div>
               <div className='flex items-center gap-4'>
                 <Link href='/sell'>
-                  <Button btnColor={'secondary'}>Sell New Item</Button>
+                  <Button color={'secondary'}>Sell New Item</Button>
                 </Link>
               </div>
             </div>
@@ -163,7 +163,7 @@ export default function MyListingsPage() {
                   onClick={handlePrev}
                   disabled={offset === 0}
                   size={'icon'}
-                  variant={'outline'}
+                  variant={'outlined'}
                   className='rounded-full disabled:opacity-50'
                 >
                   <ChevronLeft />
@@ -177,7 +177,7 @@ export default function MyListingsPage() {
                 <Button
                   onClick={handleNext}
                   size={'icon'}
-                  variant={'outline'}
+                  variant={'outlined'}
                   disabled={offset + limit >= totalCount}
                   className='rounded-full disabled:opacity-50'
                 >
@@ -215,8 +215,8 @@ export default function MyListingsPage() {
           </DialogHeader>
           <DialogFooter>
             <Button
-              btnColor={'outlinePrimary'}
-              variant='outline'
+              color={'primary'}
+              variant='outlined'
               onClick={handleDeleteCancel}
               disabled={isDeleting}
             >

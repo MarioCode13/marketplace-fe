@@ -221,7 +221,7 @@ export default function EditListingPage() {
             You need to be logged in to edit listings.
           </p>
           <Button
-            btnColor='secondary'
+            color='secondary'
             className='w-full'
             onClick={() => router.push('/login')}
           >
@@ -252,7 +252,7 @@ export default function EditListingPage() {
             Failed to load listing: {listingError.message}
           </p>
           <Button
-            btnColor='secondary'
+            color='secondary'
             className='w-full'
             onClick={() => router.push('/my-listings')}
           >
@@ -268,7 +268,7 @@ export default function EditListingPage() {
       <div className='w-full max-w-2xl py-8 px-6'>
         <div className='flex items-center justify-between gap-4 mb-6'>
           <Button
-            variant='ghost'
+            variant='text'
             size='sm'
             onClick={() => router.push(`/listings/${listingId}`)}
           >
@@ -362,7 +362,7 @@ export default function EditListingPage() {
                     />
                     <Button
                       type='button'
-                      variant='ghost'
+                      variant='text'
                       size={'sm'}
                       className='  text-xs mt-2'
                       onClick={() => setShowCustomCity(false)}
@@ -435,7 +435,7 @@ export default function EditListingPage() {
             <div className='flex gap-4 pt-4'>
               <Button
                 type='button'
-                variant='outline'
+                variant='outlined'
                 onClick={() => router.push(`/listings/${listingId}`)}
                 className='flex-1'
               >
