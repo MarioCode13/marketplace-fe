@@ -253,6 +253,15 @@ export default function Profile() {
             </Button>
           )}
 
+          {/* Configure Business CTA */}
+          <Button
+            className='w-full mt-3'
+            variant={'outlined'}
+            onClick={() => router.push('/business/edit')}
+          >
+            Configure Business
+          </Button>
+
           {/* Trust Rating Section */}
           {trustLoading ? (
             <div className='mt-6 p-4 border border-secondary rounded-lg'>
