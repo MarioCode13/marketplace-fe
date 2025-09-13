@@ -10,7 +10,7 @@ export const IS_STORE_SLUG_AVAILABLE = gql`
   }
 `
 
-export async function checkSlugAvailable(slug: string, client: ApolloClient<any>): Promise<{ valid: boolean; reason?: string }> {
+export async function checkSlugAvailable(slug: string, client: ApolloClient<object>): Promise<{ valid: boolean; reason?: string }> {
     const lowerSlug = slug.trim().toLowerCase()
     if (reservedSlugs.includes(lowerSlug)) {
         return { valid: false, reason: 'This slug is reserved or already in use.' }
