@@ -1,84 +1,61 @@
 'use client'
-
+import Image from 'next/image'
+import { Condition } from '@/lib/graphql/generated'
+import { useGetStoreBySlugFullQuery } from '@/lib/graphql/generated'
 import {
   useGetListingsQuery,
   useGetCategoriesQuery,
-  useGetStoreBySlugFullQuery,
-  Condition,
-  Category,
 } from '@/lib/graphql/generated'
-import { useParams, useRouter } from 'next/navigation'
 import ListingCard from '@/components/cards/ListingCard'
 import SkeletonListingCard from '@/components/cards/SkeletonListingCard'
 import FilterDrawer from '@/components/drawers/FilterDrawer'
-import Image from 'next/image'
-import {
-  Settings,
-  ListFilter,
-  Search,
-  ChevronLeft,
-  ChevronRight,
-} from 'lucide-react'
-import { useSelector } from 'react-redux'
-import { RootState } from '@/store/store'
-import { Button } from '@/components/ui/button'
+import { ListFilter, Search, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { notFound } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import { getTextColor } from '@/lib/utils'
 
-interface Filters {
-  categoryId?: string
-  minPrice?: number
-  maxPrice?: number
-  condition?: Condition
-  cityId?: string
-  customCity?: string
-  searchTerm?: string
-  minDate?: string
-  maxDate?: string
-  sortBy?: string
-  sortOrder?: 'asc' | 'desc'
-}
-
-function isCategory(c: unknown): c is Category {
-  return (
-    typeof c === 'object' &&
-    c !== null &&
-    'id' in c &&
-    typeof (c as Category).id === 'string' &&
-    'name' in c &&
-    typeof (c as Category).name === 'string'
-  )
-}
-
-export default function StorePage() {
+export default function ProStoreRoute() {
   const params = useParams()
-  const navigate = useRouter()
-  const slug = params?.slug as string
-  const currentUserId = useSelector(
-    (state: RootState) => state.auth.user?.userId
-  )
+  const slug = params?.storeSlug as string
 
-  // State for filtering and pagination
-  const [isFilterOpen, setIsFilterOpen] = useState(false)
-  const [filters, setFilters] = useState<Filters>({})
-  const [offset, setOffset] = useState(0)
-  const limit = 4
-
-  const {
-    data: storeData,
-    loading: storeLoading,
-    error: storeError,
-  } = useGetStoreBySlugFullQuery({
+  // Store data
+  const { data, loading, error } = useGetStoreBySlugFullQuery({
     variables: { slug },
     skip: !slug,
   })
+  const store = data?.storeBySlug
+  const isProStore = store?.planType === 'PRO_STORE'
+  const branding = store?.storeBranding
 
+  // Filters and listings
+  interface Filters {
+    categoryId?: string
+    minPrice?: number
+    maxPrice?: number
+    condition?: Condition
+    cityId?: string
+    customCity?: string
+    searchTerm?: string
+    minDate?: string
+    maxDate?: string
+    sortBy?: string
+    sortOrder?: 'asc' | 'desc'
+  }
+  const [isFilterOpen, setIsFilterOpen] = useState(false)
+  const [filters, setFilters] = useState<Filters>({})
+  const [offset, setOffset] = useState(0)
+  const limit = 8
+
+  // Categories for filter
   const { data: categoriesData } = useGetCategoriesQuery()
-
-  const categories: Category[] = (categoriesData?.getCategories || []).filter(
-    isCategory
+  const categories = (categoriesData?.getCategories || []).filter(
+    (c): c is { id: string; name: string } =>
+      !!c && typeof c.id === 'string' && typeof c.name === 'string'
   )
 
+  // Listings for this store
   const {
     data: listingsData,
     loading: listingsLoading,
@@ -87,76 +64,41 @@ export default function StorePage() {
     variables: {
       limit,
       offset,
-      userId: storeData?.storeBySlug?.id,
+      userId: store?.id,
       ...filters,
     },
-    skip: !storeData?.storeBySlug?.id,
+    skip: !store?.id,
   })
-
-  if (storeLoading)
-    return <div className='p-8 text-center'>Loading store...</div>
-  if (storeError)
-    return (
-      <div className='p-8 text-center text-red-500'>Error loading store.</div>
-    )
-  if (!storeData?.storeBySlug)
-    return <div className='p-8 text-center'>Store not found.</div>
-
-  const store = storeData.storeBySlug
-  const branding = store.storeBranding
   const listings = listingsData?.getListings?.listings || []
   const totalCount = listingsData?.getListings?.totalCount || 0
 
-  const planType = store.planType
-  const themeColor =
-    branding?.themeColor && planType === 'PRO_STORE'
-      ? branding.themeColor
-      : '#1f1b30'
-  const primaryColor = branding?.primaryColor
-    ? branding.primaryColor
-    : '#1f1b30'
-  const showBanner = planType === 'PRO_STORE' && branding?.bannerUrl
-  const badgeLabel =
-    planType === 'PRO_STORE'
-      ? 'Pro Store'
-      : planType === 'RESELLER'
-      ? 'Reseller'
-      : null
+  if (loading) return <div className='p-8 text-center'>Loading store...</div>
+  if (error || !store || !isProStore) return notFound()
 
-  const isOwner = currentUserId && store.id == currentUserId
+  // Theme colors
+  const themeColor = branding?.themeColor || '#1f1b30'
+  const primaryColor = branding?.primaryColor || '#1f1b30'
   const bgColor = branding?.lightOrDark === 'light' ? '#dde2e8' : '#121212'
   const textColor = getTextColor(bgColor)
 
-  const handleNext = () => {
-    if (offset + limit < totalCount) setOffset(offset + limit)
-  }
+  // Store details
+  const bannerUrl = branding?.bannerUrl
+  const logoUrl = branding?.logoUrl
+  const trustRating = store?.trustRating?.starRating?.toFixed(1)
+  const trustLevel = store?.trustRating?.trustLevel
+  const about = branding?.about
+  const storeName = branding?.storeName || store.username
+  const badgeLabel = 'Pro Store'
 
-  const handlePrev = () => {
-    if (offset - limit >= 0) setOffset(offset - limit)
-  }
-
-  const handleApplyFilters = (newFilters: {
-    categoryId?: string
-    minPrice?: number
-    maxPrice?: number
-    condition?: string
-    cityId?: string
-    customCity?: string
-    searchTerm?: string
-    minDate?: string
-    maxDate?: string
-    sortBy?: string
-    sortOrder?: 'asc' | 'desc'
-  }) => {
-    setFilters({
+  // Filter logic
+  const handleApplyFilters = (newFilters: Record<string, unknown>) => {
+    const convertedFilters: Filters = {
       ...newFilters,
-      condition: newFilters.condition
-        ? (newFilters.condition as Condition)
-        : undefined,
-    })
+      condition: newFilters.condition as Condition | undefined,
+    }
+    setFilters(convertedFilters)
     setOffset(0)
   }
-
   const hasActiveFilters = () => {
     return (
       Object.keys(filters).length > 0 &&
@@ -168,14 +110,30 @@ export default function StorePage() {
       )
     )
   }
-
   const clearAllFilters = () => {
     setFilters({})
     setOffset(0)
   }
+  const handleNext = () => {
+    if (offset + limit < totalCount) setOffset(offset + limit)
+  }
+  const handlePrev = () => {
+    if (offset - limit >= 0) setOffset(offset - limit)
+  }
 
   return (
     <div style={{ background: bgColor }}>
+      {bannerUrl && (
+        <div className='h-64 w-[100vw]  overflow-hidden mb-6'>
+          <Image
+            width={1200}
+            height={1200}
+            src={bannerUrl}
+            alt='Store banner'
+            className='w-full h-full object-cover'
+          />
+        </div>
+      )}
       <div className='max-w-5xl mx-auto p-4'>
         <FilterDrawer
           isOpen={isFilterOpen}
@@ -185,25 +143,13 @@ export default function StorePage() {
           currentFilters={filters}
         />
 
-        {showBanner && (
-          <div className='w-full h-48 rounded-lg overflow-hidden mb-4'>
-            <Image
-              width={1200}
-              height={1200}
-              src={branding.bannerUrl ?? ''}
-              alt='Store banner'
-              className='w-full h-full object-cover'
-            />
-          </div>
-        )}
-
         {/* Store Header */}
         <div className='flex items-center gap-4 mb-4'>
-          {branding?.logoUrl && (
+          {logoUrl && (
             <Image
               width={80}
               height={80}
-              src={branding.logoUrl}
+              src={logoUrl}
               alt='Store logo'
               className='w-20 h-20 rounded-full object-cover border'
               style={{
@@ -217,39 +163,21 @@ export default function StorePage() {
             <div className='flex items-center justify-between'>
               <h1
                 className='text-2xl font-bold'
-                style={{ color: branding?.primaryColor ?? 'unset' }}
+                style={{ color: primaryColor }}
               >
-                {branding?.storeName || store.username}
+                {storeName}
               </h1>
-              {isOwner && (
-                <Button
-                  variant={'text'}
-                  size={'icon'}
-                  className='rounded-full '
-                  title='Store Settings'
-                  onClick={() => navigate.push('/store/edit')}
-                >
-                  <Settings
-                    size={24}
-                    style={{
-                      color: textColor,
-                    }}
-                  />
-                </Button>
-              )}
             </div>
-            {branding?.about && (
-              <p className='text-gray-600 mt-1'>{branding.about}</p>
-            )}
+            {about && <p className='text-gray-600 mt-1'>{about}</p>}
             <div className='mt-2 flex items-center gap-2'>
-              {store.trustRating && (
+              {trustRating && (
                 <span className='text-yellow-500 font-semibold'>
-                  ★ {store.trustRating.starRating?.toFixed(1) || '-'}
+                  ★ {trustRating}
                 </span>
               )}
-              {store.trustRating?.trustLevel && (
+              {trustLevel && (
                 <span className='text-xs bg-gray-100 px-2 py-1 rounded text-black'>
-                  {store.trustRating.trustLevel}
+                  {trustLevel}
                 </span>
               )}
               {badgeLabel && (

@@ -67,7 +67,7 @@ export const GET_SELLER_PROFILE = gql`
       }
     }
   }
-`;
+`
 
 export const GET_MY_STORE_BRANDING = gql`
   query GetMyStoreBranding($userId: ID!) {
@@ -89,20 +89,3 @@ export const GET_MY_STORE_BRANDING = gql`
   }
 `;
 
-export const UPDATE_STORE_BRANDING = gql`
-  mutation UpdateStoreBranding($id: ID!, $slug: String, $logoUrl: String, $bannerUrl: String, $themeColor: String, $primaryColor: String, $secondaryColor: String, $lightOrDark: String, $about: String, $storeName: String) {
-    updateStoreBranding(id: $id, slug: $slug, logoUrl: $logoUrl, bannerUrl: $bannerUrl, themeColor: $themeColor, primaryColor: $primaryColor, secondaryColor: $secondaryColor, lightOrDark: $lightOrDark, about: $about, storeName: $storeName) {
-      storeBranding {
-        slug
-        logoUrl
-        bannerUrl
-        themeColor
-        primaryColor
-        secondaryColor
-        lightOrDark
-        about
-        storeName
-      }
-    }
-  }
-`; 

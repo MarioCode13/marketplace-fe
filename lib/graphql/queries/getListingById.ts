@@ -32,8 +32,11 @@ export const GET_LISTING_BY_ID = gql`
         username 
         profileImageUrl
         email
+        planType
         storeBranding {
           slug
+          storeName
+          logoUrl
         }
       }
     }

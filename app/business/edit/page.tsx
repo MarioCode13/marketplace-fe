@@ -1,4 +1,6 @@
 'use client'
+import { useApolloClient } from '@apollo/client'
+import { checkSlugAvailable } from '@/lib/utils/slugUtils'
 
 import { useQuery, useMutation } from '@apollo/client'
 import { useEffect, useState } from 'react'
@@ -20,11 +22,18 @@ import {
 import { Loader2, LoaderCircle, Users } from 'lucide-react'
 
 import { GET_MY_BUSINESS } from '@/lib/graphql/queries/getMyBusiness'
-import { UPDATE_BUSINESS_AND_BRANDING } from '@/lib/graphql/mutations/businessMutations'
+import { UPDATE_STORE_BRANDING } from '@/lib/graphql/mutations/businessMutations'
+import { BusinessUser } from '@/lib/graphql/generated'
 
 export default function BusinessEditPage() {
   const userId = useSelector((state: RootState) => state.auth.user?.userId)
   const router = useRouter()
+
+  const client = useApolloClient()
+  const [slugFocused, setSlugFocused] = useState(false)
+  const [slugValid, setSlugValid] = useState(true)
+  const [slugWarning, setSlugWarning] = useState<string | null>(null)
+  const [slugLoading, setSlugLoading] = useState(false)
 
   // Get business data
   const { data, loading } = useQuery(GET_MY_BUSINESS, {
@@ -58,12 +67,16 @@ export default function BusinessEditPage() {
     slug: '',
   })
 
-  const [updateBusinessAndBranding, { loading: saving }] = useMutation(UPDATE_BUSINESS_AND_BRANDING)
+  const [updateBusinessAndBranding, { loading: saving }] = useMutation(
+    UPDATE_STORE_BRANDING
+  )
 
   const [uploadingLogo, setUploadingLogo] = useState(false)
   const [uploadingBanner, setUploadingBanner] = useState(false)
   const [uploadLogoError, setUploadLogoError] = useState<string | null>(null)
-  const [uploadBannerError, setUploadBannerError] = useState<string | null>(null)
+  const [uploadBannerError, setUploadBannerError] = useState<string | null>(
+    null
+  )
 
   useEffect(() => {
     if (business) {
@@ -76,7 +89,7 @@ export default function BusinessEditPage() {
         postalCode: business.postalCode || '',
       })
     }
-    
+
     if (business?.storeBranding) {
       const branding = business.storeBranding
       setForm({
@@ -99,10 +112,17 @@ export default function BusinessEditPage() {
     setBusinessForm({ ...businessForm, [e.target.name]: e.target.value })
   }
 
-  const handleChange = (
+  const handleChange = async (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     setForm({ ...form, [e.target.name]: e.target.value })
+    if (e.target.name === 'slug') {
+      setSlugLoading(true)
+      const result = await checkSlugAvailable(e.target.value, client)
+      setSlugValid(result.valid)
+      setSlugWarning(result.reason || null)
+      setSlugLoading(false)
+    }
   }
 
   const handleColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -160,7 +180,9 @@ export default function BusinessEditPage() {
         const url = await res.text()
         setForm((prev) => ({ ...prev, bannerUrl: url }))
       } catch (err: unknown) {
-        setUploadBannerError(err instanceof Error ? err.message : 'Upload failed')
+        setUploadBannerError(
+          err instanceof Error ? err.message : 'Upload failed'
+        )
       } finally {
         setUploadingBanner(false)
       }
@@ -169,7 +191,7 @@ export default function BusinessEditPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (!business) {
       console.error('No business found')
       return
@@ -197,10 +219,10 @@ export default function BusinessEditPage() {
             lightOrDark: form.lightOrDark,
             about: form.about,
             storeName: form.storeName,
-          }
-        }
+          },
+        },
       })
-      
+
       router.push(`/store/${form.slug}`)
     } catch (error) {
       console.error('Error updating business:', error)
@@ -211,7 +233,9 @@ export default function BusinessEditPage() {
     return (
       <div className='flex flex-col items-center justify-center min-h-[40vh]'>
         <LoaderCircle className='animate-spin text-primary w-10 h-10 mb-4' />
-        <span className='text-lg text-gray-600'>Loading business settings...</span>
+        <span className='text-lg text-gray-600'>
+          Loading business settings...
+        </span>
       </div>
     )
 
@@ -220,7 +244,9 @@ export default function BusinessEditPage() {
       <div className='max-w-5xl mx-auto p-6'>
         <h1 className='text-2xl font-bold mb-4'>Business Settings</h1>
         <div className='text-center py-8'>
-          <p className='text-lg text-gray-600 mb-4'>No business found. Create one to get started.</p>
+          <p className='text-lg text-gray-600 mb-4'>
+            No business found. Create one to get started.
+          </p>
           <Button onClick={() => router.push('/business/create')}>
             Create Business
           </Button>
@@ -233,39 +259,70 @@ export default function BusinessEditPage() {
     <div className='max-w-5xl mx-auto p-6'>
       <h1 className='text-2xl font-bold mb-4'>Business Settings</h1>
 
-      <form onSubmit={handleSubmit} className='space-y-8'>
+      <form
+        onSubmit={handleSubmit}
+        className='space-y-8'
+      >
         <div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
           {/* Business Details */}
           <div className='space-y-4'>
             <h2 className='text-xl font-semibold'>Business Details</h2>
             <div>
               <label className='block font-medium mb-1'>Business Name</label>
-              <Input value={business.name} disabled />
+              <Input
+                value={business.name}
+                disabled
+              />
             </div>
             <div>
               <label className='block font-medium mb-1'>Business Email</label>
-              <Input name='email' value={businessForm.email} onChange={handleBusinessChange} />
+              <Input
+                name='email'
+                value={businessForm.email}
+                onChange={handleBusinessChange}
+              />
             </div>
             <div>
               <label className='block font-medium mb-1'>Contact Number</label>
-              <Input name='contactNumber' value={businessForm.contactNumber} onChange={handleBusinessChange} />
+              <Input
+                name='contactNumber'
+                value={businessForm.contactNumber}
+                onChange={handleBusinessChange}
+              />
             </div>
             <div>
               <label className='block font-medium mb-1'>Address Line 1</label>
-              <Input name='addressLine1' value={businessForm.addressLine1} onChange={handleBusinessChange} />
+              <Input
+                name='addressLine1'
+                value={businessForm.addressLine1}
+                onChange={handleBusinessChange}
+              />
             </div>
             <div>
               <label className='block font-medium mb-1'>Address Line 2</label>
-              <Input name='addressLine2' value={businessForm.addressLine2} onChange={handleBusinessChange} />
+              <Input
+                name='addressLine2'
+                value={businessForm.addressLine2}
+                onChange={handleBusinessChange}
+              />
             </div>
             <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
               <div>
                 <label className='block font-medium mb-1'>City</label>
-                <Input name='cityId' value={businessForm.cityId} onChange={handleBusinessChange} placeholder='City ID' />
+                <Input
+                  name='cityId'
+                  value={businessForm.cityId}
+                  onChange={handleBusinessChange}
+                  placeholder='City ID'
+                />
               </div>
               <div>
                 <label className='block font-medium mb-1'>Postal Code</label>
-                <Input name='postalCode' value={businessForm.postalCode} onChange={handleBusinessChange} />
+                <Input
+                  name='postalCode'
+                  value={businessForm.postalCode}
+                  onChange={handleBusinessChange}
+                />
               </div>
             </div>
           </div>
@@ -275,7 +332,49 @@ export default function BusinessEditPage() {
             <h2 className='text-xl font-semibold'>Store Branding</h2>
             <div>
               <label className='block font-medium mb-1'>Store Name</label>
-              <Input name='storeName' value={form.storeName} onChange={handleChange} required />
+              <Input
+                name='storeName'
+                value={form.storeName}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div>
+              <label className='block font-medium mb-1'>Store Slug (URL)</label>
+              <Input
+                name='slug'
+                value={form.slug}
+                onChange={handleChange}
+                required
+                placeholder='e.g. my-cool-store'
+                onFocus={() => setSlugFocused(true)}
+                onBlur={() => setSlugFocused(false)}
+              />
+              {slugFocused && (
+                <div className='text-xs mt-1'>
+                  <span className='text-yellow-700'>
+                    <strong>SEO Tip:</strong> Choose a short, memorable, and
+                    relevant slug for your store URL. Avoid spaces and special
+                    characters. Good slugs help your store appear higher in
+                    search results.
+                    <br />
+                    <strong>Warning:</strong> Changing your slug after your
+                    store is live may affect your search engine ranking and
+                    break existing links to your store. Only change it if
+                    absolutely necessary.
+                  </span>
+                  {slugLoading && (
+                    <span className='text-gray-500 ml-2'>
+                      Checking availability...
+                    </span>
+                  )}
+                  {!slugLoading && slugWarning && (
+                    <span className='block text-red-600 mt-1'>
+                      {slugWarning}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
             <div>
               <label className='block font-medium mb-1'>About</label>
@@ -291,24 +390,48 @@ export default function BusinessEditPage() {
               {isProStore && (
                 <div>
                   <label className='block font-medium mb-1'>Theme Color</label>
-                  <input type='color' name='themeColor' value={form.themeColor} onChange={handleColorChange} />
+                  <input
+                    type='color'
+                    name='themeColor'
+                    value={form.themeColor}
+                    onChange={handleColorChange}
+                  />
                 </div>
               )}
               <div>
                 <label className='block font-medium mb-1'>Primary Color</label>
-                <input type='color' name='primaryColor' value={form.primaryColor} onChange={handleChange} />
+                <input
+                  type='color'
+                  name='primaryColor'
+                  value={form.primaryColor}
+                  onChange={handleChange}
+                />
               </div>
               {isProStore && (
                 <div>
-                  <label className='block font-medium mb-1'>Secondary Color</label>
-                  <input type='color' name='secondaryColor' value={form.secondaryColor} onChange={handleChange} />
+                  <label className='block font-medium mb-1'>
+                    Secondary Color
+                  </label>
+                  <input
+                    type='color'
+                    name='secondaryColor'
+                    value={form.secondaryColor}
+                    onChange={handleChange}
+                  />
                 </div>
               )}
             </div>
             {isProStore && (
               <div>
-                <label className='block font-medium mb-1'>Light or Dark Theme</label>
-                <Select key={form.lightOrDark} name='lightOrDark' value={form.lightOrDark} onValueChange={handleSelectChange}>
+                <label className='block font-medium mb-1'>
+                  Light or Dark Theme
+                </label>
+                <Select
+                  key={form.lightOrDark}
+                  name='lightOrDark'
+                  value={form.lightOrDark}
+                  onValueChange={handleSelectChange}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder='Select theme' />
                   </SelectTrigger>
@@ -321,34 +444,69 @@ export default function BusinessEditPage() {
             )}
             <div>
               <label className='block font-medium mb-1'>Logo</label>
-              <FileInput accept='image/*' onChange={handleLogoChange} loading={uploadingLogo} id='logo-upload' disabled={uploadingLogo} />
+              <FileInput
+                accept='image/*'
+                onChange={handleLogoChange}
+                loading={uploadingLogo}
+                id='logo-upload'
+                disabled={uploadingLogo}
+              />
               {uploadingLogo && (
                 <div className='flex items-center gap-2 text-sm text-gray-500 mt-2'>
                   <Loader2 className='animate-spin w-4 h-4' />
                 </div>
               )}
               {form.logoUrl && !uploadLogoError && (
-                <Image src={form.logoUrl} alt='Logo' width={90} height={90} className='w-20 h-20 rounded-full object-cover mt-2' />
+                <Image
+                  src={form.logoUrl}
+                  alt='Logo'
+                  width={90}
+                  height={90}
+                  className='w-20 h-20 rounded-full object-cover mt-2'
+                />
               )}
             </div>
             <div>
               <label className='block font-medium mb-1'>Banner</label>
-              <FileInput accept='image/*' onChange={handleBannerChange} loading={uploadingBanner} id='banner-upload' disabled={uploadingBanner} />
+              <FileInput
+                accept='image/*'
+                onChange={handleBannerChange}
+                loading={uploadingBanner}
+                id='banner-upload'
+                disabled={uploadingBanner}
+              />
               {uploadingBanner && (
                 <div className='flex items-center gap-2 text-sm text-gray-500 mt-2'>
                   <Loader2 className='animate-spin w-4 h-4' />
                 </div>
               )}
               {form.bannerUrl && !uploadBannerError && (
-                <Image src={form.bannerUrl} alt='Banner' width={1000} height={200} className='h-24 mt-2 w-full object-cover' />
+                <Image
+                  src={form.bannerUrl}
+                  alt='Banner'
+                  width={1000}
+                  height={200}
+                  className='h-24 mt-2 w-full object-cover'
+                />
               )}
             </div>
           </div>
         </div>
 
         <div className='flex gap-2'>
-          <Button type='submit' disabled={saving}>{saving ? 'Saving...' : 'Save Changes'}</Button>
-          <Button type='button' color='secondary' onClick={() => router.push(`/store/${form.slug}`)}>Cancel</Button>
+          <Button
+            type='submit'
+            disabled={saving || !slugValid}
+          >
+            {saving ? 'Saving...' : 'Save Changes'}
+          </Button>
+          <Button
+            type='button'
+            color='secondary'
+            onClick={() => router.push(`/store/${form.slug}`)}
+          >
+            Cancel
+          </Button>
         </div>
       </form>
 
@@ -358,18 +516,31 @@ export default function BusinessEditPage() {
           <Users className='w-5 h-5' />
           <h2 className='text-xl font-semibold'>Team</h2>
         </div>
-        <p className='text-sm text-muted-foreground mb-4'>Invite and manage users who can create listings for this business. Only the owner can change business details.</p>
-        
+        <p className='text-sm text-muted-foreground mb-4'>
+          Invite and manage users who can create listings for this business.
+          Only the owner can change business details.
+        </p>
+
         {business.businessUsers && business.businessUsers.length > 0 && (
           <div className='space-y-2'>
-            {business.businessUsers.map((businessUser) => (
-              <div key={businessUser.id} className='flex items-center justify-between p-2 border rounded'>
+            {business.businessUsers.map((businessUser: BusinessUser) => (
+              <div
+                key={businessUser.id}
+                className='flex items-center justify-between p-2 border rounded'
+              >
                 <div>
-                  <span className='font-medium'>{businessUser.user.username}</span>
-                  <span className='text-sm text-gray-500 ml-2'>({businessUser.role})</span>
+                  <span className='font-medium'>
+                    {businessUser.user.username}
+                  </span>
+                  <span className='text-sm text-gray-500 ml-2'>
+                    ({businessUser.role})
+                  </span>
                 </div>
                 {businessUser.role !== 'OWNER' && (
-                  <Button variant='outline' size='sm'>
+                  <Button
+                    variant='outlined'
+                    size='sm'
+                  >
                     Remove
                   </Button>
                 )}
@@ -377,9 +548,12 @@ export default function BusinessEditPage() {
             ))}
           </div>
         )}
-        
+
         <div className='mt-4'>
-          <Button variant='outlined' disabled>
+          <Button
+            variant='outlined'
+            disabled
+          >
             Add team member (coming soon)
           </Button>
         </div>

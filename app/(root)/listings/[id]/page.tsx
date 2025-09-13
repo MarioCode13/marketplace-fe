@@ -185,9 +185,17 @@ const Page = () => {
             <Card>
               <CardContent className='p-4'>
                 <div className='flex items-center gap-4 mb-3'>
-                  {listing.user.profileImageUrl === null ? (
-                    <User className='w-6 h-6' />
-                  ) : (
+                  {/* Show store logo if user has a store with branding, otherwise show user profile image */}
+                  {listing.user.planType === 'PRO_STORE' ||
+                  listing.user.planType === 'RESELLER' ? (
+                    <Image
+                      src={generateImageUrl(listing.user.storeBranding.logoUrl)}
+                      height={50}
+                      width={50}
+                      alt='store logo'
+                      className='rounded-full w-12 h-12 object-cover'
+                    />
+                  ) : listing.user.profileImageUrl ? (
                     <Image
                       src={generateImageUrl(listing.user.profileImageUrl)}
                       height={50}
@@ -195,17 +203,36 @@ const Page = () => {
                       alt='profile'
                       className='rounded-full w-12 h-12 object-cover'
                     />
+                  ) : (
+                    <User className='w-12 h-12 p-2 bg-gray-100 rounded-full' />
                   )}
 
                   <div className='flex-1'>
-                    <p className='text-gray-500 text-sm'>Seller</p>
-                    {listing.user.storeBranding?.slug ? (
+                    <p className='text-gray-500 text-sm'>
+                      {listing.user.planType === 'PRO_STORE' ||
+                      listing.user.planType === 'RESELLER'
+                        ? 'Store'
+                        : 'Seller'}
+                    </p>
+                    {listing.user.planType === 'PRO_STORE' &&
+                    listing.user.storeBranding?.slug ? (
                       <Link
-                        href={`/store/${listing.user.storeBranding.slug}`}
+                        href={`/${listing.user.storeBranding.slug}`}
                         className='hover:underline'
                       >
                         <h2 className='text-lg font-semibold'>
-                          {listing.user.username}
+                          {listing.user.storeBranding?.storeName ||
+                            listing.user.username}
+                        </h2>
+                      </Link>
+                    ) : listing.user.planType === 'RESELLER' ? (
+                      <Link
+                        href={`/store/${listing.user.id}`}
+                        className='hover:underline'
+                      >
+                        <h2 className='text-lg font-semibold'>
+                          {listing.user.storeBranding?.storeName ||
+                            listing.user.username}
                         </h2>
                       </Link>
                     ) : (
@@ -244,10 +271,19 @@ const Page = () => {
                     </div>
                   ) : (
                     <div className='flex gap-2'>
-                      {listing.user.storeBranding?.slug ? (
-                        <Link
-                          href={`/store/${listing.user.storeBranding.slug}`}
-                        >
+                      {listing.user.planType === 'PRO_STORE' &&
+                      listing.user.storeBranding?.slug ? (
+                        <Link href={`/${listing.user.storeBranding.slug}`}>
+                          <Button
+                            variant='outlined'
+                            className='flex items-center gap-2'
+                          >
+                            <User className='w-4 h-4' />
+                            View Pro Store
+                          </Button>
+                        </Link>
+                      ) : listing.user.planType === 'RESELLER' ? (
+                        <Link href={`/store/${listing.user.id}`}>
                           <Button
                             variant='outlined'
                             className='flex items-center gap-2'

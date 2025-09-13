@@ -43,15 +43,22 @@ export type Business = {
   name: Scalars['String']['output'];
   owner: User;
   postalCode?: Maybe<Scalars['String']['output']>;
+  slug?: Maybe<Scalars['String']['output']>;
   storeBranding?: Maybe<StoreBranding>;
 };
 
 export type BusinessUser = {
   __typename?: 'BusinessUser';
   id: Scalars['ID']['output'];
-  role: Scalars['String']['output'];
+  role: BusinessUserRole;
   user: User;
 };
+
+export enum BusinessUserRole {
+  Contributor = 'CONTRIBUTOR',
+  Manager = 'MANAGER',
+  Owner = 'OWNER'
+}
 
 export type Category = {
   __typename?: 'Category';
@@ -83,6 +90,32 @@ export type Country = {
   code: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
+};
+
+export type CreateBusinessInput = {
+  addressLine1?: InputMaybe<Scalars['String']['input']>;
+  addressLine2?: InputMaybe<Scalars['String']['input']>;
+  branding?: InputMaybe<CreateStoreBrandingInput>;
+  cityId?: InputMaybe<Scalars['ID']['input']>;
+  contactNumber?: InputMaybe<Scalars['String']['input']>;
+  email: Scalars['String']['input'];
+  name: Scalars['String']['input'];
+  postalCode?: InputMaybe<Scalars['String']['input']>;
+  slug?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type CreateStoreBrandingInput = {
+  about?: InputMaybe<Scalars['String']['input']>;
+  bannerUrl?: InputMaybe<Scalars['String']['input']>;
+  cardTextColor?: InputMaybe<Scalars['String']['input']>;
+  lightOrDark?: InputMaybe<Scalars['String']['input']>;
+  logoUrl?: InputMaybe<Scalars['String']['input']>;
+  primaryColor?: InputMaybe<Scalars['String']['input']>;
+  secondaryColor?: InputMaybe<Scalars['String']['input']>;
+  slug?: InputMaybe<Scalars['String']['input']>;
+  storeName?: InputMaybe<Scalars['String']['input']>;
+  textColor?: InputMaybe<Scalars['String']['input']>;
+  themeColor?: InputMaybe<Scalars['String']['input']>;
 };
 
 export enum DocumentType {
@@ -134,7 +167,6 @@ export type Mutation = {
   register: AuthResponse;
   transferBusinessOwnership: Scalars['Boolean']['output'];
   unlinkUserFromBusiness: Scalars['Boolean']['output'];
-  updateBusinessAndBranding: Business;
   updateListing: Listing;
   updateListingDescription: Listing;
   updateListingPrice: Listing;
@@ -159,13 +191,7 @@ export type MutationCompleteTransactionArgs = {
 
 
 export type MutationCreateBusinessArgs = {
-  addressLine1?: InputMaybe<Scalars['String']['input']>;
-  addressLine2?: InputMaybe<Scalars['String']['input']>;
-  cityId?: InputMaybe<Scalars['ID']['input']>;
-  contactNumber?: InputMaybe<Scalars['String']['input']>;
-  email: Scalars['String']['input'];
-  name: Scalars['String']['input'];
-  postalCode?: InputMaybe<Scalars['String']['input']>;
+  input: CreateBusinessInput;
 };
 
 
@@ -217,7 +243,7 @@ export type MutationDeleteReviewArgs = {
 
 export type MutationLinkUserToBusinessArgs = {
   businessId: Scalars['ID']['input'];
-  role: Scalars['String']['input'];
+  role: BusinessUserRole;
   userId: Scalars['ID']['input'];
 };
 
@@ -252,12 +278,6 @@ export type MutationUnlinkUserFromBusinessArgs = {
 };
 
 
-export type MutationUpdateBusinessAndBrandingArgs = {
-  branding: UpdateStoreBrandingInput;
-  business: UpdateBusinessInput;
-};
-
-
 export type MutationUpdateListingArgs = {
   input: UpdateListingInput;
 };
@@ -289,16 +309,8 @@ export type MutationUpdateReviewArgs = {
 
 
 export type MutationUpdateStoreBrandingArgs = {
-  about?: InputMaybe<Scalars['String']['input']>;
-  bannerUrl?: InputMaybe<Scalars['String']['input']>;
   id: Scalars['ID']['input'];
-  lightOrDark?: InputMaybe<Scalars['String']['input']>;
-  logoUrl?: InputMaybe<Scalars['String']['input']>;
-  primaryColor?: InputMaybe<Scalars['String']['input']>;
-  secondaryColor?: InputMaybe<Scalars['String']['input']>;
-  slug?: InputMaybe<Scalars['String']['input']>;
-  storeName?: InputMaybe<Scalars['String']['input']>;
-  themeColor?: InputMaybe<Scalars['String']['input']>;
+  input?: InputMaybe<UpdateStoreBrandingInput>;
 };
 
 
@@ -386,6 +398,7 @@ export type Query = {
   getUserVerificationDocuments: Array<VerificationDocument>;
   hasActiveSubscription: Scalars['Boolean']['output'];
   hasBoughtListing: Scalars['Boolean']['output'];
+  isStoreSlugAvailable: Scalars['Boolean']['output'];
   listingsByUser: Array<Listing>;
   me?: Maybe<User>;
   myBusiness?: Maybe<Business>;
@@ -555,6 +568,11 @@ export type QueryHasBoughtListingArgs = {
 };
 
 
+export type QueryIsStoreSlugAvailableArgs = {
+  slug: Scalars['String']['input'];
+};
+
+
 export type QueryListingsByUserArgs = {
   userId: Scalars['ID']['input'];
 };
@@ -614,12 +632,14 @@ export type StoreBranding = {
   __typename?: 'StoreBranding';
   about?: Maybe<Scalars['String']['output']>;
   bannerUrl?: Maybe<Scalars['String']['output']>;
+  cardTextColor?: Maybe<Scalars['String']['output']>;
   lightOrDark?: Maybe<Scalars['String']['output']>;
   logoUrl?: Maybe<Scalars['String']['output']>;
   primaryColor?: Maybe<Scalars['String']['output']>;
   secondaryColor?: Maybe<Scalars['String']['output']>;
   slug?: Maybe<Scalars['String']['output']>;
   storeName?: Maybe<Scalars['String']['output']>;
+  textColor?: Maybe<Scalars['String']['output']>;
   themeColor?: Maybe<Scalars['String']['output']>;
 };
 
@@ -723,18 +743,21 @@ export type UpdateListingInput = {
 export type UpdateStoreBrandingInput = {
   about?: InputMaybe<Scalars['String']['input']>;
   bannerUrl?: InputMaybe<Scalars['String']['input']>;
+  cardTextColor?: InputMaybe<Scalars['String']['input']>;
   lightOrDark?: InputMaybe<Scalars['String']['input']>;
   logoUrl?: InputMaybe<Scalars['String']['input']>;
   primaryColor?: InputMaybe<Scalars['String']['input']>;
   secondaryColor?: InputMaybe<Scalars['String']['input']>;
   slug?: InputMaybe<Scalars['String']['input']>;
   storeName?: InputMaybe<Scalars['String']['input']>;
+  textColor?: InputMaybe<Scalars['String']['input']>;
   themeColor?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type User = {
   __typename?: 'User';
   bio?: Maybe<Scalars['String']['output']>;
+  business?: Maybe<Business>;
   city?: Maybe<City>;
   contactNumber?: Maybe<Scalars['String']['output']>;
   createdAt: Scalars['String']['output'];
@@ -832,35 +855,29 @@ export type GetAllUsersQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type GetAllUsersQuery = { __typename?: 'Query', getAllUsers: Array<{ __typename?: 'User', id: string, username: string, email: string }> };
 
-export type UpdateBusinessAndBrandingMutationVariables = Exact<{
-  business: UpdateBusinessInput;
-  branding: UpdateStoreBrandingInput;
+export type UpdateStoreBrandingMutationVariables = Exact<{
+  id: Scalars['ID']['input'];
+  input: UpdateStoreBrandingInput;
 }>;
 
 
-export type UpdateBusinessAndBrandingMutation = { __typename?: 'Mutation', updateBusinessAndBranding: { __typename?: 'Business', id: string, name: string, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, postalCode?: string | null, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, storeBranding?: { __typename?: 'StoreBranding', slug?: string | null, logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, primaryColor?: string | null, secondaryColor?: string | null, lightOrDark?: string | null, about?: string | null, storeName?: string | null } | null } };
+export type UpdateStoreBrandingMutation = { __typename?: 'Mutation', updateStoreBranding?: { __typename?: 'User', id: string, username: string, email: string, storeBranding?: { __typename?: 'StoreBranding', slug?: string | null, logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, primaryColor?: string | null, secondaryColor?: string | null, lightOrDark?: string | null, about?: string | null, storeName?: string | null, textColor?: string | null, cardTextColor?: string | null } | null } | null };
 
 export type CreateBusinessMutationVariables = Exact<{
-  name: Scalars['String']['input'];
-  email: Scalars['String']['input'];
-  contactNumber?: InputMaybe<Scalars['String']['input']>;
-  addressLine1?: InputMaybe<Scalars['String']['input']>;
-  addressLine2?: InputMaybe<Scalars['String']['input']>;
-  cityId?: InputMaybe<Scalars['ID']['input']>;
-  postalCode?: InputMaybe<Scalars['String']['input']>;
+  input: CreateBusinessInput;
 }>;
 
 
-export type CreateBusinessMutation = { __typename?: 'Mutation', createBusiness: { __typename?: 'Business', id: string, name: string, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, postalCode?: string | null, city?: { __typename?: 'City', id: string, name: string } | null } };
+export type CreateBusinessMutation = { __typename?: 'Mutation', createBusiness: { __typename?: 'Business', id: string, name: string, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, postalCode?: string | null, slug?: string | null, city?: { __typename?: 'City', id: string, name: string } | null, storeBranding?: { __typename?: 'StoreBranding', slug?: string | null, logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, primaryColor?: string | null, secondaryColor?: string | null, lightOrDark?: string | null, about?: string | null, storeName?: string | null, textColor?: string | null, cardTextColor?: string | null } | null } };
 
 export type LinkUserToBusinessMutationVariables = Exact<{
   businessId: Scalars['ID']['input'];
   userId: Scalars['ID']['input'];
-  role: Scalars['String']['input'];
+  role: BusinessUserRole;
 }>;
 
 
-export type LinkUserToBusinessMutation = { __typename?: 'Mutation', linkUserToBusiness: { __typename?: 'BusinessUser', id: string, role: string, user: { __typename?: 'User', id: string, username: string, email: string } } };
+export type LinkUserToBusinessMutation = { __typename?: 'Mutation', linkUserToBusiness: { __typename?: 'BusinessUser', id: string, role: BusinessUserRole, user: { __typename?: 'User', id: string, username: string, email: string } } };
 
 export type UnlinkUserFromBusinessMutationVariables = Exact<{
   businessId: Scalars['ID']['input'];
@@ -936,6 +953,13 @@ export type CancelTransactionMutationVariables = Exact<{
 
 export type CancelTransactionMutation = { __typename?: 'Mutation', cancelTransaction: { __typename?: 'Transaction', id: string, status: TransactionStatus, notes?: string | null, updatedAt: string } };
 
+export type GetBusinessByIdQueryVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type GetBusinessByIdQuery = { __typename?: 'Query', business?: { __typename?: 'Business', id: string, name: string, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, postalCode?: string | null, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, storeBranding?: { __typename?: 'StoreBranding', slug?: string | null, logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, lightOrDark?: string | null, primaryColor?: string | null, secondaryColor?: string | null, about?: string | null, storeName?: string | null } | null, businessUsers: Array<{ __typename?: 'BusinessUser', id: string, role: BusinessUserRole, user: { __typename?: 'User', id: string, username: string, email: string, profileImageUrl?: string | null, planType?: string | null, trustRating?: { __typename?: 'TrustRating', starRating: number, trustLevel: string, overallScore: number, totalReviews: number, totalTransactions: number, successfulTransactions: number } | null } }> } | null };
+
 export type GetCategoriesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -946,7 +970,7 @@ export type GetListingByIdQueryVariables = Exact<{
 }>;
 
 
-export type GetListingByIdQuery = { __typename?: 'Query', getListingById?: { __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, sold: boolean, customCity?: string | null, condition: Condition, createdAt: string, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, category?: { __typename?: 'Category', id: string, name: string, parentId?: string | null } | null, user: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null, email: string, storeBranding?: { __typename?: 'StoreBranding', slug?: string | null } | null } } | null };
+export type GetListingByIdQuery = { __typename?: 'Query', getListingById?: { __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, sold: boolean, customCity?: string | null, condition: Condition, createdAt: string, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, category?: { __typename?: 'Category', id: string, name: string, parentId?: string | null } | null, user: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null, email: string, planType?: string | null, storeBranding?: { __typename?: 'StoreBranding', slug?: string | null, storeName?: string | null, logoUrl?: string | null } | null } } | null };
 
 export type GetListingsQueryVariables = Exact<{
   limit: Scalars['Int']['input'];
@@ -975,7 +999,7 @@ export type MeQuery = { __typename?: 'Query', me?: { __typename?: 'User', id: st
 export type GetMyBusinessQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetMyBusinessQuery = { __typename?: 'Query', myBusiness?: { __typename?: 'Business', id: string, name: string, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, postalCode?: string | null, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, storeBranding?: { __typename?: 'StoreBranding', slug?: string | null, logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, primaryColor?: string | null, secondaryColor?: string | null, lightOrDark?: string | null, about?: string | null, storeName?: string | null } | null, businessUsers: Array<{ __typename?: 'BusinessUser', id: string, role: string, user: { __typename?: 'User', id: string, username: string, email: string, profileImageUrl?: string | null } }> } | null };
+export type GetMyBusinessQuery = { __typename?: 'Query', myBusiness?: { __typename?: 'Business', id: string, name: string, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, postalCode?: string | null, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, storeBranding?: { __typename?: 'StoreBranding', slug?: string | null, logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, primaryColor?: string | null, secondaryColor?: string | null, lightOrDark?: string | null, about?: string | null, storeName?: string | null } | null, businessUsers: Array<{ __typename?: 'BusinessUser', id: string, role: BusinessUserRole, user: { __typename?: 'User', id: string, username: string, email: string, profileImageUrl?: string | null } }> } | null };
 
 export type GetSellerProfileQueryVariables = Exact<{
   id: Scalars['ID']['input'];
@@ -990,22 +1014,6 @@ export type GetMyStoreBrandingQueryVariables = Exact<{
 
 
 export type GetMyStoreBrandingQuery = { __typename?: 'Query', user?: { __typename?: 'User', id: string, planType?: string | null, storeBranding?: { __typename?: 'StoreBranding', slug?: string | null, logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, primaryColor?: string | null, secondaryColor?: string | null, lightOrDark?: string | null, about?: string | null, storeName?: string | null } | null } | null };
-
-export type UpdateStoreBrandingMutationVariables = Exact<{
-  id: Scalars['ID']['input'];
-  slug?: InputMaybe<Scalars['String']['input']>;
-  logoUrl?: InputMaybe<Scalars['String']['input']>;
-  bannerUrl?: InputMaybe<Scalars['String']['input']>;
-  themeColor?: InputMaybe<Scalars['String']['input']>;
-  primaryColor?: InputMaybe<Scalars['String']['input']>;
-  secondaryColor?: InputMaybe<Scalars['String']['input']>;
-  lightOrDark?: InputMaybe<Scalars['String']['input']>;
-  about?: InputMaybe<Scalars['String']['input']>;
-  storeName?: InputMaybe<Scalars['String']['input']>;
-}>;
-
-
-export type UpdateStoreBrandingMutation = { __typename?: 'Mutation', updateStoreBranding?: { __typename?: 'User', storeBranding?: { __typename?: 'StoreBranding', slug?: string | null, logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, primaryColor?: string | null, secondaryColor?: string | null, lightOrDark?: string | null, about?: string | null, storeName?: string | null } | null } | null };
 
 export type GetStoreBySlugFullQueryVariables = Exact<{
   slug: Scalars['String']['input'];
@@ -1061,6 +1069,13 @@ export type GetTrustRatingQueryVariables = Exact<{
 
 
 export type GetTrustRatingQuery = { __typename?: 'Query', getTrustRating?: { __typename?: 'TrustRating', id: string, userId: string, overallScore: number, verificationScore: number, profileScore: number, reviewScore: number, transactionScore: number, totalReviews: number, positiveReviews: number, totalTransactions: number, successfulTransactions: number, lastCalculated: string, createdAt: string, updatedAt: string, starRating: number, trustLevel: string } | null };
+
+export type GetUserByIdQueryVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type GetUserByIdQuery = { __typename?: 'Query', getUserById?: { __typename?: 'User', id: string, username: string, planType?: string | null, storeBranding?: { __typename?: 'StoreBranding', slug?: string | null, logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, lightOrDark?: string | null, primaryColor?: string | null, secondaryColor?: string | null, about?: string | null, storeName?: string | null } | null, trustRating?: { __typename?: 'TrustRating', starRating: number, trustLevel: string, overallScore: number, totalReviews: number, totalTransactions: number, successfulTransactions: number } | null } | null };
 
 export type GetUserReviewsQueryVariables = Exact<{
   userId: Scalars['ID']['input'];
@@ -1137,6 +1152,13 @@ export type SearchCitiesQueryVariables = Exact<{
 
 
 export type SearchCitiesQuery = { __typename?: 'Query', searchCities: Array<{ __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', id: string, name: string, country: { __typename?: 'Country', id: string, name: string, code: string } } }> };
+
+export type IsStoreSlugAvailableQueryVariables = Exact<{
+  slug: Scalars['String']['input'];
+}>;
+
+
+export type IsStoreSlugAvailableQuery = { __typename?: 'Query', isStoreSlugAvailable: boolean };
 
 export type LoginMutationVariables = Exact<{
   emailOrUsername: Scalars['String']['input'];
@@ -1404,26 +1426,12 @@ export type GetAllUsersQueryHookResult = ReturnType<typeof useGetAllUsersQuery>;
 export type GetAllUsersLazyQueryHookResult = ReturnType<typeof useGetAllUsersLazyQuery>;
 export type GetAllUsersSuspenseQueryHookResult = ReturnType<typeof useGetAllUsersSuspenseQuery>;
 export type GetAllUsersQueryResult = Apollo.QueryResult<GetAllUsersQuery, GetAllUsersQueryVariables>;
-export const UpdateBusinessAndBrandingDocument = gql`
-    mutation UpdateBusinessAndBranding($business: UpdateBusinessInput!, $branding: UpdateStoreBrandingInput!) {
-  updateBusinessAndBranding(business: $business, branding: $branding) {
+export const UpdateStoreBrandingDocument = gql`
+    mutation UpdateStoreBranding($id: ID!, $input: UpdateStoreBrandingInput!) {
+  updateStoreBranding(id: $id, input: $input) {
     id
-    name
+    username
     email
-    contactNumber
-    addressLine1
-    addressLine2
-    city {
-      id
-      name
-      region {
-        name
-        country {
-          name
-        }
-      }
-    }
-    postalCode
     storeBranding {
       slug
       logoUrl
@@ -1434,48 +1442,42 @@ export const UpdateBusinessAndBrandingDocument = gql`
       lightOrDark
       about
       storeName
+      textColor
+      cardTextColor
     }
   }
 }
     `;
-export type UpdateBusinessAndBrandingMutationFn = Apollo.MutationFunction<UpdateBusinessAndBrandingMutation, UpdateBusinessAndBrandingMutationVariables>;
+export type UpdateStoreBrandingMutationFn = Apollo.MutationFunction<UpdateStoreBrandingMutation, UpdateStoreBrandingMutationVariables>;
 
 /**
- * __useUpdateBusinessAndBrandingMutation__
+ * __useUpdateStoreBrandingMutation__
  *
- * To run a mutation, you first call `useUpdateBusinessAndBrandingMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useUpdateBusinessAndBrandingMutation` returns a tuple that includes:
+ * To run a mutation, you first call `useUpdateStoreBrandingMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateStoreBrandingMutation` returns a tuple that includes:
  * - A mutate function that you can call at any time to execute the mutation
  * - An object with fields that represent the current status of the mutation's execution
  *
  * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
  *
  * @example
- * const [updateBusinessAndBrandingMutation, { data, loading, error }] = useUpdateBusinessAndBrandingMutation({
+ * const [updateStoreBrandingMutation, { data, loading, error }] = useUpdateStoreBrandingMutation({
  *   variables: {
- *      business: // value for 'business'
- *      branding: // value for 'branding'
+ *      id: // value for 'id'
+ *      input: // value for 'input'
  *   },
  * });
  */
-export function useUpdateBusinessAndBrandingMutation(baseOptions?: Apollo.MutationHookOptions<UpdateBusinessAndBrandingMutation, UpdateBusinessAndBrandingMutationVariables>) {
+export function useUpdateStoreBrandingMutation(baseOptions?: Apollo.MutationHookOptions<UpdateStoreBrandingMutation, UpdateStoreBrandingMutationVariables>) {
         const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<UpdateBusinessAndBrandingMutation, UpdateBusinessAndBrandingMutationVariables>(UpdateBusinessAndBrandingDocument, options);
+        return Apollo.useMutation<UpdateStoreBrandingMutation, UpdateStoreBrandingMutationVariables>(UpdateStoreBrandingDocument, options);
       }
-export type UpdateBusinessAndBrandingMutationHookResult = ReturnType<typeof useUpdateBusinessAndBrandingMutation>;
-export type UpdateBusinessAndBrandingMutationResult = Apollo.MutationResult<UpdateBusinessAndBrandingMutation>;
-export type UpdateBusinessAndBrandingMutationOptions = Apollo.BaseMutationOptions<UpdateBusinessAndBrandingMutation, UpdateBusinessAndBrandingMutationVariables>;
+export type UpdateStoreBrandingMutationHookResult = ReturnType<typeof useUpdateStoreBrandingMutation>;
+export type UpdateStoreBrandingMutationResult = Apollo.MutationResult<UpdateStoreBrandingMutation>;
+export type UpdateStoreBrandingMutationOptions = Apollo.BaseMutationOptions<UpdateStoreBrandingMutation, UpdateStoreBrandingMutationVariables>;
 export const CreateBusinessDocument = gql`
-    mutation CreateBusiness($name: String!, $email: String!, $contactNumber: String, $addressLine1: String, $addressLine2: String, $cityId: ID, $postalCode: String) {
-  createBusiness(
-    name: $name
-    email: $email
-    contactNumber: $contactNumber
-    addressLine1: $addressLine1
-    addressLine2: $addressLine2
-    cityId: $cityId
-    postalCode: $postalCode
-  ) {
+    mutation CreateBusiness($input: CreateBusinessInput!) {
+  createBusiness(input: $input) {
     id
     name
     email
@@ -1487,6 +1489,20 @@ export const CreateBusinessDocument = gql`
       name
     }
     postalCode
+    slug
+    storeBranding {
+      slug
+      logoUrl
+      bannerUrl
+      themeColor
+      primaryColor
+      secondaryColor
+      lightOrDark
+      about
+      storeName
+      textColor
+      cardTextColor
+    }
   }
 }
     `;
@@ -1505,13 +1521,7 @@ export type CreateBusinessMutationFn = Apollo.MutationFunction<CreateBusinessMut
  * @example
  * const [createBusinessMutation, { data, loading, error }] = useCreateBusinessMutation({
  *   variables: {
- *      name: // value for 'name'
- *      email: // value for 'email'
- *      contactNumber: // value for 'contactNumber'
- *      addressLine1: // value for 'addressLine1'
- *      addressLine2: // value for 'addressLine2'
- *      cityId: // value for 'cityId'
- *      postalCode: // value for 'postalCode'
+ *      input: // value for 'input'
  *   },
  * });
  */
@@ -1523,7 +1533,7 @@ export type CreateBusinessMutationHookResult = ReturnType<typeof useCreateBusine
 export type CreateBusinessMutationResult = Apollo.MutationResult<CreateBusinessMutation>;
 export type CreateBusinessMutationOptions = Apollo.BaseMutationOptions<CreateBusinessMutation, CreateBusinessMutationVariables>;
 export const LinkUserToBusinessDocument = gql`
-    mutation LinkUserToBusiness($businessId: ID!, $userId: ID!, $role: String!) {
+    mutation LinkUserToBusiness($businessId: ID!, $userId: ID!, $role: BusinessUserRole!) {
   linkUserToBusiness(businessId: $businessId, userId: $userId, role: $role) {
     id
     role
@@ -1983,6 +1993,92 @@ export function useCancelTransactionMutation(baseOptions?: Apollo.MutationHookOp
 export type CancelTransactionMutationHookResult = ReturnType<typeof useCancelTransactionMutation>;
 export type CancelTransactionMutationResult = Apollo.MutationResult<CancelTransactionMutation>;
 export type CancelTransactionMutationOptions = Apollo.BaseMutationOptions<CancelTransactionMutation, CancelTransactionMutationVariables>;
+export const GetBusinessByIdDocument = gql`
+    query GetBusinessById($id: ID!) {
+  business(id: $id) {
+    id
+    name
+    email
+    contactNumber
+    addressLine1
+    addressLine2
+    postalCode
+    city {
+      id
+      name
+      region {
+        name
+        country {
+          name
+        }
+      }
+    }
+    storeBranding {
+      slug
+      logoUrl
+      bannerUrl
+      themeColor
+      lightOrDark
+      primaryColor
+      secondaryColor
+      about
+      storeName
+    }
+    businessUsers {
+      id
+      role
+      user {
+        id
+        username
+        email
+        profileImageUrl
+        planType
+        trustRating {
+          starRating
+          trustLevel
+          overallScore
+          totalReviews
+          totalTransactions
+          successfulTransactions
+        }
+      }
+    }
+  }
+}
+    `;
+
+/**
+ * __useGetBusinessByIdQuery__
+ *
+ * To run a query within a React component, call `useGetBusinessByIdQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetBusinessByIdQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetBusinessByIdQuery({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useGetBusinessByIdQuery(baseOptions: Apollo.QueryHookOptions<GetBusinessByIdQuery, GetBusinessByIdQueryVariables> & ({ variables: GetBusinessByIdQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetBusinessByIdQuery, GetBusinessByIdQueryVariables>(GetBusinessByIdDocument, options);
+      }
+export function useGetBusinessByIdLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetBusinessByIdQuery, GetBusinessByIdQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetBusinessByIdQuery, GetBusinessByIdQueryVariables>(GetBusinessByIdDocument, options);
+        }
+export function useGetBusinessByIdSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GetBusinessByIdQuery, GetBusinessByIdQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<GetBusinessByIdQuery, GetBusinessByIdQueryVariables>(GetBusinessByIdDocument, options);
+        }
+export type GetBusinessByIdQueryHookResult = ReturnType<typeof useGetBusinessByIdQuery>;
+export type GetBusinessByIdLazyQueryHookResult = ReturnType<typeof useGetBusinessByIdLazyQuery>;
+export type GetBusinessByIdSuspenseQueryHookResult = ReturnType<typeof useGetBusinessByIdSuspenseQuery>;
+export type GetBusinessByIdQueryResult = Apollo.QueryResult<GetBusinessByIdQuery, GetBusinessByIdQueryVariables>;
 export const GetCategoriesDocument = gql`
     query GetCategories {
   getCategories {
@@ -2056,8 +2152,11 @@ export const GetListingByIdDocument = gql`
       username
       profileImageUrl
       email
+      planType
       storeBranding {
         slug
+        storeName
+        logoUrl
       }
     }
   }
@@ -2491,69 +2590,6 @@ export type GetMyStoreBrandingQueryHookResult = ReturnType<typeof useGetMyStoreB
 export type GetMyStoreBrandingLazyQueryHookResult = ReturnType<typeof useGetMyStoreBrandingLazyQuery>;
 export type GetMyStoreBrandingSuspenseQueryHookResult = ReturnType<typeof useGetMyStoreBrandingSuspenseQuery>;
 export type GetMyStoreBrandingQueryResult = Apollo.QueryResult<GetMyStoreBrandingQuery, GetMyStoreBrandingQueryVariables>;
-export const UpdateStoreBrandingDocument = gql`
-    mutation UpdateStoreBranding($id: ID!, $slug: String, $logoUrl: String, $bannerUrl: String, $themeColor: String, $primaryColor: String, $secondaryColor: String, $lightOrDark: String, $about: String, $storeName: String) {
-  updateStoreBranding(
-    id: $id
-    slug: $slug
-    logoUrl: $logoUrl
-    bannerUrl: $bannerUrl
-    themeColor: $themeColor
-    primaryColor: $primaryColor
-    secondaryColor: $secondaryColor
-    lightOrDark: $lightOrDark
-    about: $about
-    storeName: $storeName
-  ) {
-    storeBranding {
-      slug
-      logoUrl
-      bannerUrl
-      themeColor
-      primaryColor
-      secondaryColor
-      lightOrDark
-      about
-      storeName
-    }
-  }
-}
-    `;
-export type UpdateStoreBrandingMutationFn = Apollo.MutationFunction<UpdateStoreBrandingMutation, UpdateStoreBrandingMutationVariables>;
-
-/**
- * __useUpdateStoreBrandingMutation__
- *
- * To run a mutation, you first call `useUpdateStoreBrandingMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useUpdateStoreBrandingMutation` returns a tuple that includes:
- * - A mutate function that you can call at any time to execute the mutation
- * - An object with fields that represent the current status of the mutation's execution
- *
- * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
- *
- * @example
- * const [updateStoreBrandingMutation, { data, loading, error }] = useUpdateStoreBrandingMutation({
- *   variables: {
- *      id: // value for 'id'
- *      slug: // value for 'slug'
- *      logoUrl: // value for 'logoUrl'
- *      bannerUrl: // value for 'bannerUrl'
- *      themeColor: // value for 'themeColor'
- *      primaryColor: // value for 'primaryColor'
- *      secondaryColor: // value for 'secondaryColor'
- *      lightOrDark: // value for 'lightOrDark'
- *      about: // value for 'about'
- *      storeName: // value for 'storeName'
- *   },
- * });
- */
-export function useUpdateStoreBrandingMutation(baseOptions?: Apollo.MutationHookOptions<UpdateStoreBrandingMutation, UpdateStoreBrandingMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<UpdateStoreBrandingMutation, UpdateStoreBrandingMutationVariables>(UpdateStoreBrandingDocument, options);
-      }
-export type UpdateStoreBrandingMutationHookResult = ReturnType<typeof useUpdateStoreBrandingMutation>;
-export type UpdateStoreBrandingMutationResult = Apollo.MutationResult<UpdateStoreBrandingMutation>;
-export type UpdateStoreBrandingMutationOptions = Apollo.BaseMutationOptions<UpdateStoreBrandingMutation, UpdateStoreBrandingMutationVariables>;
 export const GetStoreBySlugFullDocument = gql`
     query GetStoreBySlugFull($slug: String!) {
   storeBySlug(slug: $slug) {
@@ -3198,6 +3234,67 @@ export type GetTrustRatingQueryHookResult = ReturnType<typeof useGetTrustRatingQ
 export type GetTrustRatingLazyQueryHookResult = ReturnType<typeof useGetTrustRatingLazyQuery>;
 export type GetTrustRatingSuspenseQueryHookResult = ReturnType<typeof useGetTrustRatingSuspenseQuery>;
 export type GetTrustRatingQueryResult = Apollo.QueryResult<GetTrustRatingQuery, GetTrustRatingQueryVariables>;
+export const GetUserByIdDocument = gql`
+    query GetUserById($id: ID!) {
+  getUserById(id: $id) {
+    id
+    username
+    planType
+    storeBranding {
+      slug
+      logoUrl
+      bannerUrl
+      themeColor
+      lightOrDark
+      primaryColor
+      secondaryColor
+      about
+      storeName
+    }
+    trustRating {
+      starRating
+      trustLevel
+      overallScore
+      totalReviews
+      totalTransactions
+      successfulTransactions
+    }
+  }
+}
+    `;
+
+/**
+ * __useGetUserByIdQuery__
+ *
+ * To run a query within a React component, call `useGetUserByIdQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetUserByIdQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetUserByIdQuery({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useGetUserByIdQuery(baseOptions: Apollo.QueryHookOptions<GetUserByIdQuery, GetUserByIdQueryVariables> & ({ variables: GetUserByIdQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetUserByIdQuery, GetUserByIdQueryVariables>(GetUserByIdDocument, options);
+      }
+export function useGetUserByIdLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetUserByIdQuery, GetUserByIdQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetUserByIdQuery, GetUserByIdQueryVariables>(GetUserByIdDocument, options);
+        }
+export function useGetUserByIdSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GetUserByIdQuery, GetUserByIdQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<GetUserByIdQuery, GetUserByIdQueryVariables>(GetUserByIdDocument, options);
+        }
+export type GetUserByIdQueryHookResult = ReturnType<typeof useGetUserByIdQuery>;
+export type GetUserByIdLazyQueryHookResult = ReturnType<typeof useGetUserByIdLazyQuery>;
+export type GetUserByIdSuspenseQueryHookResult = ReturnType<typeof useGetUserByIdSuspenseQuery>;
+export type GetUserByIdQueryResult = Apollo.QueryResult<GetUserByIdQuery, GetUserByIdQueryVariables>;
 export const GetUserReviewsDocument = gql`
     query GetUserReviews($userId: ID!) {
   getUserReviews(userId: $userId) {
@@ -3784,6 +3881,44 @@ export type SearchCitiesQueryHookResult = ReturnType<typeof useSearchCitiesQuery
 export type SearchCitiesLazyQueryHookResult = ReturnType<typeof useSearchCitiesLazyQuery>;
 export type SearchCitiesSuspenseQueryHookResult = ReturnType<typeof useSearchCitiesSuspenseQuery>;
 export type SearchCitiesQueryResult = Apollo.QueryResult<SearchCitiesQuery, SearchCitiesQueryVariables>;
+export const IsStoreSlugAvailableDocument = gql`
+    query IsStoreSlugAvailable($slug: String!) {
+  isStoreSlugAvailable(slug: $slug)
+}
+    `;
+
+/**
+ * __useIsStoreSlugAvailableQuery__
+ *
+ * To run a query within a React component, call `useIsStoreSlugAvailableQuery` and pass it any options that fit your needs.
+ * When your component renders, `useIsStoreSlugAvailableQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useIsStoreSlugAvailableQuery({
+ *   variables: {
+ *      slug: // value for 'slug'
+ *   },
+ * });
+ */
+export function useIsStoreSlugAvailableQuery(baseOptions: Apollo.QueryHookOptions<IsStoreSlugAvailableQuery, IsStoreSlugAvailableQueryVariables> & ({ variables: IsStoreSlugAvailableQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<IsStoreSlugAvailableQuery, IsStoreSlugAvailableQueryVariables>(IsStoreSlugAvailableDocument, options);
+      }
+export function useIsStoreSlugAvailableLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<IsStoreSlugAvailableQuery, IsStoreSlugAvailableQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<IsStoreSlugAvailableQuery, IsStoreSlugAvailableQueryVariables>(IsStoreSlugAvailableDocument, options);
+        }
+export function useIsStoreSlugAvailableSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<IsStoreSlugAvailableQuery, IsStoreSlugAvailableQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<IsStoreSlugAvailableQuery, IsStoreSlugAvailableQueryVariables>(IsStoreSlugAvailableDocument, options);
+        }
+export type IsStoreSlugAvailableQueryHookResult = ReturnType<typeof useIsStoreSlugAvailableQuery>;
+export type IsStoreSlugAvailableLazyQueryHookResult = ReturnType<typeof useIsStoreSlugAvailableLazyQuery>;
+export type IsStoreSlugAvailableSuspenseQueryHookResult = ReturnType<typeof useIsStoreSlugAvailableSuspenseQuery>;
+export type IsStoreSlugAvailableQueryResult = Apollo.QueryResult<IsStoreSlugAvailableQuery, IsStoreSlugAvailableQueryVariables>;
 export const LoginDocument = gql`
     mutation Login($emailOrUsername: String!, $password: String!) {
   login(emailOrUsername: $emailOrUsername, password: $password) {

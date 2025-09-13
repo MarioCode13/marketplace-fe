@@ -2,10 +2,7 @@
 
 import { useQuery, useMutation } from '@apollo/client'
 import { useState, useEffect } from 'react'
-import {
-  GET_MY_STORE_BRANDING,
-  UPDATE_STORE_BRANDING,
-} from '@/lib/graphql/queries/getSellerProfile'
+import { GET_MY_STORE_BRANDING } from '@/lib/graphql/queries/getSellerProfile'
 import { GET_STORE_BY_SLUG_FULL } from '@/lib/graphql/queries/getStoreBySlugFull'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -23,6 +20,7 @@ import { LoaderCircle, Loader2 } from 'lucide-react'
 import { FileInput } from '@/components/ui/fileInput'
 import Image from 'next/image'
 import PreviewModal from '@/components/modals/PreviewModal'
+import { UPDATE_STORE_BRANDING } from '@/lib/graphql/mutations/businessMutations'
 
 export default function EditStorePage() {
   const userId = useSelector((state: RootState) => state.auth.user?.userId)

@@ -72,16 +72,29 @@ export default function Navbar() {
               Browse
             </Link>
           </li>
-          {isStoreUser && user?.storeBranding?.slug && (
+          {isStoreUser && user?.storeBranding?.slug ? (
             <li>
               <Link
-                href={`/store/${user.storeBranding.slug}`}
+                href={
+                  user.planType === 'PRO_STORE'
+                    ? `/${user.storeBranding.slug}`
+                    : `/store/${user.storeBranding.slug}`
+                }
                 className='hover:text-primary transition'
               >
                 My Store
               </Link>
             </li>
-          )}
+          ) : isStoreUser ? (
+            <li>
+              <Link
+                href={'/business/edit'}
+                className='hover:text-primary transition'
+              >
+                Set Up Store
+              </Link>
+            </li>
+          ) : null}
 
           {token && (
             <>
