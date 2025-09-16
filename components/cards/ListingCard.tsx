@@ -4,7 +4,7 @@ import dayjs from 'dayjs'
 import { MoreVertical, Star } from 'lucide-react'
 import { useState } from 'react'
 import { Badge } from '@/components/ui/badge'
-import { generateImageUrl, getTextColor } from '@/lib/utils'
+import { generateImageUrl } from '@/lib/utils'
 
 interface ListingCardProps {
   listing: {
@@ -29,9 +29,14 @@ interface ListingCardProps {
         slug: string
       }
     }
+    business?: {
+      name: string
+      // add other business fields if needed
+    }
   }
   themeColor?: string
   primaryColor?: string
+  cardTextColor?: string
   showMenu?: boolean
   store?: boolean
   onEdit?: () => void
@@ -43,12 +48,17 @@ export default function ListingCard({
   showMenu = false,
   onEdit,
   onDelete,
-  themeColor,
   primaryColor,
+  cardTextColor,
   store,
 }: ListingCardProps) {
-  const textColor = getTextColor(themeColor || '')
   const [menuOpen, setMenuOpen] = useState(false)
+  // Only apply custom colors if in store context and colors are provided
+  const cardStyle =
+    store && primaryColor
+      ? { background: primaryColor, color: cardTextColor || '#222' }
+      : undefined
+
   return (
     <div
       className='relative'
@@ -59,10 +69,10 @@ export default function ListingCard({
         passHref
       >
         <div
-          className={`border border-secondary p-4 rounded-lg shadow-lg min-h-[300px] cursor-pointer transition-all duration-200 ease-in-out  hover:shadow-xl hover:opacity-80 hover:scale-[1.02] ${
+          className={`border border-secondary p-4 rounded-lg shadow-lg min-h-[300px] cursor-pointer transition-all duration-200 ease-in-out hover:shadow-xl hover:opacity-80 hover:scale-[1.02] ${
             listing.sold ? 'opacity-60' : ''
-          } ${!themeColor ? 'bg-componentBackground' : ''}`}
-          style={themeColor ? { background: themeColor } : undefined}
+          } ${!primaryColor ? 'bg-componentBackground' : ''}`}
+          style={cardStyle}
         >
           {listing.sold && (
             <div className='absolute top-2 left-2 z-10'>
@@ -86,13 +96,13 @@ export default function ListingCard({
           />
           <h2
             className='text-xl font-semibold mt-2 mb-2 line-clamp-2 leading-snug min-h-[3.438rem]'
-            style={primaryColor ? { color: primaryColor } : undefined}
+            style={cardTextColor ? { color: cardTextColor } : undefined}
           >
             {listing.title}
           </h2>
           <p
             className='text-foreground line-clamp-2 min-h-[48px]'
-            style={{ color: themeColor ? textColor : '' }}
+            style={cardTextColor ? { color: cardTextColor } : undefined}
           >
             {listing.description}
           </p>
@@ -110,6 +120,7 @@ export default function ListingCard({
                 <p className='text-sm text-gray-600'>
                   Seller: {listing.user ? listing.user.username : 'Unknown'}
                 </p>
+                {/* Only show trust rating if user exists and has trustRating */}
                 {listing.user?.trustRating && (
                   <div className='flex items-center gap-2'>
                     <div className='flex items-center gap-1'>
@@ -118,11 +129,12 @@ export default function ListingCard({
                         {listing.user.trustRating.starRating.toFixed(1)}
                       </span>
                     </div>
-
                     {listing.user.trustRating.totalReviews > 0 && (
                       <span
                         className='text-xs text-gray-500'
-                        style={{ color: textColor }}
+                        style={
+                          cardTextColor ? { color: cardTextColor } : undefined
+                        }
                       >
                         ({listing.user.trustRating.totalReviews} reviews)
                       </span>
@@ -134,7 +146,7 @@ export default function ListingCard({
           </div>
           <p
             className='text-sm text-gray-500 mt-2'
-            style={{ color: themeColor ? textColor : '' }}
+            style={cardTextColor ? { color: cardTextColor } : undefined}
           >
             {dayjs(listing.createdAt).format('DD MMM YYYY')}
           </p>

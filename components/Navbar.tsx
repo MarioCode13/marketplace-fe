@@ -9,6 +9,7 @@ import Image from 'next/image'
 import { useTheme } from '@/context/ThemeContext'
 import { Menu as MenuIcon, Moon, SunMedium, User } from 'lucide-react'
 import Drawer from './drawers/Drawer'
+import NotificationDropdown from './NotificationDropdown'
 import { useState } from 'react'
 import { Button } from './ui/button'
 import { generateImageUrl } from '@/lib/utils'
@@ -18,6 +19,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { useGetMyBusinessQuery } from '@/lib/graphql/generated'
 import { useApolloClient, useQuery } from '@apollo/client'
 import { GET_ME } from '@/lib/graphql/queries/getMe'
 
@@ -31,6 +33,12 @@ export default function Navbar() {
     skip: !token,
     fetchPolicy: 'no-cache',
   })
+
+  // Get business data for resellers
+  const { data: businessData } = useGetMyBusinessQuery({
+    skip: !token || data?.me?.planType !== 'RESELLER',
+  })
+
   const profileImageUrl = data?.me?.profileImageUrl
   const user = data?.me
   const isStoreUser =
@@ -78,7 +86,7 @@ export default function Navbar() {
                 href={
                   user.planType === 'PRO_STORE'
                     ? `/${user.storeBranding.slug}`
-                    : `/store/${user.storeBranding.slug}`
+                    : `/store/${businessData?.myBusiness?.id || user.id}`
                 }
                 className='hover:text-primary transition'
               >
@@ -142,6 +150,10 @@ export default function Navbar() {
               <SunMedium className='w-5 h-5' />
             )}
           </Button>
+
+          {/* Notifications - only show for logged in users */}
+          {token && <NotificationDropdown />}
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -241,7 +253,11 @@ export default function Navbar() {
             {isStoreUser && user?.storeBranding?.slug && (
               <li>
                 <Link
-                  href={`/store/${user.storeBranding.slug}`}
+                  href={
+                    user.planType === 'PRO_STORE'
+                      ? `/${user.storeBranding.slug}`
+                      : `/store/${businessData?.myBusiness?.id || user.id}`
+                  }
                   onClick={() => setDrawerOpen(false)}
                   className='hover:text-primary transition'
                 >

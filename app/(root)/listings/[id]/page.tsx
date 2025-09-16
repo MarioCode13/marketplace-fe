@@ -87,7 +87,13 @@ const Page = () => {
 
   const listing = data.getListingById
   const currentUserId = meData?.me?.id || user?.id || user?.userId
-  const isOwner = currentUserId === listing.user.id
+  // Check if the current user is the owner (user or business owner)
+  let isOwner = false
+  if (listing.user && currentUserId) {
+    isOwner = currentUserId === listing.user.id
+  } else if (listing.business && listing.business.owner && currentUserId) {
+    isOwner = currentUserId === listing.business.owner.id
+  }
 
   return (
     <div className='w-full flex justify-center'>
@@ -185,17 +191,19 @@ const Page = () => {
             <Card>
               <CardContent className='p-4'>
                 <div className='flex items-center gap-4 mb-3'>
-                  {/* Show store logo if user has a store with branding, otherwise show user profile image */}
-                  {listing.user.planType === 'PRO_STORE' ||
-                  listing.user.planType === 'RESELLER' ? (
+                  {/* Show store logo if business exists, otherwise show user profile image */}
+                  {listing.business &&
+                  listing.business.storeBranding?.logoUrl ? (
                     <Image
-                      src={generateImageUrl(listing.user.storeBranding.logoUrl)}
+                      src={generateImageUrl(
+                        listing.business.storeBranding.logoUrl
+                      )}
                       height={50}
                       width={50}
                       alt='store logo'
                       className='rounded-full w-12 h-12 object-cover'
                     />
-                  ) : listing.user.profileImageUrl ? (
+                  ) : listing.user?.profileImageUrl ? (
                     <Image
                       src={generateImageUrl(listing.user.profileImageUrl)}
                       height={50}
@@ -209,33 +217,19 @@ const Page = () => {
 
                   <div className='flex-1'>
                     <p className='text-gray-500 text-sm'>
-                      {listing.user.planType === 'PRO_STORE' ||
-                      listing.user.planType === 'RESELLER'
-                        ? 'Store'
-                        : 'Seller'}
+                      {listing.business ? 'Store' : 'Seller'}
                     </p>
-                    {listing.user.planType === 'PRO_STORE' &&
-                    listing.user.storeBranding?.slug ? (
+                    {listing.business ? (
                       <Link
-                        href={`/${listing.user.storeBranding.slug}`}
+                        href={`/${listing.business.storeBranding?.slug || ''}`}
                         className='hover:underline'
                       >
                         <h2 className='text-lg font-semibold'>
-                          {listing.user.storeBranding?.storeName ||
-                            listing.user.username}
+                          {listing.business.storeBranding?.storeName ||
+                            listing.business.name}
                         </h2>
                       </Link>
-                    ) : listing.user.planType === 'RESELLER' ? (
-                      <Link
-                        href={`/store/${listing.user.id}`}
-                        className='hover:underline'
-                      >
-                        <h2 className='text-lg font-semibold'>
-                          {listing.user.storeBranding?.storeName ||
-                            listing.user.username}
-                        </h2>
-                      </Link>
-                    ) : (
+                    ) : listing.user ? (
                       <Link
                         href={`/seller/${listing.user.id}`}
                         className='hover:underline'
@@ -244,6 +238,10 @@ const Page = () => {
                           {listing.user.username}
                         </h2>
                       </Link>
+                    ) : (
+                      <span className='text-lg font-semibold text-gray-400'>
+                        Unknown Seller
+                      </span>
                     )}
                   </div>
                   {isOwner ? (
@@ -271,40 +269,71 @@ const Page = () => {
                     </div>
                   ) : (
                     <div className='flex gap-2'>
-                      {listing.user.planType === 'PRO_STORE' &&
-                      listing.user.storeBranding?.slug ? (
-                        <Link href={`/${listing.user.storeBranding.slug}`}>
-                          <Button
-                            variant='outlined'
-                            className='flex items-center gap-2'
-                          >
-                            <User className='w-4 h-4' />
-                            View Pro Store
-                          </Button>
-                        </Link>
-                      ) : listing.user.planType === 'RESELLER' ? (
-                        <Link href={`/store/${listing.user.id}`}>
-                          <Button
-                            variant='outlined'
-                            className='flex items-center gap-2'
-                          >
-                            <User className='w-4 h-4' />
-                            View Store
-                          </Button>
-                        </Link>
-                      ) : (
-                        <Link href={`/seller/${listing.user.id}`}>
-                          <Button
-                            variant='outlined'
-                            className='flex items-center gap-2'
-                          >
-                            <User className='w-4 h-4' />
-                            View Profile
-                          </Button>
-                        </Link>
-                      )}
+                      {/* Refactored: Render store/profile button in a simpler way */}
+                      {(() => {
+                        if (listing.business) {
+                          if (
+                            listing.business.businessType === 'PRO_STORE' &&
+                            listing.business.storeBranding?.slug
+                          ) {
+                            return (
+                              <Link
+                                href={`/${listing.business.storeBranding.slug}`}
+                              >
+                                <Button
+                                  variant='outlined'
+                                  className='flex items-center gap-2'
+                                >
+                                  <User className='w-4 h-4' />
+                                  View Store
+                                </Button>
+                              </Link>
+                            )
+                          } else if (
+                            listing.business.businessType === 'RESELLER'
+                          ) {
+                            return (
+                              <Link href={`/store/${listing.business.id}`}>
+                                <Button
+                                  variant='outlined'
+                                  className='flex items-center gap-2'
+                                >
+                                  <User className='w-4 h-4' />
+                                  View Store
+                                </Button>
+                              </Link>
+                            )
+                          } else if (listing.user) {
+                            return (
+                              <Link href={`/seller/${listing.user.id}`}>
+                                <Button
+                                  variant='outlined'
+                                  className='flex items-center gap-2'
+                                >
+                                  <User className='w-4 h-4' />
+                                  View Profile
+                                </Button>
+                              </Link>
+                            )
+                          }
+                        } else if (listing.user) {
+                          return (
+                            <Link href={`/seller/${listing.user.id}`}>
+                              <Button
+                                variant='outlined'
+                                className='flex items-center gap-2'
+                              >
+                                <User className='w-4 h-4' />
+                                View Profile
+                              </Button>
+                            </Link>
+                          )
+                        }
+                        return null
+                      })()}
                       <Button
                         onClick={() => setModalOpen(true)}
+                        variant='contained'
                         color='secondary'
                       >
                         Contact Seller
@@ -355,7 +384,7 @@ const Page = () => {
         <ContactSellerModal
           isOpen={modalOpen}
           onClose={() => setModalOpen(false)}
-          sellerEmail={listing.user.email}
+          sellerEmail={listing.user?.email}
         />
 
         <MarkAsSoldModal

@@ -7,11 +7,18 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "f003.backblazeb2.com",
       },
-    ],
-    domains: [
-      'www.google.com',
-      'images.unsplash.com',
-      'plus.unsplash.com'
+      {
+        protocol: "https",
+        hostname: "www.google.com",
+      },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
+      {
+        protocol: "https",
+        hostname: "plus.unsplash.com",
+      },
     ],
   },
   compress: true,

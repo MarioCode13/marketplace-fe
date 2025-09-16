@@ -2,13 +2,13 @@
 
 import {
   useGetListingsQuery,
-  useGetUserByIdQuery,
+  useGetBusinessByIdQuery,
 } from '@/lib/graphql/generated'
 import { useParams, useRouter } from 'next/navigation'
 import ListingCard from '@/components/cards/ListingCard'
 import SkeletonListingCard from '@/components/cards/SkeletonListingCard'
 import Image from 'next/image'
-import { Settings, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Settings, ChevronLeft, ChevronRight, Plus } from 'lucide-react'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/store/store'
 import { Button } from '@/components/ui/button'
@@ -23,24 +23,30 @@ export default function StorePage() {
     (state: RootState) => state.auth.user?.userId
   )
 
-  // Debug logging
   console.log('Store page loaded with businessId:', businessId)
 
   // State for pagination only (no filters for resellers)
   const [offset, setOffset] = useState(0)
   const limit = 8
 
+  // Get business data for this business store
   const {
-    data: storeData,
-    loading: storeLoading,
-    error: storeError,
-  } = useGetUserByIdQuery({
+    data: businessData,
+    loading: businessLoading,
+    error: businessError,
+  } = useGetBusinessByIdQuery({
     variables: { id: businessId },
     skip: !businessId,
   })
 
   // Debug logging
-  console.log('Store query result:', { storeData, storeLoading, storeError })
+  console.log('Business query result:', {
+    businessData,
+    businessLoading,
+    businessError,
+  })
+  console.log('Current user ID:', currentUserId, typeof currentUserId)
+  console.log('Business ID from URL:', businessId)
 
   const {
     data: listingsData,
@@ -50,41 +56,60 @@ export default function StorePage() {
     variables: {
       limit,
       offset,
-      userId: storeData?.getUserById?.id,
+      // TODO: For business stores, we might want to show listings from all business users
+      // For now, let's just skip the listings query
     },
-    skip: !storeData?.getUserById?.id,
+    skip: true, // Skip for now until we determine the correct approach
   })
 
-  if (storeLoading)
+  if (businessLoading)
     return <div className='p-8 text-center'>Loading store...</div>
-  if (storeError)
+  if (businessError)
     return (
       <div className='p-8 text-center text-red-500'>Error loading store.</div>
     )
-  if (!storeData?.getUserById)
+  if (!businessData?.business)
     return <div className='p-8 text-center'>Store not found.</div>
 
-  const store = storeData.getUserById
-  const branding = store.storeBranding
+  const business = businessData.business
+  const branding = business.storeBranding
   const listings = listingsData?.getListings?.listings || []
   const totalCount = listingsData?.getListings?.totalCount || 0
 
-  const planType = store.planType
-  const themeColor =
-    branding?.themeColor && planType === 'PRO_STORE'
-      ? branding.themeColor
-      : '#1f1b30'
-  const primaryColor = branding?.primaryColor
-    ? branding.primaryColor
-    : '#1f1b30'
-  const badgeLabel =
-    planType === 'PRO_STORE'
-      ? 'Pro Store'
-      : planType === 'RESELLER'
-      ? 'Reseller'
-      : null
+  // Additional debug logging after business is available
+  console.log(
+    'Business users details:',
+    business.businessUsers?.map((bu) => ({
+      userId: bu.user.id,
+      userIdType: typeof bu.user.id,
+      username: bu.user.username,
+      role: bu.role,
+    }))
+  )
 
-  const isOwner = currentUserId && store.id == currentUserId
+  // For business stores, we show "Business Store" instead of plan type
+  const themeColor = branding?.themeColor || '#1f1b30'
+  const primaryColor = branding?.primaryColor || '#1f1b30'
+  const badgeLabel = 'Business Store'
+
+  // Check ownership/management permissions
+  // For business stores: current user must be a member of the business with OWNER or ADMIN role
+  const isBusinessMember = business.businessUsers?.some(
+    (businessUser) =>
+      businessUser.user.id.toString() === currentUserId?.toString() &&
+      ['OWNER', 'ADMIN'].includes(businessUser.role as string)
+  )
+  const isOwner = isBusinessMember
+
+  // Debug ownership logic
+  console.log('Business ownership check:', {
+    isBusinessMember,
+    isOwner,
+    currentUserId,
+    businessId: business.id,
+    businessUsers: business.businessUsers,
+  })
+
   const bgColor = branding?.lightOrDark === 'light' ? '#dde2e8' : '#121212'
   const textColor = getTextColor(bgColor)
 
@@ -121,39 +146,41 @@ export default function StorePage() {
                 className='text-2xl font-bold'
                 style={{ color: branding?.primaryColor ?? 'unset' }}
               >
-                {branding?.storeName || store.username}
+                {branding?.storeName || business.name}
               </h1>
               {isOwner && (
-                <Button
-                  variant={'text'}
-                  size={'icon'}
-                  className='rounded-full '
-                  title='Store Settings'
-                  onClick={() => navigate.push('/store/edit')}
-                >
-                  <Settings
-                    size={24}
-                    style={{
-                      color: textColor,
-                    }}
-                  />
-                </Button>
+                <div className='flex items-center gap-2'>
+                  <Button
+                    variant={'text'}
+                    size={'sm'}
+                    className='gap-2'
+                    onClick={() => navigate.push('/sell')}
+                  >
+                    <Plus size={16} />
+                    Add Listing
+                  </Button>
+                  <Button
+                    variant={'text'}
+                    size={'icon'}
+                    className='rounded-full'
+                    title='Store Settings'
+                    onClick={() => navigate.push('/business/edit')}
+                  >
+                    <Settings
+                      size={24}
+                      style={{
+                        color: textColor,
+                      }}
+                    />
+                  </Button>
+                </div>
               )}
             </div>
             {branding?.about && (
               <p className='text-gray-600 mt-1'>{branding.about}</p>
             )}
             <div className='mt-2 flex items-center gap-2'>
-              {store.trustRating && (
-                <span className='text-yellow-500 font-semibold'>
-                  ★ {store.trustRating.starRating?.toFixed(1) || '-'}
-                </span>
-              )}
-              {store.trustRating?.trustLevel && (
-                <span className='text-xs bg-gray-100 px-2 py-1 rounded text-black'>
-                  {store.trustRating.trustLevel}
-                </span>
-              )}
+              {/* Business stores don't have individual trust ratings */}
               {badgeLabel && (
                 <span
                   className='text-xs px-2 py-1 rounded ml-2 text-white'
@@ -190,7 +217,12 @@ export default function StorePage() {
               {listings.map((listing) => (
                 <ListingCard
                   key={listing.id}
-                  listing={{ ...listing, price: listing.price.toString() }}
+                  listing={{
+                    ...listing,
+                    price: listing.price.toString(),
+                    user: listing.user === null ? undefined : listing.user,
+                    business: business ? { name: business.name } : undefined,
+                  }}
                   themeColor={themeColor}
                   primaryColor={primaryColor}
                   store

@@ -167,6 +167,49 @@ const Listings: React.FC<ListingsProps> = ({
             <div className='flex items-center gap-2 text-sm text-muted-foreground flex-wrap'>
               <Search className='w-4 h-4' />
               <span>Filters applied</span>
+              {/* Show active filter values */}
+              {(() => {
+                const params = Object.fromEntries(searchParams.entries())
+                const filterLabels: string[] = []
+                // Category
+                if (params.categoryId && categoriesData?.getCategories) {
+                  const cat = categoriesData.getCategories.find(
+                    (c) => c && c.id === params.categoryId
+                  )
+                  if (cat) filterLabels.push(`Category: ${cat.name}`)
+                }
+                // Price
+                if (params.minPrice || params.maxPrice) {
+                  let priceLabel = 'Price:'
+                  if (params.minPrice) priceLabel += ` from $${params.minPrice}`
+                  if (params.maxPrice) priceLabel += ` to $${params.maxPrice}`
+                  filterLabels.push(priceLabel)
+                }
+                // Condition
+                if (params.condition)
+                  filterLabels.push(`Condition: ${params.condition}`)
+                // City
+                if (params.customCity)
+                  filterLabels.push(`City: ${params.customCity}`)
+                else if (params.cityId)
+                  filterLabels.push(`City ID: ${params.cityId}`)
+                // Search term
+                if (params.searchTerm)
+                  filterLabels.push(`Search: "${params.searchTerm}"`)
+                // Sort
+                if (params.sortBy)
+                  filterLabels.push(`Sort by: ${params.sortBy}`)
+                if (params.sortOrder)
+                  filterLabels.push(`Order: ${params.sortOrder}`)
+                return filterLabels.map((label, idx) => (
+                  <span
+                    key={idx}
+                    className='ml-2 px-2 py-1 rounded bg-componentBackground  '
+                  >
+                    {label}
+                  </span>
+                ))
+              })()}
             </div>
             <Button
               color='secondary'

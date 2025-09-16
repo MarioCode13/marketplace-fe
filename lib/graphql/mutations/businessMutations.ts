@@ -2,24 +2,19 @@
 import { gql } from '@apollo/client'
 
 export const UPDATE_STORE_BRANDING = gql`
-	mutation UpdateStoreBranding($id: ID!, $input: UpdateStoreBrandingInput!) {
-  updateStoreBranding(id: $id, input: $input) {
-    id
-    username
-    email
-    storeBranding {
-      slug
-      logoUrl
-      bannerUrl
-      themeColor
-      primaryColor
-      secondaryColor
-      lightOrDark
-      about
-      storeName
-      textColor
-      cardTextColor
-    }
+	mutation UpdateStoreBranding($businessId: ID!, $input: UpdateStoreBrandingInput!) {
+  updateStoreBranding(businessId: $businessId, input: $input) {
+    slug
+    logoUrl
+    bannerUrl
+    themeColor
+    primaryColor
+    secondaryColor
+    lightOrDark
+    about
+    storeName
+    textColor
+    cardTextColor
   }
 }
 `

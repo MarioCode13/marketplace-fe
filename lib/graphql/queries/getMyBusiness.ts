@@ -30,6 +30,9 @@ export const GET_MY_BUSINESS = gql`
         lightOrDark
         about
         storeName
+        textColor
+        cardTextColor
+        backgroundColor
       }
       businessUsers {
         id

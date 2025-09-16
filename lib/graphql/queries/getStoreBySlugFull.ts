@@ -14,6 +14,9 @@ export const GET_STORE_BY_SLUG_FULL = gql`
         lightOrDark
         primaryColor
         secondaryColor
+        backgroundColor
+        textColor
+        cardTextColor
         about
         storeName
       }

@@ -34,28 +34,29 @@ export default async function Page({
   const offset = (page - 1) * limit
 
   // Extract filters from URL params
-  const categoryId = getParamValue('categoryId')
+  const categoryId = getParamValue('categoryId') || undefined
   const minPrice = getParamValue('minPrice')
   const maxPrice = getParamValue('maxPrice')
   const condition = getParamValue('condition')
   const searchTerm = getParamValue('searchTerm')
-  const cityId = getParamValue('cityId')
+  const cityId = getParamValue('cityId') || undefined
   const sortBy = getParamValue('sortBy')
   const sortOrder = getParamValue('sortOrder')
 
-  // Build variables object
   const variables = {
     limit,
     offset,
-    categoryId: categoryId ? Number(categoryId) : undefined,
+    categoryId,
     minPrice: minPrice ? parseFloat(minPrice) : undefined,
     maxPrice: maxPrice ? parseFloat(maxPrice) : undefined,
     condition,
     searchTerm,
-    cityId: cityId ? Number(cityId) : undefined,
+    cityId,
     sortBy,
     sortOrder,
   }
+
+  console.log('Listings query variables:', variables)
 
   // Fetch from GraphQL with network-only to ensure fresh data
   const { data } = await client.query({

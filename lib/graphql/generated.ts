@@ -35,6 +35,7 @@ export type Business = {
   __typename?: 'Business';
   addressLine1?: Maybe<Scalars['String']['output']>;
   addressLine2?: Maybe<Scalars['String']['output']>;
+  businessType?: Maybe<Scalars['String']['output']>;
   businessUsers: Array<BusinessUser>;
   city?: Maybe<City>;
   contactNumber?: Maybe<Scalars['String']['output']>;
@@ -45,6 +46,14 @@ export type Business = {
   postalCode?: Maybe<Scalars['String']['output']>;
   slug?: Maybe<Scalars['String']['output']>;
   storeBranding?: Maybe<StoreBranding>;
+  /**  Added */
+  verificationDocuments: Array<VerificationDocument>;
+};
+
+export type BusinessTrustRating = {
+  __typename?: 'BusinessTrustRating';
+  averageRating: Scalars['Float']['output'];
+  reviewCount: Scalars['Int']['output'];
 };
 
 export type BusinessUser = {
@@ -106,6 +115,7 @@ export type CreateBusinessInput = {
 
 export type CreateStoreBrandingInput = {
   about?: InputMaybe<Scalars['String']['input']>;
+  backgroundColor?: InputMaybe<Scalars['String']['input']>;
   bannerUrl?: InputMaybe<Scalars['String']['input']>;
   cardTextColor?: InputMaybe<Scalars['String']['input']>;
   lightOrDark?: InputMaybe<Scalars['String']['input']>;
@@ -127,6 +137,10 @@ export enum DocumentType {
 
 export type Listing = {
   __typename?: 'Listing';
+  /**  Added, nullable */
+  archived: Scalars['Boolean']['output'];
+  /**  Now nullable */
+  business?: Maybe<Business>;
   category?: Maybe<Category>;
   city?: Maybe<City>;
   condition: Condition;
@@ -139,7 +153,7 @@ export type Listing = {
   price: Scalars['Float']['output'];
   sold: Scalars['Boolean']['output'];
   title: Scalars['String']['output'];
-  user: User;
+  user?: Maybe<User>;
 };
 
 export type ListingPageResponse = {
@@ -150,6 +164,7 @@ export type ListingPageResponse = {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  acceptBusinessInvitation: Scalars['Boolean']['output'];
   cancelSubscription: Subscription;
   cancelTransaction: Transaction;
   completeTransaction: Transaction;
@@ -158,11 +173,14 @@ export type Mutation = {
   createListing: Listing;
   createReview: Review;
   createTransaction: Transaction;
+  declineBusinessInvitation: Scalars['Boolean']['output'];
+  deleteBusinessVerificationDocument: Scalars['Boolean']['output'];
   deleteListing: Scalars['Boolean']['output'];
   deleteReview: Scalars['Boolean']['output'];
   linkUserToBusiness: BusinessUser;
   login: AuthResponse;
   markListingAsSold: Listing;
+  markNotificationRead: Scalars['Boolean']['output'];
   reactivateSubscription: Subscription;
   register: AuthResponse;
   transferBusinessOwnership: Scalars['Boolean']['output'];
@@ -172,10 +190,16 @@ export type Mutation = {
   updateListingPrice: Listing;
   updateListingTitle: Listing;
   updateReview: Review;
-  updateStoreBranding?: Maybe<User>;
+  updateStoreBranding?: Maybe<StoreBranding>;
   updateUser?: Maybe<User>;
   updateUserPlanType?: Maybe<User>;
+  uploadBusinessVerificationDocument: VerificationDocument;
   uploadListingImage: Scalars['String']['output'];
+};
+
+
+export type MutationAcceptBusinessInvitationArgs = {
+  notificationId: Scalars['ID']['input'];
 };
 
 
@@ -231,6 +255,17 @@ export type MutationCreateTransactionArgs = {
 };
 
 
+export type MutationDeclineBusinessInvitationArgs = {
+  notificationId: Scalars['ID']['input'];
+};
+
+
+export type MutationDeleteBusinessVerificationDocumentArgs = {
+  businessId: Scalars['ID']['input'];
+  documentId: Scalars['ID']['input'];
+};
+
+
 export type MutationDeleteListingArgs = {
   listingId: Scalars['ID']['input'];
 };
@@ -256,6 +291,11 @@ export type MutationLoginArgs = {
 
 export type MutationMarkListingAsSoldArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type MutationMarkNotificationReadArgs = {
+  notificationId: Scalars['ID']['input'];
 };
 
 
@@ -309,8 +349,8 @@ export type MutationUpdateReviewArgs = {
 
 
 export type MutationUpdateStoreBrandingArgs = {
-  id: Scalars['ID']['input'];
-  input?: InputMaybe<UpdateStoreBrandingInput>;
+  businessId: Scalars['ID']['input'];
+  input: UpdateStoreBrandingInput;
 };
 
 
@@ -333,8 +373,27 @@ export type MutationUpdateUserPlanTypeArgs = {
 };
 
 
+export type MutationUploadBusinessVerificationDocumentArgs = {
+  businessId: Scalars['ID']['input'];
+  documentType: DocumentType;
+  file: Scalars['String']['input'];
+};
+
+
 export type MutationUploadListingImageArgs = {
   image: Scalars['String']['input'];
+};
+
+export type Notification = {
+  __typename?: 'Notification';
+  actionRequired: Scalars['Boolean']['output'];
+  createdAt: Scalars['String']['output'];
+  data?: Maybe<Scalars['String']['output']>;
+  id: Scalars['ID']['output'];
+  message: Scalars['String']['output'];
+  read: Scalars['Boolean']['output'];
+  type: Scalars['String']['output'];
+  user: User;
 };
 
 export enum PlanType {
@@ -364,10 +423,13 @@ export type ProfileCompletion = {
 export type Query = {
   __typename?: 'Query';
   business?: Maybe<Business>;
+  businessTrustRating?: Maybe<BusinessTrustRating>;
   businessUsers: Array<BusinessUser>;
   canContactSellers: Scalars['Boolean']['output'];
   getAllUsers: Array<User>;
   getAvailablePlans: Array<Scalars['String']['output']>;
+  getBusinessDocumentByType?: Maybe<VerificationDocument>;
+  getBusinessVerificationDocuments: Array<VerificationDocument>;
   getBuyerForListing?: Maybe<Scalars['String']['output']>;
   /**  No longer non-nullable list */
   getCategories?: Maybe<Array<Maybe<Category>>>;
@@ -411,6 +473,7 @@ export type Query = {
   mySales: Array<Transaction>;
   mySubscription?: Maybe<Subscription>;
   mySubscriptionHistory: Array<Subscription>;
+  notifications: Array<Notification>;
   reviewsByUser: Array<Review>;
   searchCities: Array<City>;
   searchUsers: Array<User>;
@@ -424,7 +487,23 @@ export type QueryBusinessArgs = {
 };
 
 
+export type QueryBusinessTrustRatingArgs = {
+  businessId: Scalars['ID']['input'];
+};
+
+
 export type QueryBusinessUsersArgs = {
+  businessId: Scalars['ID']['input'];
+};
+
+
+export type QueryGetBusinessDocumentByTypeArgs = {
+  businessId: Scalars['ID']['input'];
+  documentType: DocumentType;
+};
+
+
+export type QueryGetBusinessVerificationDocumentsArgs = {
   businessId: Scalars['ID']['input'];
 };
 
@@ -455,6 +534,7 @@ export type QueryGetListingTransactionsArgs = {
 
 
 export type QueryGetListingsArgs = {
+  businessId?: InputMaybe<Scalars['ID']['input']>;
   categoryId?: InputMaybe<Scalars['ID']['input']>;
   cityId?: InputMaybe<Scalars['ID']['input']>;
   condition?: InputMaybe<Condition>;
@@ -584,6 +664,11 @@ export type QueryMyListingsArgs = {
 };
 
 
+export type QueryNotificationsArgs = {
+  userId: Scalars['ID']['input'];
+};
+
+
 export type QueryReviewsByUserArgs = {
   userId: Scalars['ID']['input'];
 };
@@ -631,6 +716,7 @@ export type Review = {
 export type StoreBranding = {
   __typename?: 'StoreBranding';
   about?: Maybe<Scalars['String']['output']>;
+  backgroundColor?: Maybe<Scalars['String']['output']>;
   bannerUrl?: Maybe<Scalars['String']['output']>;
   cardTextColor?: Maybe<Scalars['String']['output']>;
   lightOrDark?: Maybe<Scalars['String']['output']>;
@@ -742,6 +828,7 @@ export type UpdateListingInput = {
 
 export type UpdateStoreBrandingInput = {
   about?: InputMaybe<Scalars['String']['input']>;
+  backgroundColor?: InputMaybe<Scalars['String']['input']>;
   bannerUrl?: InputMaybe<Scalars['String']['input']>;
   cardTextColor?: InputMaybe<Scalars['String']['input']>;
   lightOrDark?: InputMaybe<Scalars['String']['input']>;
@@ -783,13 +870,14 @@ export type User = {
 
 export type VerificationDocument = {
   __typename?: 'VerificationDocument';
+  businessId?: Maybe<Scalars['ID']['output']>;
   documentType: DocumentType;
   documentUrl: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   notes?: Maybe<Scalars['String']['output']>;
   status: VerificationStatus;
   uploadedAt: Scalars['String']['output'];
-  userId: Scalars['ID']['output'];
+  userId?: Maybe<Scalars['ID']['output']>;
   verifiedAt?: Maybe<Scalars['String']['output']>;
 };
 
@@ -828,7 +916,7 @@ export type RegisterMutationVariables = Exact<{
 }>;
 
 
-export type RegisterMutation = { __typename?: 'Mutation', register: { __typename?: 'AuthResponse', token: string, email: string, role?: string | null } };
+export type RegisterMutation = { __typename?: 'Mutation', register: { __typename?: 'AuthResponse', token: string, email: string, role?: string | null, userId: string } };
 
 export type CreateListingMutationVariables = Exact<{
   title: Scalars['String']['input'];
@@ -856,12 +944,12 @@ export type GetAllUsersQueryVariables = Exact<{ [key: string]: never; }>;
 export type GetAllUsersQuery = { __typename?: 'Query', getAllUsers: Array<{ __typename?: 'User', id: string, username: string, email: string }> };
 
 export type UpdateStoreBrandingMutationVariables = Exact<{
-  id: Scalars['ID']['input'];
+  businessId: Scalars['ID']['input'];
   input: UpdateStoreBrandingInput;
 }>;
 
 
-export type UpdateStoreBrandingMutation = { __typename?: 'Mutation', updateStoreBranding?: { __typename?: 'User', id: string, username: string, email: string, storeBranding?: { __typename?: 'StoreBranding', slug?: string | null, logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, primaryColor?: string | null, secondaryColor?: string | null, lightOrDark?: string | null, about?: string | null, storeName?: string | null, textColor?: string | null, cardTextColor?: string | null } | null } | null };
+export type UpdateStoreBrandingMutation = { __typename?: 'Mutation', updateStoreBranding?: { __typename?: 'StoreBranding', slug?: string | null, logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, primaryColor?: string | null, secondaryColor?: string | null, lightOrDark?: string | null, about?: string | null, storeName?: string | null, textColor?: string | null, cardTextColor?: string | null } | null };
 
 export type CreateBusinessMutationVariables = Exact<{
   input: CreateBusinessInput;
@@ -901,6 +989,27 @@ export type UpdateListingMutationVariables = Exact<{
 
 export type UpdateListingMutation = { __typename?: 'Mutation', updateListing: { __typename?: 'Listing', id: string, title: string, description: string, price: number, images: Array<string>, condition: Condition, customCity?: string | null, category?: { __typename?: 'Category', id: string, name: string } | null, city?: { __typename?: 'City', id: string, name: string } | null } };
 
+export type MarkNotificationReadMutationVariables = Exact<{
+  notificationId: Scalars['ID']['input'];
+}>;
+
+
+export type MarkNotificationReadMutation = { __typename?: 'Mutation', markNotificationRead: boolean };
+
+export type AcceptBusinessInvitationMutationVariables = Exact<{
+  notificationId: Scalars['ID']['input'];
+}>;
+
+
+export type AcceptBusinessInvitationMutation = { __typename?: 'Mutation', acceptBusinessInvitation: boolean };
+
+export type DeclineBusinessInvitationMutationVariables = Exact<{
+  notificationId: Scalars['ID']['input'];
+}>;
+
+
+export type DeclineBusinessInvitationMutation = { __typename?: 'Mutation', declineBusinessInvitation: boolean };
+
 export type CreateReviewMutationVariables = Exact<{
   transactionId: Scalars['ID']['input'];
   reviewedUserId: Scalars['ID']['input'];
@@ -936,7 +1045,7 @@ export type CreateTransactionMutationVariables = Exact<{
 }>;
 
 
-export type CreateTransactionMutation = { __typename?: 'Mutation', createTransaction: { __typename?: 'Transaction', id: string, salePrice: number, saleDate: string, status: TransactionStatus, paymentMethod?: string | null, notes?: string | null, createdAt: string, updatedAt: string, listing: { __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, condition: Condition, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, user: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } }, seller: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null }, buyer: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } } };
+export type CreateTransactionMutation = { __typename?: 'Mutation', createTransaction: { __typename?: 'Transaction', id: string, salePrice: number, saleDate: string, status: TransactionStatus, paymentMethod?: string | null, notes?: string | null, createdAt: string, updatedAt: string, listing: { __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, condition: Condition, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, user?: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } | null }, seller: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null }, buyer: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } } };
 
 export type CompleteTransactionMutationVariables = Exact<{
   transactionId: Scalars['ID']['input'];
@@ -970,7 +1079,7 @@ export type GetListingByIdQueryVariables = Exact<{
 }>;
 
 
-export type GetListingByIdQuery = { __typename?: 'Query', getListingById?: { __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, sold: boolean, customCity?: string | null, condition: Condition, createdAt: string, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, category?: { __typename?: 'Category', id: string, name: string, parentId?: string | null } | null, user: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null, email: string, planType?: string | null, storeBranding?: { __typename?: 'StoreBranding', slug?: string | null, storeName?: string | null, logoUrl?: string | null } | null } } | null };
+export type GetListingByIdQuery = { __typename?: 'Query', getListingById?: { __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, sold: boolean, customCity?: string | null, condition: Condition, createdAt: string, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, category?: { __typename?: 'Category', id: string, name: string, parentId?: string | null } | null, user?: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null, email: string, planType?: string | null } | null, business?: { __typename?: 'Business', id: string, name: string, businessType?: string | null, storeBranding?: { __typename?: 'StoreBranding', slug?: string | null, storeName?: string | null, logoUrl?: string | null } | null } | null } | null };
 
 export type GetListingsQueryVariables = Exact<{
   limit: Scalars['Int']['input'];
@@ -989,7 +1098,7 @@ export type GetListingsQueryVariables = Exact<{
 }>;
 
 
-export type GetListingsQuery = { __typename?: 'Query', getListings: { __typename?: 'ListingPageResponse', totalCount: number, listings: Array<{ __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, sold: boolean, customCity?: string | null, condition: Condition, createdAt: string, expiresAt: string, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, category?: { __typename?: 'Category', id: string, name: string } | null, user: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } }> } };
+export type GetListingsQuery = { __typename?: 'Query', getListings: { __typename?: 'ListingPageResponse', totalCount: number, listings: Array<{ __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, sold: boolean, customCity?: string | null, condition: Condition, createdAt: string, expiresAt: string, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, category?: { __typename?: 'Category', id: string, name: string } | null, user?: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } | null, business?: { __typename?: 'Business', name: string } | null }> } };
 
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -999,7 +1108,14 @@ export type MeQuery = { __typename?: 'Query', me?: { __typename?: 'User', id: st
 export type GetMyBusinessQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetMyBusinessQuery = { __typename?: 'Query', myBusiness?: { __typename?: 'Business', id: string, name: string, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, postalCode?: string | null, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, storeBranding?: { __typename?: 'StoreBranding', slug?: string | null, logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, primaryColor?: string | null, secondaryColor?: string | null, lightOrDark?: string | null, about?: string | null, storeName?: string | null } | null, businessUsers: Array<{ __typename?: 'BusinessUser', id: string, role: BusinessUserRole, user: { __typename?: 'User', id: string, username: string, email: string, profileImageUrl?: string | null } }> } | null };
+export type GetMyBusinessQuery = { __typename?: 'Query', myBusiness?: { __typename?: 'Business', id: string, name: string, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, postalCode?: string | null, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, storeBranding?: { __typename?: 'StoreBranding', slug?: string | null, logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, primaryColor?: string | null, secondaryColor?: string | null, lightOrDark?: string | null, about?: string | null, storeName?: string | null, textColor?: string | null, cardTextColor?: string | null } | null, businessUsers: Array<{ __typename?: 'BusinessUser', id: string, role: BusinessUserRole, user: { __typename?: 'User', id: string, username: string, email: string, profileImageUrl?: string | null } }> } | null };
+
+export type GetNotificationsQueryVariables = Exact<{
+  userId: Scalars['ID']['input'];
+}>;
+
+
+export type GetNotificationsQuery = { __typename?: 'Query', notifications: Array<{ __typename?: 'Notification', id: string, message: string, type: string, read: boolean, actionRequired: boolean, data?: string | null, createdAt: string, user: { __typename?: 'User', id: string, username: string } }> };
 
 export type GetSellerProfileQueryVariables = Exact<{
   id: Scalars['ID']['input'];
@@ -1020,7 +1136,7 @@ export type GetStoreBySlugFullQueryVariables = Exact<{
 }>;
 
 
-export type GetStoreBySlugFullQuery = { __typename?: 'Query', storeBySlug?: { __typename?: 'User', id: string, username: string, planType?: string | null, storeBranding?: { __typename?: 'StoreBranding', slug?: string | null, logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, lightOrDark?: string | null, primaryColor?: string | null, secondaryColor?: string | null, about?: string | null, storeName?: string | null } | null, trustRating?: { __typename?: 'TrustRating', starRating: number, trustLevel: string, overallScore: number, totalReviews: number, positiveReviews: number } | null, listings: Array<{ __typename?: 'Listing', id: string, title: string, description: string, price: number, images: Array<string>, condition: Condition, customCity?: string | null, createdAt: string, expiresAt: string, sold: boolean, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null }> } | null };
+export type GetStoreBySlugFullQuery = { __typename?: 'Query', storeBySlug?: { __typename?: 'User', id: string, username: string, planType?: string | null, storeBranding?: { __typename?: 'StoreBranding', slug?: string | null, logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, lightOrDark?: string | null, primaryColor?: string | null, secondaryColor?: string | null, backgroundColor?: string | null, textColor?: string | null, cardTextColor?: string | null, about?: string | null, storeName?: string | null } | null, trustRating?: { __typename?: 'TrustRating', starRating: number, trustLevel: string, overallScore: number, totalReviews: number, positiveReviews: number } | null, listings: Array<{ __typename?: 'Listing', id: string, title: string, description: string, price: number, images: Array<string>, condition: Condition, customCity?: string | null, createdAt: string, expiresAt: string, sold: boolean, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null }> } | null };
 
 export type GetStoreBySlugMinimalQueryVariables = Exact<{
   slug: Scalars['String']['input'];
@@ -1032,29 +1148,29 @@ export type GetStoreBySlugMinimalQuery = { __typename?: 'Query', storeBySlug?: {
 export type GetMyPurchasesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetMyPurchasesQuery = { __typename?: 'Query', myPurchases: Array<{ __typename?: 'Transaction', id: string, salePrice: number, saleDate: string, status: TransactionStatus, paymentMethod?: string | null, notes?: string | null, createdAt: string, updatedAt: string, listing: { __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, customCity?: string | null, condition: Condition, city?: { __typename?: 'City', name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, user: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } }, seller: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null }, buyer: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } }> };
+export type GetMyPurchasesQuery = { __typename?: 'Query', myPurchases: Array<{ __typename?: 'Transaction', id: string, salePrice: number, saleDate: string, status: TransactionStatus, paymentMethod?: string | null, notes?: string | null, createdAt: string, updatedAt: string, listing: { __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, customCity?: string | null, condition: Condition, city?: { __typename?: 'City', name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, user?: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } | null }, seller: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null }, buyer: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } }> };
 
 export type GetMySalesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetMySalesQuery = { __typename?: 'Query', mySales: Array<{ __typename?: 'Transaction', id: string, salePrice: number, saleDate: string, status: TransactionStatus, paymentMethod?: string | null, notes?: string | null, createdAt: string, updatedAt: string, listing: { __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, customCity?: string | null, condition: Condition, city?: { __typename?: 'City', name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, user: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } }, seller: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null }, buyer: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } }> };
+export type GetMySalesQuery = { __typename?: 'Query', mySales: Array<{ __typename?: 'Transaction', id: string, salePrice: number, saleDate: string, status: TransactionStatus, paymentMethod?: string | null, notes?: string | null, createdAt: string, updatedAt: string, listing: { __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, customCity?: string | null, condition: Condition, city?: { __typename?: 'City', name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, user?: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } | null }, seller: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null }, buyer: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } }> };
 
 export type GetMyCompletedPurchasesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetMyCompletedPurchasesQuery = { __typename?: 'Query', myCompletedPurchases: Array<{ __typename?: 'Transaction', id: string, salePrice: number, saleDate: string, status: TransactionStatus, paymentMethod?: string | null, notes?: string | null, createdAt: string, updatedAt: string, listing: { __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, customCity?: string | null, condition: Condition, city?: { __typename?: 'City', name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, user: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } }, seller: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null }, buyer: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } }> };
+export type GetMyCompletedPurchasesQuery = { __typename?: 'Query', myCompletedPurchases: Array<{ __typename?: 'Transaction', id: string, salePrice: number, saleDate: string, status: TransactionStatus, paymentMethod?: string | null, notes?: string | null, createdAt: string, updatedAt: string, listing: { __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, customCity?: string | null, condition: Condition, city?: { __typename?: 'City', name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, user?: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } | null }, seller: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null }, buyer: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } }> };
 
 export type GetMyCompletedSalesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetMyCompletedSalesQuery = { __typename?: 'Query', myCompletedSales: Array<{ __typename?: 'Transaction', id: string, salePrice: number, saleDate: string, status: TransactionStatus, paymentMethod?: string | null, notes?: string | null, createdAt: string, updatedAt: string, listing: { __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, customCity?: string | null, condition: Condition, city?: { __typename?: 'City', name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, user: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } }, seller: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null }, buyer: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } }> };
+export type GetMyCompletedSalesQuery = { __typename?: 'Query', myCompletedSales: Array<{ __typename?: 'Transaction', id: string, salePrice: number, saleDate: string, status: TransactionStatus, paymentMethod?: string | null, notes?: string | null, createdAt: string, updatedAt: string, listing: { __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, customCity?: string | null, condition: Condition, city?: { __typename?: 'City', name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, user?: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } | null }, seller: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null }, buyer: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } }> };
 
 export type GetTransactionQueryVariables = Exact<{
   transactionId: Scalars['ID']['input'];
 }>;
 
 
-export type GetTransactionQuery = { __typename?: 'Query', getTransaction: { __typename?: 'Transaction', id: string, salePrice: number, saleDate: string, status: TransactionStatus, paymentMethod?: string | null, notes?: string | null, createdAt: string, updatedAt: string, listing: { __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, customCity?: string | null, condition: Condition, city?: { __typename?: 'City', name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, user: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } }, seller: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null }, buyer: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } } };
+export type GetTransactionQuery = { __typename?: 'Query', getTransaction: { __typename?: 'Transaction', id: string, salePrice: number, saleDate: string, status: TransactionStatus, paymentMethod?: string | null, notes?: string | null, createdAt: string, updatedAt: string, listing: { __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, customCity?: string | null, condition: Condition, city?: { __typename?: 'City', name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, user?: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } | null }, seller: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null }, buyer: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } } };
 
 export type GetMyReviewForTransactionQueryVariables = Exact<{
   transactionId: Scalars['ID']['input'];
@@ -1136,7 +1252,7 @@ export type GetUserVerificationDocumentsQueryVariables = Exact<{
 }>;
 
 
-export type GetUserVerificationDocumentsQuery = { __typename?: 'Query', getUserVerificationDocuments: Array<{ __typename?: 'VerificationDocument', id: string, userId: string, documentType: DocumentType, documentUrl: string, status: VerificationStatus, uploadedAt: string, verifiedAt?: string | null, notes?: string | null }> };
+export type GetUserVerificationDocumentsQuery = { __typename?: 'Query', getUserVerificationDocuments: Array<{ __typename?: 'VerificationDocument', id: string, userId?: string | null, documentType: DocumentType, documentUrl: string, status: VerificationStatus, uploadedAt: string, verifiedAt?: string | null, notes?: string | null }> };
 
 export type MyListingsQueryVariables = Exact<{
   limit?: InputMaybe<Scalars['Int']['input']>;
@@ -1144,7 +1260,7 @@ export type MyListingsQueryVariables = Exact<{
 }>;
 
 
-export type MyListingsQuery = { __typename?: 'Query', myListings: { __typename?: 'ListingPageResponse', totalCount: number, listings: Array<{ __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, sold: boolean, customCity?: string | null, condition: Condition, createdAt: string, expiresAt: string, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, user: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } }> } };
+export type MyListingsQuery = { __typename?: 'Query', myListings: { __typename?: 'ListingPageResponse', totalCount: number, listings: Array<{ __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, sold: boolean, customCity?: string | null, condition: Condition, createdAt: string, expiresAt: string, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, user?: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } | null }> } };
 
 export type SearchCitiesQueryVariables = Exact<{
   query: Scalars['String']['input'];
@@ -1259,6 +1375,7 @@ export const RegisterDocument = gql`
     token
     email
     role
+    userId
   }
 }
     `;
@@ -1427,24 +1544,19 @@ export type GetAllUsersLazyQueryHookResult = ReturnType<typeof useGetAllUsersLaz
 export type GetAllUsersSuspenseQueryHookResult = ReturnType<typeof useGetAllUsersSuspenseQuery>;
 export type GetAllUsersQueryResult = Apollo.QueryResult<GetAllUsersQuery, GetAllUsersQueryVariables>;
 export const UpdateStoreBrandingDocument = gql`
-    mutation UpdateStoreBranding($id: ID!, $input: UpdateStoreBrandingInput!) {
-  updateStoreBranding(id: $id, input: $input) {
-    id
-    username
-    email
-    storeBranding {
-      slug
-      logoUrl
-      bannerUrl
-      themeColor
-      primaryColor
-      secondaryColor
-      lightOrDark
-      about
-      storeName
-      textColor
-      cardTextColor
-    }
+    mutation UpdateStoreBranding($businessId: ID!, $input: UpdateStoreBrandingInput!) {
+  updateStoreBranding(businessId: $businessId, input: $input) {
+    slug
+    logoUrl
+    bannerUrl
+    themeColor
+    primaryColor
+    secondaryColor
+    lightOrDark
+    about
+    storeName
+    textColor
+    cardTextColor
   }
 }
     `;
@@ -1463,7 +1575,7 @@ export type UpdateStoreBrandingMutationFn = Apollo.MutationFunction<UpdateStoreB
  * @example
  * const [updateStoreBrandingMutation, { data, loading, error }] = useUpdateStoreBrandingMutation({
  *   variables: {
- *      id: // value for 'id'
+ *      businessId: // value for 'businessId'
  *      input: // value for 'input'
  *   },
  * });
@@ -1683,6 +1795,99 @@ export function useUpdateListingMutation(baseOptions?: Apollo.MutationHookOption
 export type UpdateListingMutationHookResult = ReturnType<typeof useUpdateListingMutation>;
 export type UpdateListingMutationResult = Apollo.MutationResult<UpdateListingMutation>;
 export type UpdateListingMutationOptions = Apollo.BaseMutationOptions<UpdateListingMutation, UpdateListingMutationVariables>;
+export const MarkNotificationReadDocument = gql`
+    mutation MarkNotificationRead($notificationId: ID!) {
+  markNotificationRead(notificationId: $notificationId)
+}
+    `;
+export type MarkNotificationReadMutationFn = Apollo.MutationFunction<MarkNotificationReadMutation, MarkNotificationReadMutationVariables>;
+
+/**
+ * __useMarkNotificationReadMutation__
+ *
+ * To run a mutation, you first call `useMarkNotificationReadMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useMarkNotificationReadMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [markNotificationReadMutation, { data, loading, error }] = useMarkNotificationReadMutation({
+ *   variables: {
+ *      notificationId: // value for 'notificationId'
+ *   },
+ * });
+ */
+export function useMarkNotificationReadMutation(baseOptions?: Apollo.MutationHookOptions<MarkNotificationReadMutation, MarkNotificationReadMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<MarkNotificationReadMutation, MarkNotificationReadMutationVariables>(MarkNotificationReadDocument, options);
+      }
+export type MarkNotificationReadMutationHookResult = ReturnType<typeof useMarkNotificationReadMutation>;
+export type MarkNotificationReadMutationResult = Apollo.MutationResult<MarkNotificationReadMutation>;
+export type MarkNotificationReadMutationOptions = Apollo.BaseMutationOptions<MarkNotificationReadMutation, MarkNotificationReadMutationVariables>;
+export const AcceptBusinessInvitationDocument = gql`
+    mutation AcceptBusinessInvitation($notificationId: ID!) {
+  acceptBusinessInvitation(notificationId: $notificationId)
+}
+    `;
+export type AcceptBusinessInvitationMutationFn = Apollo.MutationFunction<AcceptBusinessInvitationMutation, AcceptBusinessInvitationMutationVariables>;
+
+/**
+ * __useAcceptBusinessInvitationMutation__
+ *
+ * To run a mutation, you first call `useAcceptBusinessInvitationMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useAcceptBusinessInvitationMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [acceptBusinessInvitationMutation, { data, loading, error }] = useAcceptBusinessInvitationMutation({
+ *   variables: {
+ *      notificationId: // value for 'notificationId'
+ *   },
+ * });
+ */
+export function useAcceptBusinessInvitationMutation(baseOptions?: Apollo.MutationHookOptions<AcceptBusinessInvitationMutation, AcceptBusinessInvitationMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<AcceptBusinessInvitationMutation, AcceptBusinessInvitationMutationVariables>(AcceptBusinessInvitationDocument, options);
+      }
+export type AcceptBusinessInvitationMutationHookResult = ReturnType<typeof useAcceptBusinessInvitationMutation>;
+export type AcceptBusinessInvitationMutationResult = Apollo.MutationResult<AcceptBusinessInvitationMutation>;
+export type AcceptBusinessInvitationMutationOptions = Apollo.BaseMutationOptions<AcceptBusinessInvitationMutation, AcceptBusinessInvitationMutationVariables>;
+export const DeclineBusinessInvitationDocument = gql`
+    mutation DeclineBusinessInvitation($notificationId: ID!) {
+  declineBusinessInvitation(notificationId: $notificationId)
+}
+    `;
+export type DeclineBusinessInvitationMutationFn = Apollo.MutationFunction<DeclineBusinessInvitationMutation, DeclineBusinessInvitationMutationVariables>;
+
+/**
+ * __useDeclineBusinessInvitationMutation__
+ *
+ * To run a mutation, you first call `useDeclineBusinessInvitationMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDeclineBusinessInvitationMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [declineBusinessInvitationMutation, { data, loading, error }] = useDeclineBusinessInvitationMutation({
+ *   variables: {
+ *      notificationId: // value for 'notificationId'
+ *   },
+ * });
+ */
+export function useDeclineBusinessInvitationMutation(baseOptions?: Apollo.MutationHookOptions<DeclineBusinessInvitationMutation, DeclineBusinessInvitationMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<DeclineBusinessInvitationMutation, DeclineBusinessInvitationMutationVariables>(DeclineBusinessInvitationDocument, options);
+      }
+export type DeclineBusinessInvitationMutationHookResult = ReturnType<typeof useDeclineBusinessInvitationMutation>;
+export type DeclineBusinessInvitationMutationResult = Apollo.MutationResult<DeclineBusinessInvitationMutation>;
+export type DeclineBusinessInvitationMutationOptions = Apollo.BaseMutationOptions<DeclineBusinessInvitationMutation, DeclineBusinessInvitationMutationVariables>;
 export const CreateReviewDocument = gql`
     mutation CreateReview($transactionId: ID!, $reviewedUserId: ID!, $rating: Float!, $comment: String) {
   createReview(
@@ -2153,6 +2358,11 @@ export const GetListingByIdDocument = gql`
       profileImageUrl
       email
       planType
+    }
+    business {
+      id
+      name
+      businessType
       storeBranding {
         slug
         storeName
@@ -2241,6 +2451,9 @@ export const GetListingsDocument = gql`
         id
         username
         profileImageUrl
+      }
+      business {
+        name
       }
     }
     totalCount
@@ -2391,6 +2604,8 @@ export const GetMyBusinessDocument = gql`
       lightOrDark
       about
       storeName
+      textColor
+      cardTextColor
     }
     businessUsers {
       id
@@ -2437,6 +2652,56 @@ export type GetMyBusinessQueryHookResult = ReturnType<typeof useGetMyBusinessQue
 export type GetMyBusinessLazyQueryHookResult = ReturnType<typeof useGetMyBusinessLazyQuery>;
 export type GetMyBusinessSuspenseQueryHookResult = ReturnType<typeof useGetMyBusinessSuspenseQuery>;
 export type GetMyBusinessQueryResult = Apollo.QueryResult<GetMyBusinessQuery, GetMyBusinessQueryVariables>;
+export const GetNotificationsDocument = gql`
+    query GetNotifications($userId: ID!) {
+  notifications(userId: $userId) {
+    id
+    message
+    type
+    read
+    actionRequired
+    data
+    createdAt
+    user {
+      id
+      username
+    }
+  }
+}
+    `;
+
+/**
+ * __useGetNotificationsQuery__
+ *
+ * To run a query within a React component, call `useGetNotificationsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetNotificationsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetNotificationsQuery({
+ *   variables: {
+ *      userId: // value for 'userId'
+ *   },
+ * });
+ */
+export function useGetNotificationsQuery(baseOptions: Apollo.QueryHookOptions<GetNotificationsQuery, GetNotificationsQueryVariables> & ({ variables: GetNotificationsQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetNotificationsQuery, GetNotificationsQueryVariables>(GetNotificationsDocument, options);
+      }
+export function useGetNotificationsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetNotificationsQuery, GetNotificationsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetNotificationsQuery, GetNotificationsQueryVariables>(GetNotificationsDocument, options);
+        }
+export function useGetNotificationsSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GetNotificationsQuery, GetNotificationsQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<GetNotificationsQuery, GetNotificationsQueryVariables>(GetNotificationsDocument, options);
+        }
+export type GetNotificationsQueryHookResult = ReturnType<typeof useGetNotificationsQuery>;
+export type GetNotificationsLazyQueryHookResult = ReturnType<typeof useGetNotificationsLazyQuery>;
+export type GetNotificationsSuspenseQueryHookResult = ReturnType<typeof useGetNotificationsSuspenseQuery>;
+export type GetNotificationsQueryResult = Apollo.QueryResult<GetNotificationsQuery, GetNotificationsQueryVariables>;
 export const GetSellerProfileDocument = gql`
     query GetSellerProfile($id: ID!) {
   user(id: $id) {
@@ -2604,6 +2869,9 @@ export const GetStoreBySlugFullDocument = gql`
       lightOrDark
       primaryColor
       secondaryColor
+      backgroundColor
+      textColor
+      cardTextColor
       about
       storeName
     }

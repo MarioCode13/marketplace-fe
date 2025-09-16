@@ -50,6 +50,7 @@ function renderMenu(
 ) {
   return categories.map((cat) => {
     const path = [...parentPath, cat]
+
     if (cat.children && cat.children.length > 0) {
       return (
         <div

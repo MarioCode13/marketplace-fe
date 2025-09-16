@@ -2,7 +2,7 @@ import React from 'react'
 import Image from 'next/image'
 import ListingCard from '@/components/cards/ListingCard'
 import { X } from 'lucide-react'
-import { getTextColor } from '@/lib/utils'
+import { Button } from '../ui/button'
 
 interface PreviewModalProps {
   form: {
@@ -11,6 +11,9 @@ interface PreviewModalProps {
     themeColor: string
     primaryColor: string
     secondaryColor: string
+    backgroundColor: string
+    textColor: string
+    cardTextColor: string
     lightOrDark: string
     logoUrl: string
     bannerUrl: string
@@ -66,21 +69,29 @@ export default function PreviewModal({
   form,
   setShowPreview,
 }: PreviewModalProps) {
-  const bgColor = form.lightOrDark === 'dark' ? '#121212' : '#dde2e8'
-  const textColor = getTextColor(form.themeColor)
+  // Use new color fields for preview
+  const backgroundColor = form.backgroundColor || '#f8f9fa'
+  const primaryColor = form.primaryColor || '#fff'
+  const cardTextColor = form.cardTextColor || '#222'
+  const textColor = form.textColor || '#222'
+  const secondaryColor = form.secondaryColor || '#1f1b30'
+  const themeColor = form.themeColor || '#1f1b30'
   return (
     <div className='fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50'>
       <div
         className='rounded-lg shadow-lg p-6 max-w-3xl w-full relative'
-        style={{ background: bgColor }}
+        style={{ background: backgroundColor }}
       >
-        <button
-          className='absolute top-2 right-2 text-gray-500 hover:text-gray-800'
+        <Button
+          variant='contained'
+          size={'icon'}
+          color={'gradient'}
+          className='rounded-full absolute top-2 right-2 text-gray-500 hover:text-gray-800'
           onClick={() => setShowPreview(false)}
           style={{ color: textColor }}
         >
           <X size={26} />
-        </button>
+        </Button>
         {/* Banner */}
         {form.bannerUrl && (
           <div className='w-full h-40 rounded-lg overflow-hidden mb-4'>
@@ -103,7 +114,7 @@ export default function PreviewModal({
               alt='Store logo'
               className='w-20 h-20 rounded-full object-cover border'
               style={{
-                borderColor: form.themeColor,
+                borderColor: themeColor,
                 borderWidth: 2,
                 borderStyle: 'solid',
               }}
@@ -112,14 +123,24 @@ export default function PreviewModal({
           <div className='flex-1'>
             <h1
               className='text-2xl font-bold'
-              style={{ color: form.themeColor }}
+              style={{ color: secondaryColor }}
             >
               {form.storeName || 'Store Name'}
             </h1>
-            {form.about && <p className='text-gray-600 mt-1'>{form.about}</p>}
+            {form.about && (
+              <p
+                className='text-gray-600 mt-1'
+                style={{ color: textColor }}
+              >
+                {form.about}
+              </p>
+            )}
             <div className='mt-2 flex items-center gap-2'>
-              <span className='text-xs px-2 py-1 rounded text-black border'>
-                {form.lightOrDark === 'dark' ? 'Dark Theme' : 'Light Theme'}
+              <span
+                className='text-xs px-2 py-1 rounded text-white border'
+                style={{ backgroundColor: themeColor }}
+              >
+                Preview Theme
               </span>
             </div>
           </div>
@@ -129,7 +150,9 @@ export default function PreviewModal({
             <ListingCard
               key={listing.id}
               listing={listing}
-              themeColor={form.themeColor}
+              primaryColor={primaryColor}
+              cardTextColor={cardTextColor}
+              store
             />
           ))}
         </div>

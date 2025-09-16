@@ -16,6 +16,7 @@ const REGISTER_MUTATION = gql`
       token
       email
       role
+      userId
     }
   }
 `
@@ -23,12 +24,16 @@ const REGISTER_MUTATION = gql`
 export default function Register() {
   const router = useRouter()
   const [form, setForm] = useState({ username: '', email: '', password: '' })
+
   const [acceptedTerms, setAcceptedTerms] = useState(false)
-  const [register, { loading, error }] = useMutation(REGISTER_MUTATION)
+  const [register, { loading: registerLoading, error }] =
+    useMutation(REGISTER_MUTATION)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value })
   }
+
+  const loading = registerLoading
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -190,7 +195,8 @@ export default function Register() {
 
             <Button
               type='button'
-              color='secondary'
+              variant={'outlined'}
+              color='primary'
               className='w-full'
               onClick={() => router.push('/login')}
             >

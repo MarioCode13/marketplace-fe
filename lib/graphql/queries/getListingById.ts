@@ -33,6 +33,11 @@ export const GET_LISTING_BY_ID = gql`
         profileImageUrl
         email
         planType
+      }
+      business {
+        id
+        name
+        businessType
         storeBranding {
           slug
           storeName

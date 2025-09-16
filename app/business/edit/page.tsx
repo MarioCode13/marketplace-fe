@@ -4,11 +4,9 @@ import { checkSlugAvailable } from '@/lib/utils/slugUtils'
 
 import { useQuery, useMutation } from '@apollo/client'
 import { useEffect, useState } from 'react'
-import { useSelector } from 'react-redux'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-
-import { RootState } from '@/store/store'
+import { toast } from 'sonner'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { FileInput } from '@/components/ui/fileInput'
@@ -19,14 +17,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Loader2, LoaderCircle, Users } from 'lucide-react'
+import { Loader2, LoaderCircle, Users, Eye } from 'lucide-react'
 
 import { GET_MY_BUSINESS } from '@/lib/graphql/queries/getMyBusiness'
+import { GET_ME } from '@/lib/graphql/queries/getMe'
 import { UPDATE_STORE_BRANDING } from '@/lib/graphql/mutations/businessMutations'
-import { BusinessUser } from '@/lib/graphql/generated'
+import { BusinessUser, UpdateStoreBrandingInput } from '@/lib/graphql/generated'
+import PreviewModal from '@/components/modals/PreviewModal'
 
 export default function BusinessEditPage() {
-  const userId = useSelector((state: RootState) => state.auth.user?.userId)
   const router = useRouter()
 
   const client = useApolloClient()
@@ -35,22 +34,35 @@ export default function BusinessEditPage() {
   const [slugWarning, setSlugWarning] = useState<string | null>(null)
   const [slugLoading, setSlugLoading] = useState(false)
 
+  // Get user data to get the proper user ID
+  const { data: userData } = useQuery(GET_ME)
+  const userId = userData?.me?.id
+
   // Get business data
   const { data, loading } = useQuery(GET_MY_BUSINESS, {
     skip: !userId,
   })
 
   const business = data?.myBusiness
-  const planType = data?.myBusiness?.storeBranding ? 'PRO_STORE' : 'FREE' // This should come from user data
-  const isProStore = planType === 'PRO_STORE'
+  const userPlanType = userData?.me?.planType
+  const userRole = userData?.me?.role
+  const isProStore = userPlanType === 'PRO_STORE'
+  const isAdmin = userRole === 'ADMIN'
+
+  // Check if user can edit business details (admin or business owner)
+  const canEditBusiness =
+    isAdmin ||
+    business?.businessUsers?.some(
+      (bu: BusinessUser) => bu.user.id === userId && bu.role === 'OWNER'
+    )
 
   // Business form state
   const [businessForm, setBusinessForm] = useState({
+    name: '',
     email: '',
     contactNumber: '',
     addressLine1: '',
     addressLine2: '',
-    cityId: '',
     postalCode: '',
   })
 
@@ -61,11 +73,16 @@ export default function BusinessEditPage() {
     themeColor: '#000000',
     primaryColor: '#000000',
     secondaryColor: '#ffffff',
+    backgroundColor: '#f8f9fa',
+    textColor: '#000000',
+    cardTextColor: '#000000',
     lightOrDark: 'dark',
     logoUrl: '',
     bannerUrl: '',
     slug: '',
   })
+
+  const [showPreview, setShowPreview] = useState(false)
 
   const [updateBusinessAndBranding, { loading: saving }] = useMutation(
     UPDATE_STORE_BRANDING
@@ -79,17 +96,6 @@ export default function BusinessEditPage() {
   )
 
   useEffect(() => {
-    if (business) {
-      setBusinessForm({
-        email: business.email || '',
-        contactNumber: business.contactNumber || '',
-        addressLine1: business.addressLine1 || '',
-        addressLine2: business.addressLine2 || '',
-        cityId: business.city?.id?.toString() || '',
-        postalCode: business.postalCode || '',
-      })
-    }
-
     if (business?.storeBranding) {
       const branding = business.storeBranding
       setForm({
@@ -98,6 +104,9 @@ export default function BusinessEditPage() {
         themeColor: branding.themeColor || '#000000',
         primaryColor: branding.primaryColor || '#000000',
         secondaryColor: branding.secondaryColor || '#ffffff',
+        backgroundColor: branding.backgroundColor || '#f8f9fa',
+        textColor: branding.textColor || '#000000',
+        cardTextColor: branding.cardTextColor || '#000000',
         lightOrDark: branding.lightOrDark || 'light',
         logoUrl: branding.logoUrl || '',
         bannerUrl: branding.bannerUrl || '',
@@ -106,17 +115,25 @@ export default function BusinessEditPage() {
     }
   }, [business])
 
-  const handleBusinessChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    setBusinessForm({ ...businessForm, [e.target.name]: e.target.value })
-  }
+  // Populate business form
+  useEffect(() => {
+    if (business) {
+      setBusinessForm({
+        name: business.name || '',
+        email: business.email || '',
+        contactNumber: business.contactNumber || '',
+        addressLine1: business.addressLine1 || '',
+        addressLine2: business.addressLine2 || '',
+        postalCode: business.postalCode || '',
+      })
+    }
+  }, [business])
 
   const handleChange = async (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     setForm({ ...form, [e.target.name]: e.target.value })
-    if (e.target.name === 'slug') {
+    if (e.target.name === 'slug' && isProStore) {
       setSlugLoading(true)
       const result = await checkSlugAvailable(e.target.value, client)
       setSlugValid(result.valid)
@@ -131,6 +148,12 @@ export default function BusinessEditPage() {
 
   const handleSelectChange = (value: string) => {
     setForm((prev) => ({ ...prev, lightOrDark: value }))
+  }
+
+  const handleBusinessChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    setBusinessForm({ ...businessForm, [e.target.name]: e.target.value })
   }
 
   const handleLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -192,40 +215,91 @@ export default function BusinessEditPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!business) {
-      console.error('No business found')
+    console.log('UserData:', userData)
+    console.log('Business:', business)
+    console.log('UserId:', userId)
+    console.log('BusinessId:', business?.id)
+
+    if (!userId) {
+      console.error('No user ID found')
+      toast.error('User ID not found. Please refresh the page.')
+      return
+    }
+
+    if (!business?.id) {
+      console.error('No business ID found')
+      toast.error('Business not found. Please refresh the page.')
+      return
+    }
+
+    if (!slugValid && isProStore) {
+      console.error('Invalid slug')
       return
     }
 
     try {
+      console.log('Form values being sent:', form)
+      console.log('Business form values:', businessForm)
+      console.log('Calling mutation with businessId:', business.id)
+
+      // Update store branding
+      const brandingInput: Partial<UpdateStoreBrandingInput> = {
+        logoUrl: form.logoUrl,
+        bannerUrl: form.bannerUrl,
+        themeColor: form.themeColor,
+        primaryColor: form.primaryColor,
+        secondaryColor: form.secondaryColor,
+        backgroundColor: form.backgroundColor,
+        textColor: form.textColor,
+        cardTextColor: form.cardTextColor,
+        lightOrDark: form.lightOrDark,
+        about: form.about,
+        storeName: form.storeName,
+      }
+
+      // Only include slug for Pro stores
+      if (isProStore) {
+        brandingInput.slug = form.slug
+      }
+
       await updateBusinessAndBranding({
         variables: {
-          business: {
-            businessId: business.id,
-            email: businessForm.email,
-            contactNumber: businessForm.contactNumber,
-            addressLine1: businessForm.addressLine1,
-            addressLine2: businessForm.addressLine2,
-            cityId: businessForm.cityId ? parseInt(businessForm.cityId) : null,
-            postalCode: businessForm.postalCode,
-          },
-          branding: {
-            slug: form.slug,
-            logoUrl: form.logoUrl,
-            bannerUrl: form.bannerUrl,
-            themeColor: form.themeColor,
-            primaryColor: form.primaryColor,
-            secondaryColor: form.secondaryColor,
-            lightOrDark: form.lightOrDark,
-            about: form.about,
-            storeName: form.storeName,
-          },
+          businessId: String(business.id), // Using businessId to match updated backend
+          input: brandingInput,
         },
       })
 
-      router.push(`/store/${form.slug}`)
+      // TODO: Update business details when backend mutation is available
+      if (canEditBusiness) {
+        // Check if business details have changed
+        const businessChanged =
+          businessForm.name !== (business.name || '') ||
+          businessForm.email !== (business.email || '') ||
+          businessForm.contactNumber !== (business.contactNumber || '') ||
+          businessForm.addressLine1 !== (business.addressLine1 || '') ||
+          businessForm.addressLine2 !== (business.addressLine2 || '') ||
+          businessForm.postalCode !== (business.postalCode || '')
+
+        if (businessChanged) {
+          console.log(
+            'Business details changed, would update with:',
+            businessForm
+          )
+          toast.info('Business details changes noted (backend update pending)')
+        }
+      }
+
+      await client.refetchQueries({
+        include: [GET_ME, GET_MY_BUSINESS],
+      })
+
+      toast.success('Changes saved successfully!')
+      // Redirect based on plan type
+      const redirectUrl = isProStore ? `/${form.slug}` : `/store/${business.id}`
+      router.push(redirectUrl)
     } catch (error) {
-      console.error('Error updating business:', error)
+      console.error('Error updating business settings:', error)
+      toast.error('Failed to save changes. Please try again.')
     }
   }
 
@@ -257,7 +331,13 @@ export default function BusinessEditPage() {
 
   return (
     <div className='max-w-5xl mx-auto p-6'>
-      <h1 className='text-2xl font-bold mb-4'>Business Settings</h1>
+      <h1 className='text-2xl font-bold mb-2'>Business Settings</h1>
+      <p className='text-gray-600 mb-6'>
+        Manage your business details and store branding.
+        {canEditBusiness
+          ? ' You can edit both business information and store branding as an admin/owner.'
+          : ' You can edit store branding. Business details require admin/owner permissions.'}
+      </p>
 
       <form
         onSubmit={handleSubmit}
@@ -267,19 +347,30 @@ export default function BusinessEditPage() {
           {/* Business Details */}
           <div className='space-y-4'>
             <h2 className='text-xl font-semibold'>Business Details</h2>
+            {!canEditBusiness && (
+              <p className='text-sm text-gray-600 mb-4'>
+                Only business owners and admins can edit business details.
+              </p>
+            )}
             <div>
               <label className='block font-medium mb-1'>Business Name</label>
               <Input
-                value={business.name}
-                disabled
+                name='name'
+                value={businessForm.name}
+                onChange={handleBusinessChange}
+                disabled={!canEditBusiness}
+                placeholder='Enter business name'
               />
             </div>
             <div>
               <label className='block font-medium mb-1'>Business Email</label>
               <Input
                 name='email'
+                type='email'
                 value={businessForm.email}
                 onChange={handleBusinessChange}
+                disabled={!canEditBusiness}
+                placeholder='Enter business email'
               />
             </div>
             <div>
@@ -288,6 +379,8 @@ export default function BusinessEditPage() {
                 name='contactNumber'
                 value={businessForm.contactNumber}
                 onChange={handleBusinessChange}
+                disabled={!canEditBusiness}
+                placeholder='Enter contact number'
               />
             </div>
             <div>
@@ -296,6 +389,8 @@ export default function BusinessEditPage() {
                 name='addressLine1'
                 value={businessForm.addressLine1}
                 onChange={handleBusinessChange}
+                disabled={!canEditBusiness}
+                placeholder='Enter address line 1'
               />
             </div>
             <div>
@@ -304,16 +399,17 @@ export default function BusinessEditPage() {
                 name='addressLine2'
                 value={businessForm.addressLine2}
                 onChange={handleBusinessChange}
+                disabled={!canEditBusiness}
+                placeholder='Enter address line 2 (optional)'
               />
             </div>
             <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
               <div>
                 <label className='block font-medium mb-1'>City</label>
                 <Input
-                  name='cityId'
-                  value={businessForm.cityId}
-                  onChange={handleBusinessChange}
-                  placeholder='City ID'
+                  value={business.city?.name || ''}
+                  disabled
+                  placeholder='City (read-only)'
                 />
               </div>
               <div>
@@ -322,6 +418,8 @@ export default function BusinessEditPage() {
                   name='postalCode'
                   value={businessForm.postalCode}
                   onChange={handleBusinessChange}
+                  disabled={!canEditBusiness}
+                  placeholder='Enter postal code'
                 />
               </div>
             </div>
@@ -339,43 +437,47 @@ export default function BusinessEditPage() {
                 required
               />
             </div>
-            <div>
-              <label className='block font-medium mb-1'>Store Slug (URL)</label>
-              <Input
-                name='slug'
-                value={form.slug}
-                onChange={handleChange}
-                required
-                placeholder='e.g. my-cool-store'
-                onFocus={() => setSlugFocused(true)}
-                onBlur={() => setSlugFocused(false)}
-              />
-              {slugFocused && (
-                <div className='text-xs mt-1'>
-                  <span className='text-yellow-700'>
-                    <strong>SEO Tip:</strong> Choose a short, memorable, and
-                    relevant slug for your store URL. Avoid spaces and special
-                    characters. Good slugs help your store appear higher in
-                    search results.
-                    <br />
-                    <strong>Warning:</strong> Changing your slug after your
-                    store is live may affect your search engine ranking and
-                    break existing links to your store. Only change it if
-                    absolutely necessary.
-                  </span>
-                  {slugLoading && (
-                    <span className='text-gray-500 ml-2'>
-                      Checking availability...
+            {isProStore && (
+              <div>
+                <label className='block font-medium mb-1'>
+                  Store Slug (URL)
+                </label>
+                <Input
+                  name='slug'
+                  value={form.slug}
+                  onChange={handleChange}
+                  required
+                  placeholder='e.g. my-cool-store'
+                  onFocus={() => setSlugFocused(true)}
+                  onBlur={() => setSlugFocused(false)}
+                />
+                {slugFocused && (
+                  <div className='text-xs mt-1'>
+                    <span className='text-yellow-700'>
+                      <strong>SEO Tip:</strong> Choose a short, memorable, and
+                      relevant slug for your store URL. Avoid spaces and special
+                      characters. Good slugs help your store appear higher in
+                      search results.
+                      <br />
+                      <strong>Warning:</strong> Changing your slug after your
+                      store is live may affect your search engine ranking and
+                      break existing links to your store. Only change it if
+                      absolutely necessary.
                     </span>
-                  )}
-                  {!slugLoading && slugWarning && (
-                    <span className='block text-red-600 mt-1'>
-                      {slugWarning}
-                    </span>
-                  )}
-                </div>
-              )}
-            </div>
+                    {slugLoading && (
+                      <span className='text-gray-500 ml-2'>
+                        Checking availability...
+                      </span>
+                    )}
+                    {!slugLoading && slugWarning && (
+                      <span className='block text-red-600 mt-1'>
+                        {slugWarning}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
             <div>
               <label className='block font-medium mb-1'>About</label>
               <textarea
@@ -386,7 +488,51 @@ export default function BusinessEditPage() {
                 className='w-full p-2 flex rounded-sm border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors focus-visible:outline-none'
               />
             </div>
-            <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
+            <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+              <div>
+                <label className='block font-medium mb-1'>
+                  Background Color
+                </label>
+                <input
+                  type='color'
+                  name='backgroundColor'
+                  value={form.backgroundColor}
+                  onChange={handleChange}
+                  className='w-full h-10 rounded border border-input'
+                />
+              </div>
+              <div>
+                <label className='block font-medium mb-1'>Primary Color</label>
+                <input
+                  type='color'
+                  name='primaryColor'
+                  value={form.primaryColor}
+                  onChange={handleChange}
+                  className='w-full h-10 rounded border border-input'
+                />
+              </div>
+              <div>
+                <label className='block font-medium mb-1'>Text Color</label>
+                <input
+                  type='color'
+                  name='textColor'
+                  value={form.textColor}
+                  onChange={handleChange}
+                  className='w-full h-10 rounded border border-input'
+                />
+              </div>
+              <div>
+                <label className='block font-medium mb-1'>
+                  Card Text Color
+                </label>
+                <input
+                  type='color'
+                  name='cardTextColor'
+                  value={form.cardTextColor}
+                  onChange={handleChange}
+                  className='w-full h-10 rounded border border-input'
+                />
+              </div>
               {isProStore && (
                 <div>
                   <label className='block font-medium mb-1'>Theme Color</label>
@@ -395,18 +541,10 @@ export default function BusinessEditPage() {
                     name='themeColor'
                     value={form.themeColor}
                     onChange={handleColorChange}
+                    className='w-full h-10 rounded border border-input'
                   />
                 </div>
               )}
-              <div>
-                <label className='block font-medium mb-1'>Primary Color</label>
-                <input
-                  type='color'
-                  name='primaryColor'
-                  value={form.primaryColor}
-                  onChange={handleChange}
-                />
-              </div>
               {isProStore && (
                 <div>
                   <label className='block font-medium mb-1'>
@@ -417,6 +555,7 @@ export default function BusinessEditPage() {
                     name='secondaryColor'
                     value={form.secondaryColor}
                     onChange={handleChange}
+                    className='w-full h-10 rounded border border-input'
                   />
                 </div>
               )}
@@ -502,8 +641,21 @@ export default function BusinessEditPage() {
           </Button>
           <Button
             type='button'
+            variant='outlined'
+            onClick={() => setShowPreview(true)}
+          >
+            <Eye className='w-4 h-4 mr-2' />
+            Preview
+          </Button>
+          <Button
+            type='button'
             color='secondary'
-            onClick={() => router.push(`/store/${form.slug}`)}
+            onClick={() => {
+              const cancelUrl = isProStore
+                ? `/${form.slug}`
+                : `/store/${business.id}`
+              router.push(cancelUrl)
+            }}
           >
             Cancel
           </Button>
@@ -558,6 +710,13 @@ export default function BusinessEditPage() {
           </Button>
         </div>
       </div>
+
+      {showPreview && (
+        <PreviewModal
+          form={form}
+          setShowPreview={setShowPreview}
+        />
+      )}
     </div>
   )
 }

@@ -62,6 +62,9 @@ export const GET_LISTINGS = gql`
           username
           profileImageUrl
         }
+        business{
+          name
+        }
       }
       totalCount
     }

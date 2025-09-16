@@ -230,30 +230,30 @@ export default function Home() {
       <section className='relative py-20 bg-gradient-to-r from-slate-800 to-purple-800'>
         <div className='max-w-4xl mx-auto text-center px-6'>
           <h2 className='text-3xl sm:text-4xl font-bold text-white mb-6'>
-            Ready to Start Trading?
+            Ready to Unlock Your Potential?
           </h2>
           <p className='text-xl text-blue-100 mb-8 max-w-2xl mx-auto'>
-            Join thousands of South Africans who trust Dealio for their
-            secondhand buying and selling needs.
+            Choose the perfect plan for your needs and join thousands of South
+            Africans who trust Dealio for their marketplace success.
           </p>
           <div className='flex flex-col sm:flex-row gap-4 justify-center'>
             <Button
-              onClick={() => router.push('/listings')}
+              onClick={() => router.push('/subscriptions')}
               variant={'contained'}
               color='gradient'
               className='px-8 py-4 text-lg font-semibold shadow-lg  hover:shadow-xl transition-all duration-300 transform hover:scale-105'
               size='lg'
             >
-              <ShoppingBag className='mr-2 w-5 h-5' /> Start Browsing
+              <Star className='mr-2 w-5 h-5' /> View Subscription Plans
             </Button>
             <Button
-              onClick={() => router.push('/sell')}
+              onClick={() => router.push('/listings')}
               className='!text-[#e6e1ff] px-8 py-4 text-lg   shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105'
               size='lg'
               variant='outlined'
               color='gradient'
             >
-              <TrendingUp className='mr-2 w-5 h-5' /> Start Selling
+              <ShoppingBag className='mr-2 w-5 h-5' /> Browse Marketplace
             </Button>
           </div>
         </div>

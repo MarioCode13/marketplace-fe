@@ -1,7 +1,10 @@
 'use client'
 import Image from 'next/image'
 import { Condition } from '@/lib/graphql/generated'
-import { useGetStoreBySlugFullQuery } from '@/lib/graphql/generated'
+import {
+  useGetStoreBySlugFullQuery,
+  useGetMyBusinessQuery,
+} from '@/lib/graphql/generated'
 import {
   useGetListingsQuery,
   useGetCategoriesQuery,
@@ -9,16 +12,30 @@ import {
 import ListingCard from '@/components/cards/ListingCard'
 import SkeletonListingCard from '@/components/cards/SkeletonListingCard'
 import FilterDrawer from '@/components/drawers/FilterDrawer'
-import { ListFilter, Search, ChevronLeft, ChevronRight } from 'lucide-react'
+import {
+  ListFilter,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+  Settings,
+  Plus,
+} from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { notFound } from 'next/navigation'
-import { useParams } from 'next/navigation'
-import { getTextColor } from '@/lib/utils'
+import { useParams, useRouter } from 'next/navigation'
+import { useSelector } from 'react-redux'
+import { RootState } from '@/store/store'
 
 export default function ProStoreRoute() {
   const params = useParams()
+  const router = useRouter()
   const slug = params?.storeSlug as string
+
+  // Current user
+  const currentUserId = useSelector(
+    (state: RootState) => state.auth.user?.userId
+  )
 
   // Store data
   const { data, loading, error } = useGetStoreBySlugFullQuery({
@@ -28,6 +45,24 @@ export default function ProStoreRoute() {
   const store = data?.storeBySlug
   const isProStore = store?.planType === 'PRO_STORE'
   const branding = store?.storeBranding
+
+  // Check if current user is the store owner
+  // Debug logging to understand the data structure
+  console.log('Current user ID:', currentUserId, typeof currentUserId)
+  console.log('Store ID:', store?.id, typeof store?.id)
+  console.log('Store data:', store)
+
+  // Note: For pro stores, store.id should be the user ID of the store owner
+  const isStoreOwner =
+    currentUserId &&
+    store?.id &&
+    currentUserId.toString() === store.id.toString()
+
+  // Get business data if the current user is the store owner
+  // (to show business details like address, contact info)
+  const { data: businessData } = useGetMyBusinessQuery()
+
+  console.log('Business data:', businessData)
 
   // Filters and listings
   interface Filters {
@@ -56,17 +91,20 @@ export default function ProStoreRoute() {
   )
 
   // Listings for this store
+  // Use businessId for pro stores, userId for individual stores
+  const isBusinessStore = isProStore && store?.id
+  const listingsQueryVars = {
+    limit,
+    offset,
+    ...filters,
+    ...(isBusinessStore ? { businessId: store.id } : { userId: store?.id }),
+  }
   const {
     data: listingsData,
     loading: listingsLoading,
     error: listingsError,
   } = useGetListingsQuery({
-    variables: {
-      limit,
-      offset,
-      userId: store?.id,
-      ...filters,
-    },
+    variables: listingsQueryVars,
     skip: !store?.id,
   })
   const listings = listingsData?.getListings?.listings || []
@@ -75,11 +113,13 @@ export default function ProStoreRoute() {
   if (loading) return <div className='p-8 text-center'>Loading store...</div>
   if (error || !store || !isProStore) return notFound()
 
-  // Theme colors
+  // Branding colors
+  const backgroundColor = branding?.backgroundColor || '#f8f9fa'
+  const primaryColor = branding?.primaryColor || '#fff'
+  const cardTextColor = branding?.cardTextColor || '#222'
+  const textColor = branding?.textColor || '#222'
+  const secondaryColor = branding?.secondaryColor || '#1f1b30'
   const themeColor = branding?.themeColor || '#1f1b30'
-  const primaryColor = branding?.primaryColor || '#1f1b30'
-  const bgColor = branding?.lightOrDark === 'light' ? '#dde2e8' : '#121212'
-  const textColor = getTextColor(bgColor)
 
   // Store details
   const bannerUrl = branding?.bannerUrl
@@ -122,11 +162,11 @@ export default function ProStoreRoute() {
   }
 
   return (
-    <div style={{ background: bgColor }}>
+    <div style={{ background: backgroundColor, color: textColor }}>
       {bannerUrl && (
-        <div className='h-64 w-[100vw]  overflow-hidden mb-6'>
+        <div className='h-72  w-[100vw] max-w-[100%] overflow-hidden mb-6'>
           <Image
-            width={1200}
+            width={1600}
             height={1200}
             src={bannerUrl}
             alt='Store banner'
@@ -163,20 +203,57 @@ export default function ProStoreRoute() {
             <div className='flex items-center justify-between'>
               <h1
                 className='text-2xl font-bold'
-                style={{ color: primaryColor }}
+                style={{ color: secondaryColor }}
               >
                 {storeName}
               </h1>
+              {isStoreOwner && (
+                <div className='flex items-center gap-2'>
+                  <Button
+                    variant={'contained'}
+                    size={'sm'}
+                    color={'gradient'}
+                    className='gap-2'
+                    onClick={() => router.push('/sell')}
+                  >
+                    <Plus size={16} />
+                    Add Listing
+                  </Button>
+                  <Button
+                    variant={'text'}
+                    size={'icon'}
+                    color={'gradient'}
+                    className='rounded-full'
+                    title='Store Settings'
+                    onClick={() => router.push('/business/edit')}
+                  >
+                    <Settings size={20} />
+                  </Button>
+                </div>
+              )}
             </div>
-            {about && <p className='text-gray-600 mt-1'>{about}</p>}
+            {about && (
+              <p
+                className='mt-1'
+                style={{ color: textColor }}
+              >
+                {about}
+              </p>
+            )}
             <div className='mt-2 flex items-center gap-2'>
               {trustRating && (
-                <span className='text-yellow-500 font-semibold'>
+                <span
+                  className='font-semibold'
+                  style={{ color: secondaryColor }}
+                >
                   ★ {trustRating}
                 </span>
               )}
               {trustLevel && (
-                <span className='text-xs bg-gray-100 px-2 py-1 rounded text-black'>
+                <span
+                  className='text-xs px-2 py-1 rounded'
+                  style={{ backgroundColor: secondaryColor, color: textColor }}
+                >
                   {trustLevel}
                 </span>
               )}
@@ -194,16 +271,21 @@ export default function ProStoreRoute() {
 
         <div className='mt-8'>
           <div className='flex items-center justify-start w-full mb-6'>
-            <div className='flex items-center gap-4'>
+            <div
+              className='flex items-center gap-4'
+              style={{ color: textColor }}
+            >
               <Button
                 onClick={() => setIsFilterOpen(true)}
                 variant={'outlined'}
                 size={'icon'}
                 className='rounded-full p-3'
+                style={{ backgroundColor: themeColor }}
               >
                 <ListFilter
                   className='!w-5 !h-5'
                   strokeWidth={2}
+                  style={{ color: textColor }}
                 />
               </Button>
             </div>
@@ -212,30 +294,45 @@ export default function ProStoreRoute() {
           {/* Active filters display */}
           {hasActiveFilters() && (
             <div className='w-full mb-4 p-3 bg-muted rounded-lg'>
-              <div className='flex items-center gap-2 text-sm text-muted-foreground'>
+              <div
+                className='flex items-center gap-2 text-sm'
+                style={{ color: textColor }}
+              >
                 <Search
                   style={{ color: textColor }}
                   className='w-4 h-4'
                 />
                 <span style={{ color: textColor }}>Active filters:</span>
                 {filters.categoryId && (
-                  <span className='bg-background px-2 py-1 rounded text-xs'>
+                  <span
+                    className='bg-background px-2 py-1 rounded text-xs'
+                    style={{ color: textColor }}
+                  >
                     Category:{' '}
                     {categories.find((c) => c.id === filters.categoryId)?.name}
                   </span>
                 )}
                 {filters.condition && (
-                  <span className='bg-background px-2 py-1 rounded text-xs'>
+                  <span
+                    className='bg-background px-2 py-1 rounded text-xs'
+                    style={{ color: textColor }}
+                  >
                     Condition: {filters.condition}
                   </span>
                 )}
                 {filters.searchTerm && (
-                  <span className='bg-background px-2 py-1 rounded text-xs'>
+                  <span
+                    className='bg-background px-2 py-1 rounded text-xs'
+                    style={{ color: textColor }}
+                  >
                     Search: &quot;{filters.searchTerm}&quot;
                   </span>
                 )}
                 {(filters.minPrice || filters.maxPrice) && (
-                  <span className='bg-background px-2 py-1 rounded text-xs'>
+                  <span
+                    className='bg-background px-2 py-1 rounded text-xs'
+                    style={{ color: textColor }}
+                  >
                     Price: ${filters.minPrice || 0} - ${filters.maxPrice || '∞'}
                   </span>
                 )}
@@ -255,7 +352,7 @@ export default function ProStoreRoute() {
 
           {/* Results count */}
           <div
-            className='w-full mb-4 text-sm text-muted-foreground'
+            className='w-full mb-4 text-sm'
             style={{ color: textColor }}
           >
             {listingsLoading
@@ -277,9 +374,14 @@ export default function ProStoreRoute() {
               {listings.map((listing) => (
                 <ListingCard
                   key={listing.id}
-                  listing={{ ...listing, price: listing.price.toString() }}
-                  themeColor={themeColor}
+                  listing={{
+                    ...listing,
+                    price: listing.price.toString(),
+                    user: listing.user ?? undefined,
+                    business: listing.business ?? undefined,
+                  }}
                   primaryColor={primaryColor}
+                  cardTextColor={cardTextColor}
                   store
                 />
               ))}
@@ -287,7 +389,7 @@ export default function ProStoreRoute() {
           ) : (
             <div className='text-center py-12'>
               <p
-                className='text-lg text-muted-foreground mb-2'
+                className='text-lg mb-2'
                 style={{ color: textColor }}
               >
                 No listings found
@@ -324,7 +426,7 @@ export default function ProStoreRoute() {
               </Button>
 
               <span
-                className='text-sm text-muted-foreground'
+                className='text-sm'
                 style={{ color: textColor }}
               >
                 {Math.floor(offset / limit) + 1} of{' '}
@@ -343,6 +445,83 @@ export default function ProStoreRoute() {
             </div>
           )}
         </div>
+        {/* Business Details Section */}
+        {businessData?.myBusiness && (
+          <div
+            className='my-14 p-4 rounded-lg border'
+            style={{
+              borderColor: themeColor + '30',
+              backgroundColor: backgroundColor,
+              color: textColor,
+            }}
+          >
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-4 text-sm'>
+              {businessData.myBusiness.email && (
+                <div>
+                  <span
+                    className='font-medium'
+                    style={{ color: textColor }}
+                  >
+                    Email:
+                  </span>
+                  <span
+                    className='ml-2'
+                    style={{ color: textColor }}
+                  >
+                    {businessData.myBusiness.email}
+                  </span>
+                </div>
+              )}
+              {businessData.myBusiness.contactNumber && (
+                <div>
+                  <span
+                    className='font-medium'
+                    style={{ color: textColor }}
+                  >
+                    Phone:
+                  </span>
+                  <span
+                    className='ml-2'
+                    style={{ color: textColor }}
+                  >
+                    {businessData.myBusiness.contactNumber}
+                  </span>
+                </div>
+              )}
+              {(businessData.myBusiness.addressLine1 ||
+                businessData.myBusiness.city) && (
+                <div className='md:col-span-2'>
+                  <span
+                    className='font-medium'
+                    style={{ color: textColor }}
+                  >
+                    Address:
+                  </span>
+                  <div
+                    className='ml-2'
+                    style={{ color: textColor }}
+                  >
+                    {businessData.myBusiness.addressLine1 && (
+                      <div>{businessData.myBusiness.addressLine1}</div>
+                    )}
+                    {businessData.myBusiness.addressLine2 && (
+                      <div>{businessData.myBusiness.addressLine2}</div>
+                    )}
+                    <div>
+                      {businessData.myBusiness.city?.name &&
+                        `${businessData.myBusiness.city.name}, `}
+                      {businessData.myBusiness.city?.region?.name &&
+                        `${businessData.myBusiness.city.region.name}, `}
+                      {businessData.myBusiness.city?.region?.country?.name}
+                      {businessData.myBusiness.postalCode &&
+                        ` ${businessData.myBusiness.postalCode}`}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

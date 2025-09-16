@@ -157,7 +157,7 @@ export default function CompleteProfilePage() {
           firstName: form.firstName,
           lastName: form.lastName,
           bio: form.bio,
-          cityId: form.city ? Number(form.city) : undefined,
+          cityId: form.city || undefined,
           customCity: form.customCity || undefined,
           contactNumber: form.contactNumber || undefined,
         },
