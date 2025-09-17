@@ -2,7 +2,7 @@
 import Image from 'next/image'
 import { Condition } from '@/lib/graphql/generated'
 import {
-  useGetStoreBySlugFullQuery,
+  useGetBusinessBySlugQuery,
   useGetMyBusinessQuery,
 } from '@/lib/graphql/generated'
 import {
@@ -37,32 +37,28 @@ export default function ProStoreRoute() {
     (state: RootState) => state.auth.user?.userId
   )
 
-  // Store data
-  const { data, loading, error } = useGetStoreBySlugFullQuery({
+  // Business data
+  const { data, loading, error } = useGetBusinessBySlugQuery({
     variables: { slug },
     skip: !slug,
   })
-  const store = data?.storeBySlug
-  const isProStore = store?.planType === 'PRO_STORE'
-  const branding = store?.storeBranding
+  const business = data?.getBusinessBySlug
+  const isProStore =
+    business?.businessUsers?.[0]?.user?.planType === 'PRO_STORE'
+  const branding = business?.storeBranding
 
-  // Check if current user is the store owner
-  // Debug logging to understand the data structure
-  console.log('Current user ID:', currentUserId, typeof currentUserId)
-  console.log('Store ID:', store?.id, typeof store?.id)
-  console.log('Store data:', store)
-
-  // Note: For pro stores, store.id should be the user ID of the store owner
+  // Check if current user is OWNER or ADMIN in business.businessUsers
   const isStoreOwner =
     currentUserId &&
-    store?.id &&
-    currentUserId.toString() === store.id.toString()
+    business?.businessUsers?.some(
+      (bu) =>
+        bu.user.id.toString() === currentUserId.toString() &&
+        ['OWNER', 'ADMIN'].includes(bu.role)
+    )
 
   // Get business data if the current user is the store owner
   // (to show business details like address, contact info)
   const { data: businessData } = useGetMyBusinessQuery()
-
-  console.log('Business data:', businessData)
 
   // Filters and listings
   interface Filters {
@@ -90,28 +86,30 @@ export default function ProStoreRoute() {
       !!c && typeof c.id === 'string' && typeof c.name === 'string'
   )
 
-  // Listings for this store
-  // Use businessId for pro stores, userId for individual stores
-  const isBusinessStore = isProStore && store?.id
+  // Listings for this business
   const listingsQueryVars = {
     limit,
     offset,
     ...filters,
-    ...(isBusinessStore ? { businessId: store.id } : { userId: store?.id }),
+    ...(isProStore && business?.id ? { businessId: business.id } : {}),
   }
+  const shouldSkipListings = isProStore && !business?.id
+  console.log('Listings Query Variables:', listingsQueryVars)
+  console.log('Listings Query Variables:', listingsQueryVars)
+  console.log('Listings Query Variables:', listingsQueryVars)
   const {
     data: listingsData,
     loading: listingsLoading,
     error: listingsError,
   } = useGetListingsQuery({
     variables: listingsQueryVars,
-    skip: !store?.id,
+    skip: shouldSkipListings,
   })
   const listings = listingsData?.getListings?.listings || []
   const totalCount = listingsData?.getListings?.totalCount || 0
 
   if (loading) return <div className='p-8 text-center'>Loading store...</div>
-  if (error || !store || !isProStore) return notFound()
+  if (error || !business || !isProStore) return notFound()
 
   // Branding colors
   const backgroundColor = branding?.backgroundColor || '#f8f9fa'
@@ -121,13 +119,17 @@ export default function ProStoreRoute() {
   const secondaryColor = branding?.secondaryColor || '#1f1b30'
   const themeColor = branding?.themeColor || '#1f1b30'
 
-  // Store details
+  // Business details
   const bannerUrl = branding?.bannerUrl
   const logoUrl = branding?.logoUrl
-  const trustRating = store?.trustRating?.starRating?.toFixed(1)
-  const trustLevel = store?.trustRating?.trustLevel
+  const trustRating =
+    business?.businessUsers?.[0]?.user?.trustRating?.starRating?.toFixed(1)
+  const trustLevel = business?.businessUsers?.[0]?.user?.trustRating?.trustLevel
   const about = branding?.about
-  const storeName = branding?.storeName || store.username
+  const storeName =
+    branding?.storeName ||
+    business?.businessUsers?.[0]?.user?.username ||
+    business?.name
   const badgeLabel = 'Pro Store'
 
   // Filter logic

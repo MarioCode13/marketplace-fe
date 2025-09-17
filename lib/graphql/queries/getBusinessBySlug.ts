@@ -1,8 +1,8 @@
 import { gql } from '@apollo/client'
 
-export const GET_BUSINESS_BY_ID = gql`
-  query GetBusinessById($id: ID!) {
-    business(id: $id) {
+export const GET_BUSINESS_BY_SLUG = gql`
+  query GetBusinessBySlug($slug: String!) {
+    getBusinessBySlug(slug: $slug) {
       id
       name
       email
@@ -29,6 +29,9 @@ export const GET_BUSINESS_BY_ID = gql`
         secondaryColor
         about
         storeName
+        backgroundColor
+        textColor
+        cardTextColor
       }
       businessUsers {
         id

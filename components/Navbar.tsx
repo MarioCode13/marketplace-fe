@@ -33,11 +33,12 @@ export default function Navbar() {
     skip: !token,
     fetchPolicy: 'no-cache',
   })
-
-  // Get business data for resellers
   const { data: businessData } = useGetMyBusinessQuery({
-    skip: !token || data?.me?.planType !== 'RESELLER',
+    skip: !token,
   })
+  // Debug logs for user and business queries
+  console.log('Navbar: GET_ME user data:', data)
+  console.log('Navbar: useGetMyBusinessQuery business data:', businessData)
 
   const profileImageUrl = data?.me?.profileImageUrl
   const user = data?.me
@@ -80,13 +81,13 @@ export default function Navbar() {
               Browse
             </Link>
           </li>
-          {isStoreUser && user?.storeBranding?.slug ? (
+          {isStoreUser && businessData?.myBusiness ? (
             <li>
               <Link
                 href={
-                  user.planType === 'PRO_STORE'
-                    ? `/${user.storeBranding.slug}`
-                    : `/store/${businessData?.myBusiness?.id || user.id}`
+                  businessData.myBusiness.slug
+                    ? `/${businessData.myBusiness.slug}`
+                    : `/store/${businessData.myBusiness.id}`
                 }
                 className='hover:text-primary transition'
               >
@@ -250,12 +251,12 @@ export default function Navbar() {
                 Browse
               </Link>
             </li>
-            {isStoreUser && user?.storeBranding?.slug && (
+            {isStoreUser && businessData?.myBusiness?.slug && (
               <li>
                 <Link
                   href={
                     user.planType === 'PRO_STORE'
-                      ? `/${user.storeBranding.slug}`
+                      ? `/${businessData?.myBusiness?.slug}`
                       : `/store/${businessData?.myBusiness?.id || user.id}`
                   }
                   onClick={() => setDrawerOpen(false)}

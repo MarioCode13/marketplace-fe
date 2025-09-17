@@ -26,10 +26,7 @@ export const GET_ME = gql`
       contactNumber
       idPhotoUrl
       driversLicenseUrl
-      proofOfAddressUrl
-      storeBranding {
-        slug
-      }
+      proofOfAddressUrl 
       subscription {
         status
         planType

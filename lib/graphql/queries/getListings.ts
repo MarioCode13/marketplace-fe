@@ -2,10 +2,10 @@ import { gql } from '@apollo/client'
 
 export const GET_LISTINGS = gql`
   query GetListings(
-    $limit: Int!, 
-    $offset: Int!, 
-    $categoryId: ID, 
-    $minPrice: Float, 
+    $limit: Int!,
+    $offset: Int!,
+    $categoryId: ID,
+    $minPrice: Float,
     $maxPrice: Float,
     $condition: Condition,
     $cityId: ID,
@@ -14,13 +14,14 @@ export const GET_LISTINGS = gql`
     $maxDate: String,
     $sortBy: String,
     $sortOrder: String,
-    $userId: ID
+    $userId: ID,
+    $businessId: ID
   ) {
     getListings(
-      limit: $limit, 
-      offset: $offset, 
-      categoryId: $categoryId, 
-      minPrice: $minPrice, 
+      limit: $limit,
+      offset: $offset,
+      categoryId: $categoryId,
+      minPrice: $minPrice,
       maxPrice: $maxPrice,
       condition: $condition,
       cityId: $cityId,
@@ -29,8 +30,8 @@ export const GET_LISTINGS = gql`
       maxDate: $maxDate,
       sortBy: $sortBy,
       sortOrder: $sortOrder,
-      userId: $userId
-    
+      userId: $userId,
+      businessId: $businessId
     ) {
       listings {
         id

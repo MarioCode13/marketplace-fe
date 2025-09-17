@@ -7,7 +7,6 @@ export const GET_STORE_BY_SLUG_MINIMAL = gql`
       username
       planType
       storeBranding {
-        slug
         storeName
         logoUrl
       }

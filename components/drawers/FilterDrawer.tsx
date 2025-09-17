@@ -171,13 +171,13 @@ export default function FilterDrawer({
       onClose={onClose}
       title='Filters'
     >
-      <div className='flex flex-col max-w-80 h-full'>
+      <div className='flex flex-col max-w-80 h-full text-foreground'>
         {/* Filter content */}
         <div className='flex-1'>
           {/* Active Filters Display */}
           {hasActiveFilters() && (
             <div className='flex flex-wrap gap-2 p-2 bg-muted rounded-lg'>
-              <span className='text-sm font-medium text-muted-foreground'>
+              <span className='text-sm font-medium text-foreground'>
                 Active filters:
               </span>
               {filters.categoryId && (
@@ -262,10 +262,10 @@ export default function FilterDrawer({
             </div>
           )}
 
-          <div className='flex-col space-y-6 '>
+          <div className='flex-col space-y-6 text-foreground'>
             {/* Search */}
             <div className='space-y-2'>
-              <Label className='flex items-center gap-2'>
+              <Label className='flex items-center gap-2 text-foreground'>
                 <Search className='w-4 h-4' />
                 Search
               </Label>
@@ -279,7 +279,7 @@ export default function FilterDrawer({
 
             {/* Category */}
             <div className='space-y-2'>
-              <Label>Category</Label>
+              <Label className='text-foreground'>Category</Label>
               <CategoryCascader
                 categories={categories as CategoryNode[]}
                 value={filters.categoryId}
@@ -290,7 +290,7 @@ export default function FilterDrawer({
 
             {/* Condition */}
             <div className='space-y-2'>
-              <Label>Condition</Label>
+              <Label className='text-foreground'>Condition</Label>
               <Select
                 value={filters.condition ?? 'all'}
                 onValueChange={(value) =>
@@ -316,7 +316,7 @@ export default function FilterDrawer({
 
             {/* Location */}
             <div className='space-y-2'>
-              <Label className='flex items-center gap-2'>
+              <Label className='flex items-center gap-2 text-foreground'>
                 <MapPin className='w-4 h-4' />
                 Location
               </Label>
@@ -358,7 +358,7 @@ export default function FilterDrawer({
 
             {/* Price Range */}
             <div className='space-y-2'>
-              <Label>Price Range</Label>
+              <Label className='text-foreground'>Price Range</Label>
               <div className='flex gap-2'>
                 <Input
                   type='number'
@@ -389,7 +389,7 @@ export default function FilterDrawer({
 
             {/* Date Range */}
             <div className='space-y-2'>
-              <Label className='flex items-center gap-2'>
+              <Label className='flex items-center gap-2 text-foreground'>
                 <Calendar className='w-4 h-4' />
                 Date Posted
               </Label>
@@ -411,7 +411,7 @@ export default function FilterDrawer({
 
             {/* Sort Options */}
             <div className='space-y-2'>
-              <Label className='flex items-center gap-2'>
+              <Label className='flex items-center gap-2 text-foreground'>
                 <SortAsc className='w-4 h-4' />
                 Sort By
               </Label>

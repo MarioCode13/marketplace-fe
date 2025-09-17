@@ -6,8 +6,10 @@ export const GET_STORE_BY_SLUG_FULL = gql`
       id
       username
       planType
-      storeBranding {
-        slug
+      business{
+        id
+      }
+      storeBranding { 
         logoUrl
         bannerUrl
         themeColor

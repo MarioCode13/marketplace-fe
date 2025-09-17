@@ -4,6 +4,7 @@ export const GET_MY_BUSINESS = gql`
   query GetMyBusiness {
     myBusiness {
       id
+      slug
       name
       email
       contactNumber
@@ -21,7 +22,6 @@ export const GET_MY_BUSINESS = gql`
       }
       postalCode
       storeBranding {
-        slug
         logoUrl
         bannerUrl
         themeColor

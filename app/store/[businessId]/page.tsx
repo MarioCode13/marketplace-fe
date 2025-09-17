@@ -56,10 +56,9 @@ export default function StorePage() {
     variables: {
       limit,
       offset,
-      // TODO: For business stores, we might want to show listings from all business users
-      // For now, let's just skip the listings query
+      businessId,
     },
-    skip: true, // Skip for now until we determine the correct approach
+    skip: !businessId,
   })
 
   if (businessLoading)
@@ -77,15 +76,15 @@ export default function StorePage() {
   const totalCount = listingsData?.getListings?.totalCount || 0
 
   // Additional debug logging after business is available
-  console.log(
-    'Business users details:',
-    business.businessUsers?.map((bu) => ({
-      userId: bu.user.id,
-      userIdType: typeof bu.user.id,
-      username: bu.user.username,
-      role: bu.role,
-    }))
-  )
+  // console.log(
+  //   'Business users details:',
+  //   business.businessUsers?.map((bu) => ({
+  //     userId: bu.user.id,
+  //     userIdType: typeof bu.user.id,
+  //     username: bu.user.username,
+  //     role: bu.role,
+  //   }))
+  // )
 
   // For business stores, we show "Business Store" instead of plan type
   const themeColor = branding?.themeColor || '#1f1b30'
@@ -102,13 +101,13 @@ export default function StorePage() {
   const isOwner = isBusinessMember
 
   // Debug ownership logic
-  console.log('Business ownership check:', {
-    isBusinessMember,
-    isOwner,
-    currentUserId,
-    businessId: business.id,
-    businessUsers: business.businessUsers,
-  })
+  // console.log('Business ownership check:', {
+  //   isBusinessMember,
+  //   isOwner,
+  //   currentUserId,
+  //   businessId: business.id,
+  //   businessUsers: business.businessUsers,
+  // })
 
   const bgColor = branding?.lightOrDark === 'light' ? '#dde2e8' : '#121212'
   const textColor = getTextColor(bgColor)

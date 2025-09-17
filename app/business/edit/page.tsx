@@ -110,7 +110,7 @@ export default function BusinessEditPage() {
         lightOrDark: branding.lightOrDark || 'light',
         logoUrl: branding.logoUrl || '',
         bannerUrl: branding.bannerUrl || '',
-        slug: branding.slug || '',
+        slug: business?.slug || '',
       })
     }
   }, [business])
@@ -255,6 +255,7 @@ export default function BusinessEditPage() {
         lightOrDark: form.lightOrDark,
         about: form.about,
         storeName: form.storeName,
+        slug: form.slug,
       }
 
       // Only include slug for Pro stores

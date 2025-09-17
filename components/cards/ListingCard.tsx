@@ -118,7 +118,9 @@ export default function ListingCard({
             {!store && (
               <>
                 <p className='text-sm text-gray-600'>
-                  Seller: {listing.user ? listing.user.username : 'Unknown'}
+                  {listing.user
+                    ? listing.user.username
+                    : listing.business?.name || 'Unknown'}
                 </p>
                 {/* Only show trust rating if user exists and has trustRating */}
                 {listing.user?.trustRating && (

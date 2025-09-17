@@ -1,5 +1,5 @@
 'use client'
-
+import { GET_MY_BUSINESS } from '@/lib/graphql/queries/getMyBusiness'
 import { useQuery, useMutation } from '@apollo/client'
 import { useState, useEffect } from 'react'
 import { GET_MY_STORE_BRANDING } from '@/lib/graphql/queries/getSellerProfile'
@@ -23,6 +23,8 @@ import PreviewModal from '@/components/modals/PreviewModal'
 import { UPDATE_STORE_BRANDING } from '@/lib/graphql/mutations/businessMutations'
 
 export default function EditStorePage() {
+  // Fetch business data for slug
+  const { data: businessData } = useQuery(GET_MY_BUSINESS)
   const userId = useSelector((state: RootState) => state.auth.user?.userId)
   const router = useRouter()
   const { data, loading } = useQuery(GET_MY_STORE_BRANDING, {
@@ -80,11 +82,11 @@ export default function EditStorePage() {
         lightOrDark: branding.lightOrDark || 'light',
         logoUrl: branding.logoUrl || '',
         bannerUrl: branding.bannerUrl || '',
-        slug: branding.slug || '',
+        slug: businessData?.myBusiness?.slug || '',
       })
       console.log('Loaded branding.lightOrDark:', branding.lightOrDark)
     }
-  }, [branding])
+  }, [branding, businessData?.myBusiness?.slug])
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -186,6 +188,15 @@ export default function EditStorePage() {
         onSubmit={handleSubmit}
         className='space-y-4'
       >
+        <div>
+          <label className='block font-medium mb-1'>Store Slug</label>
+          <Input
+            name='slug'
+            value={form.slug}
+            onChange={handleChange}
+            required
+          />
+        </div>
         <div>
           <label className='block font-medium mb-1'>Store Name</label>
           <Input
@@ -331,7 +342,7 @@ export default function EditStorePage() {
           <Button
             type='button'
             color='secondary'
-            onClick={() => router.push(`/store/${branding.slug}`)}
+            onClick={() => router.push(`/store/${form.slug}`)}
           >
             Cancel
           </Button>

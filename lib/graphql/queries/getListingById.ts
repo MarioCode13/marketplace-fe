@@ -39,7 +39,6 @@ export const GET_LISTING_BY_ID = gql`
         name
         businessType
         storeBranding {
-          slug
           storeName
           logoUrl
         }

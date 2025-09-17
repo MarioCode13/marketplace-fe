@@ -51,7 +51,6 @@ export const GET_SELLER_PROFILE = gql`
         planType
       }
       storeBranding {
-        slug
         logoUrl
         bannerUrl
         themeColor
@@ -74,8 +73,7 @@ export const GET_MY_STORE_BRANDING = gql`
     user(id: $userId) {
       id
       planType
-      storeBranding {
-        slug
+      storeBranding { 
         logoUrl
         bannerUrl
         themeColor
@@ -83,9 +81,12 @@ export const GET_MY_STORE_BRANDING = gql`
         secondaryColor
         lightOrDark
         about
-        storeName
+        storeName 
+        backgroundColor
+        textColor
+        cardTextColor
       }
     }
   }
-`;
+`
 

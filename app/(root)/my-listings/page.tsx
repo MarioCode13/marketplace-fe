@@ -9,6 +9,8 @@ import SkeletonListingCard from '@/components/cards/SkeletonListingCard'
 import { Button } from '@/components/ui/button'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { MY_LISTINGS } from '@/lib/graphql/queries/myListings'
+import { GET_LISTINGS } from '@/lib/graphql/queries/getListings'
+import { GET_MY_BUSINESS } from '@/lib/graphql/queries/getMyBusiness'
 import { DELETE_LISTING } from '@/lib/graphql/mutations/listingMutations'
 import ListingCard from '@/components/cards/ListingCard'
 import {
@@ -52,14 +54,33 @@ export default function MyListingsPage() {
   const router = useRouter()
   const token = useSelector((state: RootState) => state.auth.token)
 
-  const { loading, error, data, refetch } = useQuery(MY_LISTINGS, {
-    variables: { limit, offset },
+  // Query for user's business association
+  const { data: myBusinessData } = useQuery(GET_MY_BUSINESS, {
     context: {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     },
   })
+
+  // If user is associated with a business, show business listings
+  const isBusinessUser = !!myBusinessData?.myBusiness
+  const businessId = myBusinessData?.myBusiness?.id
+
+  // Listings query: use GET_LISTINGS with businessId for business users, else use MY_LISTINGS
+  const { loading, error, data, refetch } = useQuery(
+    isBusinessUser ? GET_LISTINGS : MY_LISTINGS,
+    {
+      variables: isBusinessUser
+        ? { limit, offset, businessId }
+        : { limit, offset },
+      context: {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    }
+  )
 
   const [deleteListing] = useMutation(DELETE_LISTING, {
     context: {
@@ -69,8 +90,12 @@ export default function MyListingsPage() {
     },
   })
 
-  const listings: Listing[] = data?.myListings?.listings || []
-  const totalCount: number = data?.myListings?.totalCount || listings.length
+  const listings: Listing[] = isBusinessUser
+    ? data?.getListings?.listings || []
+    : data?.myListings?.listings || []
+  const totalCount: number = isBusinessUser
+    ? data?.getListings?.totalCount || listings.length
+    : data?.myListings?.totalCount || listings.length
 
   const handleNext = () => {
     if (offset + limit < totalCount) setOffset(offset + limit)
@@ -122,15 +147,19 @@ export default function MyListingsPage() {
             <div className='flex items-center justify-between w-full mb-6'>
               <div className='w-12'></div> {/* Spacer to balance the button */}
               <div className='flex items-center gap-4'>
-                <h1 className='text-2xl font-bold'>My Listings</h1>
+                <h1 className='text-2xl font-bold'>
+                  {isBusinessUser
+                    ? `${myBusinessData.myBusiness.name} Listings`
+                    : 'My Listings'}
+                </h1>
               </div>
               <div className='flex items-center gap-4'>
-                <Link href='/sell'>
+                <Link href={isBusinessUser ? '/sell?business=1' : '/sell'}>
                   <Button
                     color={'secondary'}
                     variant={'contained'}
                   >
-                    Sell New Item
+                    {isBusinessUser ? 'Add Business Listing' : 'Sell New Item'}
                   </Button>
                 </Link>
               </div>
@@ -146,7 +175,10 @@ export default function MyListingsPage() {
                 {listings.map((listing) => (
                   <ListingCard
                     key={listing.id}
-                    listing={listing}
+                    listing={{
+                      ...listing,
+                      user: listing.user === null ? undefined : listing.user,
+                    }}
                     showMenu
                     onEdit={() => router.push(`/edit-listing/${listing.id}`)}
                     onDelete={() => handleDeleteClick(listing.id)}
@@ -156,7 +188,9 @@ export default function MyListingsPage() {
             ) : (
               <div className='text-center py-8'>
                 <p className='text-gray-600 mb-4'>
-                  You don&apos;t have any active listings.
+                  {isBusinessUser
+                    ? 'Your business does not have any active listings.'
+                    : "You don't have any active listings."}
                 </p>
               </div>
             )}

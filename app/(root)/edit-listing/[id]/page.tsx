@@ -21,6 +21,7 @@ import { ImagePreview } from '@/components/ImagePreview'
 import { ImageUploadArea } from '@/components/ImageUploadArea'
 import { ArrowLeft, Loader2 } from 'lucide-react'
 import { GET_LISTING_BY_ID } from '@/lib/graphql/queries/getListingById'
+import { GET_MY_BUSINESS } from '@/lib/graphql/queries/getMyBusiness'
 import { GET_CONDITIONS } from '@/lib/graphql/queries/getConditions'
 import { GET_ME } from '@/lib/graphql/queries/getMe'
 import { UPDATE_LISTING } from '@/lib/graphql/mutations/listingMutations'
@@ -36,11 +37,25 @@ import { buildCategoryTree, FlatCategory, formatEnum } from '@/lib/utils'
 import CityAutocomplete from '@/components/drawers/CityAutocomplete'
 
 export default function EditListingPage() {
+  // ...existing code...
+  // ...existing code...
   const router = useRouter()
   const params = useParams()
   const listingId = params?.id as string
   const token = useSelector((state: RootState) => state.auth.token)
   const userId = useSelector((state: RootState) => state.auth.user?.userId)
+
+  // Query for user's business association
+  const { data: myBusinessData } = useQuery(GET_MY_BUSINESS, {
+    context: {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  })
+  const isBusinessUser = !!myBusinessData?.myBusiness
+  const businessId = myBusinessData?.myBusiness?.id
+  // Removed duplicate declarations
 
   const [uploading, setUploading] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -120,16 +135,28 @@ export default function EditListingPage() {
 
   // Check if user owns the listing
   useEffect(() => {
-    if (listingData?.getListingById && (userId || meData?.me?.id)) {
+    if (
+      listingData?.getListingById &&
+      (userId || meData?.me?.id || businessId)
+    ) {
       const listing = listingData.getListingById
       const currentUserId = meData?.me?.id || userId
 
-      if (String(listing.user.id) !== String(currentUserId)) {
+      // If business listing, check business ownership
+      if (isBusinessUser && listing.business?.id) {
+        if (String(listing.business.id) !== String(businessId)) {
+          toast.error('You can only edit your business listings')
+          router.push('/my-listings')
+        }
+      } else if (
+        listing.user &&
+        String(listing.user.id) !== String(currentUserId)
+      ) {
         toast.error('You can only edit your own listings')
         router.push('/my-listings')
       }
     }
-  }, [listingData, userId, meData, router])
+  }, [listingData, userId, meData, router, businessId, isBusinessUser])
 
   const handleChange = (
     e: React.ChangeEvent<

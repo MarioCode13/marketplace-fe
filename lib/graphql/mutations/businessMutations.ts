@@ -4,7 +4,7 @@ import { gql } from '@apollo/client'
 export const UPDATE_STORE_BRANDING = gql`
 	mutation UpdateStoreBranding($businessId: ID!, $input: UpdateStoreBrandingInput!) {
   updateStoreBranding(businessId: $businessId, input: $input) {
-    slug
+  
     logoUrl
     bannerUrl
     themeColor
@@ -34,8 +34,7 @@ export const CREATE_BUSINESS = gql`
 			}
 			postalCode
 			slug
-			storeBranding {
-				slug
+			storeBranding { 
 				logoUrl
 				bannerUrl
 				themeColor

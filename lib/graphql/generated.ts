@@ -122,7 +122,6 @@ export type CreateStoreBrandingInput = {
   logoUrl?: InputMaybe<Scalars['String']['input']>;
   primaryColor?: InputMaybe<Scalars['String']['input']>;
   secondaryColor?: InputMaybe<Scalars['String']['input']>;
-  slug?: InputMaybe<Scalars['String']['input']>;
   storeName?: InputMaybe<Scalars['String']['input']>;
   textColor?: InputMaybe<Scalars['String']['input']>;
   themeColor?: InputMaybe<Scalars['String']['input']>;
@@ -424,11 +423,12 @@ export type Query = {
   __typename?: 'Query';
   business?: Maybe<Business>;
   businessTrustRating?: Maybe<BusinessTrustRating>;
-  businessUsers: Array<BusinessUser>;
   canContactSellers: Scalars['Boolean']['output'];
   getAllUsers: Array<User>;
   getAvailablePlans: Array<Scalars['String']['output']>;
+  getBusinessBySlug?: Maybe<Business>;
   getBusinessDocumentByType?: Maybe<VerificationDocument>;
+  getBusinessUsers: Array<BusinessUser>;
   getBusinessVerificationDocuments: Array<VerificationDocument>;
   getBuyerForListing?: Maybe<Scalars['String']['output']>;
   /**  No longer non-nullable list */
@@ -492,14 +492,19 @@ export type QueryBusinessTrustRatingArgs = {
 };
 
 
-export type QueryBusinessUsersArgs = {
-  businessId: Scalars['ID']['input'];
+export type QueryGetBusinessBySlugArgs = {
+  slug: Scalars['String']['input'];
 };
 
 
 export type QueryGetBusinessDocumentByTypeArgs = {
   businessId: Scalars['ID']['input'];
   documentType: DocumentType;
+};
+
+
+export type QueryGetBusinessUsersArgs = {
+  businessId: Scalars['ID']['input'];
 };
 
 
@@ -723,7 +728,6 @@ export type StoreBranding = {
   logoUrl?: Maybe<Scalars['String']['output']>;
   primaryColor?: Maybe<Scalars['String']['output']>;
   secondaryColor?: Maybe<Scalars['String']['output']>;
-  slug?: Maybe<Scalars['String']['output']>;
   storeName?: Maybe<Scalars['String']['output']>;
   textColor?: Maybe<Scalars['String']['output']>;
   themeColor?: Maybe<Scalars['String']['output']>;
@@ -835,7 +839,6 @@ export type UpdateStoreBrandingInput = {
   logoUrl?: InputMaybe<Scalars['String']['input']>;
   primaryColor?: InputMaybe<Scalars['String']['input']>;
   secondaryColor?: InputMaybe<Scalars['String']['input']>;
-  slug?: InputMaybe<Scalars['String']['input']>;
   storeName?: InputMaybe<Scalars['String']['input']>;
   textColor?: InputMaybe<Scalars['String']['input']>;
   themeColor?: InputMaybe<Scalars['String']['input']>;
@@ -949,14 +952,14 @@ export type UpdateStoreBrandingMutationVariables = Exact<{
 }>;
 
 
-export type UpdateStoreBrandingMutation = { __typename?: 'Mutation', updateStoreBranding?: { __typename?: 'StoreBranding', slug?: string | null, logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, primaryColor?: string | null, secondaryColor?: string | null, lightOrDark?: string | null, about?: string | null, storeName?: string | null, textColor?: string | null, cardTextColor?: string | null } | null };
+export type UpdateStoreBrandingMutation = { __typename?: 'Mutation', updateStoreBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, primaryColor?: string | null, secondaryColor?: string | null, lightOrDark?: string | null, about?: string | null, storeName?: string | null, textColor?: string | null, cardTextColor?: string | null } | null };
 
 export type CreateBusinessMutationVariables = Exact<{
   input: CreateBusinessInput;
 }>;
 
 
-export type CreateBusinessMutation = { __typename?: 'Mutation', createBusiness: { __typename?: 'Business', id: string, name: string, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, postalCode?: string | null, slug?: string | null, city?: { __typename?: 'City', id: string, name: string } | null, storeBranding?: { __typename?: 'StoreBranding', slug?: string | null, logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, primaryColor?: string | null, secondaryColor?: string | null, lightOrDark?: string | null, about?: string | null, storeName?: string | null, textColor?: string | null, cardTextColor?: string | null } | null } };
+export type CreateBusinessMutation = { __typename?: 'Mutation', createBusiness: { __typename?: 'Business', id: string, name: string, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, postalCode?: string | null, slug?: string | null, city?: { __typename?: 'City', id: string, name: string } | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, primaryColor?: string | null, secondaryColor?: string | null, lightOrDark?: string | null, about?: string | null, storeName?: string | null, textColor?: string | null, cardTextColor?: string | null } | null } };
 
 export type LinkUserToBusinessMutationVariables = Exact<{
   businessId: Scalars['ID']['input'];
@@ -1067,7 +1070,14 @@ export type GetBusinessByIdQueryVariables = Exact<{
 }>;
 
 
-export type GetBusinessByIdQuery = { __typename?: 'Query', business?: { __typename?: 'Business', id: string, name: string, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, postalCode?: string | null, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, storeBranding?: { __typename?: 'StoreBranding', slug?: string | null, logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, lightOrDark?: string | null, primaryColor?: string | null, secondaryColor?: string | null, about?: string | null, storeName?: string | null } | null, businessUsers: Array<{ __typename?: 'BusinessUser', id: string, role: BusinessUserRole, user: { __typename?: 'User', id: string, username: string, email: string, profileImageUrl?: string | null, planType?: string | null, trustRating?: { __typename?: 'TrustRating', starRating: number, trustLevel: string, overallScore: number, totalReviews: number, totalTransactions: number, successfulTransactions: number } | null } }> } | null };
+export type GetBusinessByIdQuery = { __typename?: 'Query', business?: { __typename?: 'Business', id: string, name: string, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, postalCode?: string | null, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, lightOrDark?: string | null, primaryColor?: string | null, secondaryColor?: string | null, about?: string | null, storeName?: string | null } | null, businessUsers: Array<{ __typename?: 'BusinessUser', id: string, role: BusinessUserRole, user: { __typename?: 'User', id: string, username: string, email: string, profileImageUrl?: string | null, planType?: string | null, trustRating?: { __typename?: 'TrustRating', starRating: number, trustLevel: string, overallScore: number, totalReviews: number, totalTransactions: number, successfulTransactions: number } | null } }> } | null };
+
+export type GetBusinessBySlugQueryVariables = Exact<{
+  slug: Scalars['String']['input'];
+}>;
+
+
+export type GetBusinessBySlugQuery = { __typename?: 'Query', getBusinessBySlug?: { __typename?: 'Business', id: string, name: string, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, postalCode?: string | null, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, lightOrDark?: string | null, primaryColor?: string | null, secondaryColor?: string | null, about?: string | null, storeName?: string | null, backgroundColor?: string | null, textColor?: string | null, cardTextColor?: string | null } | null, businessUsers: Array<{ __typename?: 'BusinessUser', id: string, role: BusinessUserRole, user: { __typename?: 'User', id: string, username: string, email: string, profileImageUrl?: string | null, planType?: string | null, trustRating?: { __typename?: 'TrustRating', starRating: number, trustLevel: string, overallScore: number, totalReviews: number, totalTransactions: number, successfulTransactions: number } | null } }> } | null };
 
 export type GetCategoriesQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1079,7 +1089,7 @@ export type GetListingByIdQueryVariables = Exact<{
 }>;
 
 
-export type GetListingByIdQuery = { __typename?: 'Query', getListingById?: { __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, sold: boolean, customCity?: string | null, condition: Condition, createdAt: string, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, category?: { __typename?: 'Category', id: string, name: string, parentId?: string | null } | null, user?: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null, email: string, planType?: string | null } | null, business?: { __typename?: 'Business', id: string, name: string, businessType?: string | null, storeBranding?: { __typename?: 'StoreBranding', slug?: string | null, storeName?: string | null, logoUrl?: string | null } | null } | null } | null };
+export type GetListingByIdQuery = { __typename?: 'Query', getListingById?: { __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, sold: boolean, customCity?: string | null, condition: Condition, createdAt: string, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, category?: { __typename?: 'Category', id: string, name: string, parentId?: string | null } | null, user?: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null, email: string, planType?: string | null } | null, business?: { __typename?: 'Business', id: string, name: string, businessType?: string | null, storeBranding?: { __typename?: 'StoreBranding', storeName?: string | null, logoUrl?: string | null } | null } | null } | null };
 
 export type GetListingsQueryVariables = Exact<{
   limit: Scalars['Int']['input'];
@@ -1095,6 +1105,7 @@ export type GetListingsQueryVariables = Exact<{
   sortBy?: InputMaybe<Scalars['String']['input']>;
   sortOrder?: InputMaybe<Scalars['String']['input']>;
   userId?: InputMaybe<Scalars['ID']['input']>;
+  businessId?: InputMaybe<Scalars['ID']['input']>;
 }>;
 
 
@@ -1103,12 +1114,12 @@ export type GetListingsQuery = { __typename?: 'Query', getListings: { __typename
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type MeQuery = { __typename?: 'Query', me?: { __typename?: 'User', id: string, username: string, email: string, firstName?: string | null, lastName?: string | null, bio?: string | null, profileImageUrl?: string | null, planType?: string | null, role: string, customCity?: string | null, contactNumber?: string | null, idPhotoUrl?: string | null, driversLicenseUrl?: string | null, proofOfAddressUrl?: string | null, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, storeBranding?: { __typename?: 'StoreBranding', slug?: string | null } | null, subscription?: { __typename?: 'Subscription', status: SubscriptionStatus, planType: PlanType } | null } | null };
+export type MeQuery = { __typename?: 'Query', me?: { __typename?: 'User', id: string, username: string, email: string, firstName?: string | null, lastName?: string | null, bio?: string | null, profileImageUrl?: string | null, planType?: string | null, role: string, customCity?: string | null, contactNumber?: string | null, idPhotoUrl?: string | null, driversLicenseUrl?: string | null, proofOfAddressUrl?: string | null, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, subscription?: { __typename?: 'Subscription', status: SubscriptionStatus, planType: PlanType } | null } | null };
 
 export type GetMyBusinessQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetMyBusinessQuery = { __typename?: 'Query', myBusiness?: { __typename?: 'Business', id: string, name: string, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, postalCode?: string | null, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, storeBranding?: { __typename?: 'StoreBranding', slug?: string | null, logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, primaryColor?: string | null, secondaryColor?: string | null, lightOrDark?: string | null, about?: string | null, storeName?: string | null, textColor?: string | null, cardTextColor?: string | null } | null, businessUsers: Array<{ __typename?: 'BusinessUser', id: string, role: BusinessUserRole, user: { __typename?: 'User', id: string, username: string, email: string, profileImageUrl?: string | null } }> } | null };
+export type GetMyBusinessQuery = { __typename?: 'Query', myBusiness?: { __typename?: 'Business', id: string, slug?: string | null, name: string, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, postalCode?: string | null, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, primaryColor?: string | null, secondaryColor?: string | null, lightOrDark?: string | null, about?: string | null, storeName?: string | null, textColor?: string | null, cardTextColor?: string | null, backgroundColor?: string | null } | null, businessUsers: Array<{ __typename?: 'BusinessUser', id: string, role: BusinessUserRole, user: { __typename?: 'User', id: string, username: string, email: string, profileImageUrl?: string | null } }> } | null };
 
 export type GetNotificationsQueryVariables = Exact<{
   userId: Scalars['ID']['input'];
@@ -1122,28 +1133,28 @@ export type GetSellerProfileQueryVariables = Exact<{
 }>;
 
 
-export type GetSellerProfileQuery = { __typename?: 'Query', user?: { __typename?: 'User', id: string, username: string, email: string, createdAt: string, profileImageUrl?: string | null, firstName?: string | null, lastName?: string | null, bio?: string | null, customCity?: string | null, contactNumber?: string | null, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, trustRating?: { __typename?: 'TrustRating', overallScore: number, verificationScore: number, profileScore: number, reviewScore: number, transactionScore: number, totalReviews: number, positiveReviews: number, starRating: number, trustLevel: string } | null, profileCompletion?: { __typename?: 'ProfileCompletion', id: string, hasProfilePhoto: boolean, hasBio: boolean, hasContactNumber: boolean, hasLocation: boolean, hasIdDocument: boolean, hasDriversLicense: boolean, hasProofOfAddress: boolean, completionPercentage: number, createdAt: string, updatedAt: string } | null, subscription?: { __typename?: 'Subscription', planType: PlanType } | null, storeBranding?: { __typename?: 'StoreBranding', slug?: string | null, logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, about?: string | null } | null, listings: Array<{ __typename?: 'Listing', id: string, title: string, price: number, images: Array<string>, sold: boolean, createdAt: string }> } | null };
+export type GetSellerProfileQuery = { __typename?: 'Query', user?: { __typename?: 'User', id: string, username: string, email: string, createdAt: string, profileImageUrl?: string | null, firstName?: string | null, lastName?: string | null, bio?: string | null, customCity?: string | null, contactNumber?: string | null, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, trustRating?: { __typename?: 'TrustRating', overallScore: number, verificationScore: number, profileScore: number, reviewScore: number, transactionScore: number, totalReviews: number, positiveReviews: number, starRating: number, trustLevel: string } | null, profileCompletion?: { __typename?: 'ProfileCompletion', id: string, hasProfilePhoto: boolean, hasBio: boolean, hasContactNumber: boolean, hasLocation: boolean, hasIdDocument: boolean, hasDriversLicense: boolean, hasProofOfAddress: boolean, completionPercentage: number, createdAt: string, updatedAt: string } | null, subscription?: { __typename?: 'Subscription', planType: PlanType } | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, about?: string | null } | null, listings: Array<{ __typename?: 'Listing', id: string, title: string, price: number, images: Array<string>, sold: boolean, createdAt: string }> } | null };
 
 export type GetMyStoreBrandingQueryVariables = Exact<{
   userId: Scalars['ID']['input'];
 }>;
 
 
-export type GetMyStoreBrandingQuery = { __typename?: 'Query', user?: { __typename?: 'User', id: string, planType?: string | null, storeBranding?: { __typename?: 'StoreBranding', slug?: string | null, logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, primaryColor?: string | null, secondaryColor?: string | null, lightOrDark?: string | null, about?: string | null, storeName?: string | null } | null } | null };
+export type GetMyStoreBrandingQuery = { __typename?: 'Query', user?: { __typename?: 'User', id: string, planType?: string | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, primaryColor?: string | null, secondaryColor?: string | null, lightOrDark?: string | null, about?: string | null, storeName?: string | null } | null } | null };
 
 export type GetStoreBySlugFullQueryVariables = Exact<{
   slug: Scalars['String']['input'];
 }>;
 
 
-export type GetStoreBySlugFullQuery = { __typename?: 'Query', storeBySlug?: { __typename?: 'User', id: string, username: string, planType?: string | null, storeBranding?: { __typename?: 'StoreBranding', slug?: string | null, logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, lightOrDark?: string | null, primaryColor?: string | null, secondaryColor?: string | null, backgroundColor?: string | null, textColor?: string | null, cardTextColor?: string | null, about?: string | null, storeName?: string | null } | null, trustRating?: { __typename?: 'TrustRating', starRating: number, trustLevel: string, overallScore: number, totalReviews: number, positiveReviews: number } | null, listings: Array<{ __typename?: 'Listing', id: string, title: string, description: string, price: number, images: Array<string>, condition: Condition, customCity?: string | null, createdAt: string, expiresAt: string, sold: boolean, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null }> } | null };
+export type GetStoreBySlugFullQuery = { __typename?: 'Query', storeBySlug?: { __typename?: 'User', id: string, username: string, planType?: string | null, business?: { __typename?: 'Business', id: string } | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, lightOrDark?: string | null, primaryColor?: string | null, secondaryColor?: string | null, backgroundColor?: string | null, textColor?: string | null, cardTextColor?: string | null, about?: string | null, storeName?: string | null } | null, trustRating?: { __typename?: 'TrustRating', starRating: number, trustLevel: string, overallScore: number, totalReviews: number, positiveReviews: number } | null, listings: Array<{ __typename?: 'Listing', id: string, title: string, description: string, price: number, images: Array<string>, condition: Condition, customCity?: string | null, createdAt: string, expiresAt: string, sold: boolean, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null }> } | null };
 
 export type GetStoreBySlugMinimalQueryVariables = Exact<{
   slug: Scalars['String']['input'];
 }>;
 
 
-export type GetStoreBySlugMinimalQuery = { __typename?: 'Query', storeBySlug?: { __typename?: 'User', id: string, username: string, planType?: string | null, storeBranding?: { __typename?: 'StoreBranding', slug?: string | null, storeName?: string | null, logoUrl?: string | null } | null } | null };
+export type GetStoreBySlugMinimalQuery = { __typename?: 'Query', storeBySlug?: { __typename?: 'User', id: string, username: string, planType?: string | null, storeBranding?: { __typename?: 'StoreBranding', storeName?: string | null, logoUrl?: string | null } | null } | null };
 
 export type GetMyPurchasesQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1191,7 +1202,7 @@ export type GetUserByIdQueryVariables = Exact<{
 }>;
 
 
-export type GetUserByIdQuery = { __typename?: 'Query', getUserById?: { __typename?: 'User', id: string, username: string, planType?: string | null, storeBranding?: { __typename?: 'StoreBranding', slug?: string | null, logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, lightOrDark?: string | null, primaryColor?: string | null, secondaryColor?: string | null, about?: string | null, storeName?: string | null } | null, trustRating?: { __typename?: 'TrustRating', starRating: number, trustLevel: string, overallScore: number, totalReviews: number, totalTransactions: number, successfulTransactions: number } | null } | null };
+export type GetUserByIdQuery = { __typename?: 'Query', getUserById?: { __typename?: 'User', id: string, username: string, planType?: string | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, lightOrDark?: string | null, primaryColor?: string | null, secondaryColor?: string | null, about?: string | null, storeName?: string | null } | null, trustRating?: { __typename?: 'TrustRating', starRating: number, trustLevel: string, overallScore: number, totalReviews: number, totalTransactions: number, successfulTransactions: number } | null } | null };
 
 export type GetUserReviewsQueryVariables = Exact<{
   userId: Scalars['ID']['input'];
@@ -1546,7 +1557,6 @@ export type GetAllUsersQueryResult = Apollo.QueryResult<GetAllUsersQuery, GetAll
 export const UpdateStoreBrandingDocument = gql`
     mutation UpdateStoreBranding($businessId: ID!, $input: UpdateStoreBrandingInput!) {
   updateStoreBranding(businessId: $businessId, input: $input) {
-    slug
     logoUrl
     bannerUrl
     themeColor
@@ -1603,7 +1613,6 @@ export const CreateBusinessDocument = gql`
     postalCode
     slug
     storeBranding {
-      slug
       logoUrl
       bannerUrl
       themeColor
@@ -2219,7 +2228,6 @@ export const GetBusinessByIdDocument = gql`
       }
     }
     storeBranding {
-      slug
       logoUrl
       bannerUrl
       themeColor
@@ -2284,6 +2292,94 @@ export type GetBusinessByIdQueryHookResult = ReturnType<typeof useGetBusinessByI
 export type GetBusinessByIdLazyQueryHookResult = ReturnType<typeof useGetBusinessByIdLazyQuery>;
 export type GetBusinessByIdSuspenseQueryHookResult = ReturnType<typeof useGetBusinessByIdSuspenseQuery>;
 export type GetBusinessByIdQueryResult = Apollo.QueryResult<GetBusinessByIdQuery, GetBusinessByIdQueryVariables>;
+export const GetBusinessBySlugDocument = gql`
+    query GetBusinessBySlug($slug: String!) {
+  getBusinessBySlug(slug: $slug) {
+    id
+    name
+    email
+    contactNumber
+    addressLine1
+    addressLine2
+    postalCode
+    city {
+      id
+      name
+      region {
+        name
+        country {
+          name
+        }
+      }
+    }
+    storeBranding {
+      logoUrl
+      bannerUrl
+      themeColor
+      lightOrDark
+      primaryColor
+      secondaryColor
+      about
+      storeName
+      backgroundColor
+      textColor
+      cardTextColor
+    }
+    businessUsers {
+      id
+      role
+      user {
+        id
+        username
+        email
+        profileImageUrl
+        planType
+        trustRating {
+          starRating
+          trustLevel
+          overallScore
+          totalReviews
+          totalTransactions
+          successfulTransactions
+        }
+      }
+    }
+  }
+}
+    `;
+
+/**
+ * __useGetBusinessBySlugQuery__
+ *
+ * To run a query within a React component, call `useGetBusinessBySlugQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetBusinessBySlugQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetBusinessBySlugQuery({
+ *   variables: {
+ *      slug: // value for 'slug'
+ *   },
+ * });
+ */
+export function useGetBusinessBySlugQuery(baseOptions: Apollo.QueryHookOptions<GetBusinessBySlugQuery, GetBusinessBySlugQueryVariables> & ({ variables: GetBusinessBySlugQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetBusinessBySlugQuery, GetBusinessBySlugQueryVariables>(GetBusinessBySlugDocument, options);
+      }
+export function useGetBusinessBySlugLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetBusinessBySlugQuery, GetBusinessBySlugQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetBusinessBySlugQuery, GetBusinessBySlugQueryVariables>(GetBusinessBySlugDocument, options);
+        }
+export function useGetBusinessBySlugSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GetBusinessBySlugQuery, GetBusinessBySlugQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<GetBusinessBySlugQuery, GetBusinessBySlugQueryVariables>(GetBusinessBySlugDocument, options);
+        }
+export type GetBusinessBySlugQueryHookResult = ReturnType<typeof useGetBusinessBySlugQuery>;
+export type GetBusinessBySlugLazyQueryHookResult = ReturnType<typeof useGetBusinessBySlugLazyQuery>;
+export type GetBusinessBySlugSuspenseQueryHookResult = ReturnType<typeof useGetBusinessBySlugSuspenseQuery>;
+export type GetBusinessBySlugQueryResult = Apollo.QueryResult<GetBusinessBySlugQuery, GetBusinessBySlugQueryVariables>;
 export const GetCategoriesDocument = gql`
     query GetCategories {
   getCategories {
@@ -2364,7 +2460,6 @@ export const GetListingByIdDocument = gql`
       name
       businessType
       storeBranding {
-        slug
         storeName
         logoUrl
       }
@@ -2406,7 +2501,7 @@ export type GetListingByIdLazyQueryHookResult = ReturnType<typeof useGetListingB
 export type GetListingByIdSuspenseQueryHookResult = ReturnType<typeof useGetListingByIdSuspenseQuery>;
 export type GetListingByIdQueryResult = Apollo.QueryResult<GetListingByIdQuery, GetListingByIdQueryVariables>;
 export const GetListingsDocument = gql`
-    query GetListings($limit: Int!, $offset: Int!, $categoryId: ID, $minPrice: Float, $maxPrice: Float, $condition: Condition, $cityId: ID, $searchTerm: String, $minDate: String, $maxDate: String, $sortBy: String, $sortOrder: String, $userId: ID) {
+    query GetListings($limit: Int!, $offset: Int!, $categoryId: ID, $minPrice: Float, $maxPrice: Float, $condition: Condition, $cityId: ID, $searchTerm: String, $minDate: String, $maxDate: String, $sortBy: String, $sortOrder: String, $userId: ID, $businessId: ID) {
   getListings(
     limit: $limit
     offset: $offset
@@ -2421,6 +2516,7 @@ export const GetListingsDocument = gql`
     sortBy: $sortBy
     sortOrder: $sortOrder
     userId: $userId
+    businessId: $businessId
   ) {
     listings {
       id
@@ -2486,6 +2582,7 @@ export const GetListingsDocument = gql`
  *      sortBy: // value for 'sortBy'
  *      sortOrder: // value for 'sortOrder'
  *      userId: // value for 'userId'
+ *      businessId: // value for 'businessId'
  *   },
  * });
  */
@@ -2532,9 +2629,6 @@ export const MeDocument = gql`
     idPhotoUrl
     driversLicenseUrl
     proofOfAddressUrl
-    storeBranding {
-      slug
-    }
     subscription {
       status
       planType
@@ -2578,6 +2672,7 @@ export const GetMyBusinessDocument = gql`
     query GetMyBusiness {
   myBusiness {
     id
+    slug
     name
     email
     contactNumber
@@ -2595,7 +2690,6 @@ export const GetMyBusinessDocument = gql`
     }
     postalCode
     storeBranding {
-      slug
       logoUrl
       bannerUrl
       themeColor
@@ -2606,6 +2700,7 @@ export const GetMyBusinessDocument = gql`
       storeName
       textColor
       cardTextColor
+      backgroundColor
     }
     businessUsers {
       id
@@ -2753,7 +2848,6 @@ export const GetSellerProfileDocument = gql`
       planType
     }
     storeBranding {
-      slug
       logoUrl
       bannerUrl
       themeColor
@@ -2809,7 +2903,6 @@ export const GetMyStoreBrandingDocument = gql`
     id
     planType
     storeBranding {
-      slug
       logoUrl
       bannerUrl
       themeColor
@@ -2861,8 +2954,10 @@ export const GetStoreBySlugFullDocument = gql`
     id
     username
     planType
+    business {
+      id
+    }
     storeBranding {
-      slug
       logoUrl
       bannerUrl
       themeColor
@@ -2947,7 +3042,6 @@ export const GetStoreBySlugMinimalDocument = gql`
     username
     planType
     storeBranding {
-      slug
       storeName
       logoUrl
     }
@@ -3509,7 +3603,6 @@ export const GetUserByIdDocument = gql`
     username
     planType
     storeBranding {
-      slug
       logoUrl
       bannerUrl
       themeColor
