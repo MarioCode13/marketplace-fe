@@ -839,6 +839,7 @@ export type UpdateStoreBrandingInput = {
   logoUrl?: InputMaybe<Scalars['String']['input']>;
   primaryColor?: InputMaybe<Scalars['String']['input']>;
   secondaryColor?: InputMaybe<Scalars['String']['input']>;
+  slug?: InputMaybe<Scalars['String']['input']>;
   storeName?: InputMaybe<Scalars['String']['input']>;
   textColor?: InputMaybe<Scalars['String']['input']>;
   themeColor?: InputMaybe<Scalars['String']['input']>;
@@ -1140,7 +1141,7 @@ export type GetMyStoreBrandingQueryVariables = Exact<{
 }>;
 
 
-export type GetMyStoreBrandingQuery = { __typename?: 'Query', user?: { __typename?: 'User', id: string, planType?: string | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, primaryColor?: string | null, secondaryColor?: string | null, lightOrDark?: string | null, about?: string | null, storeName?: string | null } | null } | null };
+export type GetMyStoreBrandingQuery = { __typename?: 'Query', user?: { __typename?: 'User', id: string, planType?: string | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, primaryColor?: string | null, secondaryColor?: string | null, lightOrDark?: string | null, about?: string | null, storeName?: string | null, backgroundColor?: string | null, textColor?: string | null, cardTextColor?: string | null } | null } | null };
 
 export type GetStoreBySlugFullQueryVariables = Exact<{
   slug: Scalars['String']['input'];
@@ -2911,6 +2912,9 @@ export const GetMyStoreBrandingDocument = gql`
       lightOrDark
       about
       storeName
+      backgroundColor
+      textColor
+      cardTextColor
     }
   }
 }
