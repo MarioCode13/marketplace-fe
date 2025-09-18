@@ -26,6 +26,12 @@ import { notFound } from 'next/navigation'
 import { useParams, useRouter } from 'next/navigation'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/store/store'
+import {
+  formatEnum,
+  getTextColor,
+  buildCategoryTree,
+  FlatCategory,
+} from '@/lib/utils'
 
 export default function ProStoreRoute() {
   const params = useParams()
@@ -79,14 +85,11 @@ export default function ProStoreRoute() {
   const [offset, setOffset] = useState(0)
   const limit = 8
 
-  // Categories for filter
   const { data: categoriesData } = useGetCategoriesQuery()
-  const categories = (categoriesData?.getCategories || []).filter(
-    (c): c is { id: string; name: string } =>
-      !!c && typeof c.id === 'string' && typeof c.name === 'string'
-  )
+  const categories = categoriesData?.getCategories
+    ? buildCategoryTree(categoriesData.getCategories as FlatCategory[])
+    : []
 
-  // Listings for this business
   const listingsQueryVars = {
     limit,
     offset,
@@ -94,9 +97,6 @@ export default function ProStoreRoute() {
     ...(isProStore && business?.id ? { businessId: business.id } : {}),
   }
   const shouldSkipListings = isProStore && !business?.id
-  console.log('Listings Query Variables:', listingsQueryVars)
-  console.log('Listings Query Variables:', listingsQueryVars)
-  console.log('Listings Query Variables:', listingsQueryVars)
   const {
     data: listingsData,
     loading: listingsLoading,
@@ -130,7 +130,9 @@ export default function ProStoreRoute() {
     branding?.storeName ||
     business?.businessUsers?.[0]?.user?.username ||
     business?.name
-  const badgeLabel = 'Pro Store'
+  const badgeLabel = formatEnum(
+    business?.businessUsers?.[0]?.user?.planType ?? ''
+  )
 
   // Filter logic
   const handleApplyFilters = (newFilters: Record<string, unknown>) => {
@@ -254,15 +256,21 @@ export default function ProStoreRoute() {
               {trustLevel && (
                 <span
                   className='text-xs px-2 py-1 rounded'
-                  style={{ backgroundColor: secondaryColor, color: textColor }}
+                  style={{
+                    backgroundColor: secondaryColor,
+                    color: getTextColor(secondaryColor),
+                  }}
                 >
                   {trustLevel}
                 </span>
               )}
               {badgeLabel && (
                 <span
-                  className='text-xs px-2 py-1 rounded ml-2 text-white'
-                  style={{ backgroundColor: themeColor }}
+                  className='text-xs px-2 py-1 rounded ml-2 '
+                  style={{
+                    backgroundColor: themeColor,
+                    color: getTextColor(themeColor),
+                  }}
                 >
                   {badgeLabel}
                 </span>
@@ -452,7 +460,7 @@ export default function ProStoreRoute() {
           <div
             className='my-14 p-4 rounded-lg border'
             style={{
-              borderColor: themeColor + '30',
+              borderColor: themeColor + '50',
               backgroundColor: backgroundColor,
               color: textColor,
             }}

@@ -24,6 +24,8 @@ import { GET_ME } from '@/lib/graphql/queries/getMe'
 import { UPDATE_STORE_BRANDING } from '@/lib/graphql/mutations/businessMutations'
 import { BusinessUser, UpdateStoreBrandingInput } from '@/lib/graphql/generated'
 import PreviewModal from '@/components/modals/PreviewModal'
+import Link from 'next/link'
+import AddTeamMember from './AddTeamMember'
 
 export default function BusinessEditPage() {
   const router = useRouter()
@@ -215,34 +217,22 @@ export default function BusinessEditPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    console.log('UserData:', userData)
-    console.log('Business:', business)
-    console.log('UserId:', userId)
-    console.log('BusinessId:', business?.id)
-
     if (!userId) {
-      console.error('No user ID found')
       toast.error('User ID not found. Please refresh the page.')
       return
     }
 
     if (!business?.id) {
-      console.error('No business ID found')
       toast.error('Business not found. Please refresh the page.')
       return
     }
 
     if (!slugValid && isProStore) {
-      console.error('Invalid slug')
+      toast.error('Invalid slug')
       return
     }
 
     try {
-      console.log('Form values being sent:', form)
-      console.log('Business form values:', businessForm)
-      console.log('Calling mutation with businessId:', business.id)
-
-      // Update store branding
       const brandingInput: Partial<UpdateStoreBrandingInput> = {
         logoUrl: form.logoUrl,
         bannerUrl: form.bannerUrl,
@@ -282,10 +272,6 @@ export default function BusinessEditPage() {
           businessForm.postalCode !== (business.postalCode || '')
 
         if (businessChanged) {
-          console.log(
-            'Business details changed, would update with:',
-            businessForm
-          )
           toast.info('Business details changes noted (backend update pending)')
         }
       }
@@ -299,8 +285,9 @@ export default function BusinessEditPage() {
       const redirectUrl = isProStore ? `/${form.slug}` : `/store/${business.id}`
       router.push(redirectUrl)
     } catch (error) {
-      console.error('Error updating business settings:', error)
-      toast.error('Failed to save changes. Please try again.')
+      toast.error(
+        'Failed to save changes. Please try again. ' + (error as Error).message
+      )
     }
   }
 
@@ -606,30 +593,32 @@ export default function BusinessEditPage() {
                 />
               )}
             </div>
-            <div>
-              <label className='block font-medium mb-1'>Banner</label>
-              <FileInput
-                accept='image/*'
-                onChange={handleBannerChange}
-                loading={uploadingBanner}
-                id='banner-upload'
-                disabled={uploadingBanner}
-              />
-              {uploadingBanner && (
-                <div className='flex items-center gap-2 text-sm text-gray-500 mt-2'>
-                  <Loader2 className='animate-spin w-4 h-4' />
-                </div>
-              )}
-              {form.bannerUrl && !uploadBannerError && (
-                <Image
-                  src={form.bannerUrl}
-                  alt='Banner'
-                  width={1000}
-                  height={200}
-                  className='h-24 mt-2 w-full object-cover'
+            {isProStore && (
+              <div>
+                <label className='block font-medium mb-1'>Banner</label>
+                <FileInput
+                  accept='image/*'
+                  onChange={handleBannerChange}
+                  loading={uploadingBanner}
+                  id='banner-upload'
+                  disabled={uploadingBanner}
                 />
-              )}
-            </div>
+                {uploadingBanner && (
+                  <div className='flex items-center gap-2 text-sm text-gray-500 mt-2'>
+                    <Loader2 className='animate-spin w-4 h-4' />
+                  </div>
+                )}
+                {form.bannerUrl && !uploadBannerError && (
+                  <Image
+                    src={form.bannerUrl}
+                    alt='Banner'
+                    width={1000}
+                    height={200}
+                    className='h-24 mt-2 w-full object-cover'
+                  />
+                )}
+              </div>
+            )}
           </div>
         </div>
 
@@ -703,18 +692,60 @@ export default function BusinessEditPage() {
         )}
 
         <div className='mt-4'>
-          <Button
-            variant='outlined'
-            disabled
-          >
-            Add team member (coming soon)
-          </Button>
+          {isProStore ? (
+            <AddTeamMember businessId={business?.id} />
+          ) : (
+            <>
+              <Button
+                variant='outlined'
+                disabled
+              >
+                Add team member (Pro Store only)
+              </Button>
+              <div className='mt-4 flex flex-col items-center justify-center p-4 rounded-lg bg-gradient-to-r from-slate-800 to-purple-800 border border-purple-900 shadow-sm'>
+                <div className='flex items-center justify-center mb-2'>
+                  <svg
+                    width='32'
+                    height='32'
+                    fill='none'
+                    viewBox='0 0 24 24'
+                    stroke='currentColor'
+                    className='text-white mr-2'
+                  >
+                    <path
+                      strokeLinecap='round'
+                      strokeLinejoin='round'
+                      strokeWidth={2}
+                      d='M12 8v4l3 3m6 1a9 9 0 11-18 0 9 9 0 0118 0z'
+                    />
+                  </svg>
+                  <span className='font-bold text-lg text-white'>
+                    Unlock Team Management
+                  </span>
+                </div>
+                <div className='text-sm text-white mb-3'>
+                  Upgrade to <span className='font-semibold'>Pro Store</span> to
+                  add and manage team members, unlock advanced features, and
+                  grow your business.
+                </div>
+                <Link
+                  href='/subscriptions'
+                  className='inline-block px-4 py-2 bg-primary text-white rounded shadow hover:bg-primaryHover transition font-semibold'
+                >
+                  Upgrade Now
+                </Link>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
       {showPreview && (
         <PreviewModal
-          form={form}
+          form={{
+            ...form,
+            bannerUrl: isProStore ? form.bannerUrl : '',
+          }}
           setShowPreview={setShowPreview}
         />
       )}

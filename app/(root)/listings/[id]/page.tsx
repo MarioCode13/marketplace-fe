@@ -221,7 +221,7 @@ const Page = () => {
                     </p>
                     {listing.business ? (
                       <Link
-                        href={`/${listing.business.storeBranding?.slug || ''}`}
+                        href={`/${listing.business?.slug || ''}`}
                         className='hover:underline'
                       >
                         <h2 className='text-lg font-semibold'>
@@ -274,12 +274,10 @@ const Page = () => {
                         if (listing.business) {
                           if (
                             listing.business.businessType === 'PRO_STORE' &&
-                            listing.business.storeBranding?.slug
+                            listing.business?.slug
                           ) {
                             return (
-                              <Link
-                                href={`/${listing.business.storeBranding.slug}`}
-                              >
+                              <Link href={`/${listing.business?.slug}`}>
                                 <Button
                                   variant='outlined'
                                   className='flex items-center gap-2'
@@ -348,7 +346,6 @@ const Page = () => {
                       <Shield className='w-4 h-4 text-blue-600' />
                       <span className='text-sm font-medium'>Trust Rating</span>
                     </div>
-                    {/* This would be populated with actual trust data */}
                     <div className='flex items-center gap-2'>
                       <div className='flex items-center gap-1'>
                         {[1, 2, 3, 4, 5].map((star) => (
@@ -363,13 +360,13 @@ const Page = () => {
                         ))}
                         <span className='text-sm text-gray-600 ml-1'>4.0</span>
                       </div>
-                      <Badge
+                      {/* <Badge
                         variant='outline'
                         className='bg-green-100 text-green-800 border-green-200'
                       >
                         <Shield className='w-3 h-3 mr-1' />
                         VERY GOOD
-                      </Badge>
+                      </Badge> */}
                       <span className='text-sm text-gray-600'>
                         (12 reviews)
                       </span>

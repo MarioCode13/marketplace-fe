@@ -153,13 +153,12 @@ export default function SubscriptionsPage() {
           },
         }
       )
-      console.log('Fetch response:', res)
       const url = await res.text()
-      console.log('PayFast URL:', url)
       window.location.href = url
     } catch (e) {
-      console.error('Failed to initiate payment:', e)
-      alert('Failed to initiate payment. Please try again.')
+      alert(
+        'Failed to initiate payment. Please try again. ' + (e as Error).message
+      )
     } finally {
       setLoadingTier(null)
     }

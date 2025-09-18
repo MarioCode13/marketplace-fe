@@ -56,8 +56,6 @@ export default async function Page({
     sortOrder,
   }
 
-  console.log('Listings query variables:', variables)
-
   // Fetch from GraphQL with network-only to ensure fresh data
   const { data } = await client.query({
     query: GET_LISTINGS,

@@ -170,7 +170,7 @@ export default function SellPage() {
       setImages([])
       router.push('/')
     } catch (err) {
-      console.error(err)
+      toast.error('Failed to create listing: ' + (err as Error).message)
     }
   }
 

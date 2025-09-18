@@ -39,6 +39,7 @@ export const GET_MY_BUSINESS = gql`
         role
         user {
           id
+          planType
           username
           email
           profileImageUrl

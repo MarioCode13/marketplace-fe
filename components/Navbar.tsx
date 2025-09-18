@@ -36,9 +36,6 @@ export default function Navbar() {
   const { data: businessData } = useGetMyBusinessQuery({
     skip: !token,
   })
-  // Debug logs for user and business queries
-  console.log('Navbar: GET_ME user data:', data)
-  console.log('Navbar: useGetMyBusinessQuery business data:', businessData)
 
   const profileImageUrl = data?.me?.profileImageUrl
   const user = data?.me

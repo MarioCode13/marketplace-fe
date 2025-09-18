@@ -114,7 +114,6 @@ export default function EditListingPage() {
     // Only initialize if formKey is empty (not yet initialized)
     if (!formKey) {
       const listing = listingData.getListingById
-      console.log('Initializing form with listing data:', listing)
 
       setForm({
         title: listing.title,
@@ -197,8 +196,7 @@ export default function EditListingPage() {
       setImages([...images, data[0]])
       toast.success('Image uploaded successfully!')
     } catch (err) {
-      console.error('❌ Upload error:', err)
-      toast.error('Failed to upload image')
+      toast.error('❌ Failed to upload image: ' + (err as Error).message)
     }
     setUploading(false)
   }
@@ -206,8 +204,6 @@ export default function EditListingPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true)
-
-    console.log('Form state on submit:', form)
 
     try {
       const input: UpdateListingInput = {
@@ -221,7 +217,6 @@ export default function EditListingPage() {
         cityId: form.city || null,
         customCity: form.customCity || null,
       }
-      console.log('Mutation input:', input)
 
       await updateListing({
         variables: { input },
@@ -230,8 +225,7 @@ export default function EditListingPage() {
       toast.success('Listing updated successfully!')
       router.push(`/listings/${listingId}`)
     } catch (err) {
-      console.error(err)
-      toast.error('Failed to update listing')
+      toast.error('Failed to update listing: ' + (err as Error).message)
     }
 
     setSaving(false)

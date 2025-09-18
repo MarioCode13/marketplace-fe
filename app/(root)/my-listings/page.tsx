@@ -126,8 +126,10 @@ export default function MyListingsPage() {
       // Refetch the listings to update the UI
       await refetch()
     } catch (error) {
-      console.error('Error deleting listing:', error)
-      toast.error('Failed to delete listing. Please try again.')
+      toast.error(
+        'Failed to delete listing. Please try again. ' +
+          (error as Error).message
+      )
     } finally {
       setIsDeleting(false)
     }

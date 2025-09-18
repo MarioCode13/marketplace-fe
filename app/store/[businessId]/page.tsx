@@ -18,12 +18,10 @@ import { getTextColor } from '@/lib/utils'
 export default function StorePage() {
   const params = useParams()
   const navigate = useRouter()
-  const businessId = params?.businessId as string // This will be the business ID, not a slug
+  const businessId = params?.businessId as string
   const currentUserId = useSelector(
     (state: RootState) => state.auth.user?.userId
   )
-
-  console.log('Store page loaded with businessId:', businessId)
 
   // State for pagination only (no filters for resellers)
   const [offset, setOffset] = useState(0)
@@ -38,15 +36,6 @@ export default function StorePage() {
     variables: { id: businessId },
     skip: !businessId,
   })
-
-  // Debug logging
-  console.log('Business query result:', {
-    businessData,
-    businessLoading,
-    businessError,
-  })
-  console.log('Current user ID:', currentUserId, typeof currentUserId)
-  console.log('Business ID from URL:', businessId)
 
   const {
     data: listingsData,
@@ -75,17 +64,6 @@ export default function StorePage() {
   const listings = listingsData?.getListings?.listings || []
   const totalCount = listingsData?.getListings?.totalCount || 0
 
-  // Additional debug logging after business is available
-  // console.log(
-  //   'Business users details:',
-  //   business.businessUsers?.map((bu) => ({
-  //     userId: bu.user.id,
-  //     userIdType: typeof bu.user.id,
-  //     username: bu.user.username,
-  //     role: bu.role,
-  //   }))
-  // )
-
   // For business stores, we show "Business Store" instead of plan type
   const themeColor = branding?.themeColor || '#1f1b30'
   const primaryColor = branding?.primaryColor || '#1f1b30'
@@ -99,15 +77,6 @@ export default function StorePage() {
       ['OWNER', 'ADMIN'].includes(businessUser.role as string)
   )
   const isOwner = isBusinessMember
-
-  // Debug ownership logic
-  // console.log('Business ownership check:', {
-  //   isBusinessMember,
-  //   isOwner,
-  //   currentUserId,
-  //   businessId: business.id,
-  //   businessUsers: business.businessUsers,
-  // })
 
   const bgColor = branding?.lightOrDark === 'light' ? '#dde2e8' : '#121212'
   const textColor = getTextColor(bgColor)

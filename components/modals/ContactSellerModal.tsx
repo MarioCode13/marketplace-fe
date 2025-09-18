@@ -114,6 +114,8 @@ const ContactSellerModal = ({
           {success && <p className='text-green-500'>{success}</p>}
           <Button
             type='submit'
+            variant={'contained'}
+            color={'primary'}
             disabled={loading}
             className='w-full'
           >

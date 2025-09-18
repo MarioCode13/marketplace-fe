@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import { gql } from '@apollo/client'
 import { jwtDecode } from 'jwt-decode'
 import { getApolloClient } from '@/lib/apollo/client'
+import { toast } from 'sonner'
 
 // Get the Apollo Client instance
 const getClient = () => getApolloClient()
@@ -74,17 +75,16 @@ const getInitialAuthState = () => {
         if (token) {
             const decoded: DecodedToken = jwtDecode(token)
             if (decoded.exp * 1000 < Date.now()) {
-                console.log('Token expired')
                 localStorage.removeItem('token')
                 return { token: null, user: null }
             }
             return { token, user: decoded }
         }
     } catch (error) {
-        console.error('Error accessing localStorage or decoding token:', error)
         if (typeof window !== 'undefined') {
             localStorage.removeItem('token')
         }
+        toast.error('Error decoding token:' + (error instanceof Error ? error.message : ''))
     }
     return { token: null, user: null }
 }
@@ -116,7 +116,6 @@ const authSlice = createSlice({
                 state.error = null
             })
             .addCase(loginUser.fulfilled, (state, action) => {
-                console.log('Login successful, payload:', action.payload)
                 state.token = action.payload.token
                 try {
                     state.user = {
@@ -124,7 +123,7 @@ const authSlice = createSlice({
                         userId: action.payload.user.userId
                     }
                 } catch (error) {
-                    console.error('Error decoding token:', error)
+                    toast.error('Error decoding token:' + (error instanceof Error ? error.message : ''))
                     state.user = null
                 }
                 state.loading = false

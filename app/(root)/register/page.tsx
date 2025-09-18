@@ -81,9 +81,7 @@ export default function Register() {
           toast.error('Registration failed. Please try again')
         }
       } else {
-        // Optional: handle unknown errors
-        console.error('Unexpected error:', err)
-        toast.error('An unexpected error occurred.')
+        toast.error('An unexpected error occurred: ' + (err as Error).message)
       }
     }
   }

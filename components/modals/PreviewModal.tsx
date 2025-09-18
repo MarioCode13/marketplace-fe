@@ -74,7 +74,7 @@ export default function PreviewModal({
   const primaryColor = form.primaryColor || '#fff'
   const cardTextColor = form.cardTextColor || '#222'
   const textColor = form.textColor || '#222'
-  const secondaryColor = form.secondaryColor || '#1f1b30'
+  // const secondaryColor = form.secondaryColor || '#1f1b30'
   const themeColor = form.themeColor || '#1f1b30'
   return (
     <div className='fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50'>
@@ -123,7 +123,7 @@ export default function PreviewModal({
           <div className='flex-1'>
             <h1
               className='text-2xl font-bold'
-              style={{ color: secondaryColor }}
+              style={{ color: primaryColor }}
             >
               {form.storeName || 'Store Name'}
             </h1>
