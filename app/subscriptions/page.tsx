@@ -147,7 +147,7 @@ export default function SubscriptionsPage() {
       const res = await fetch(
         `http://localhost:8080/api/payments/payfast/subscription-url?${params.toString()}`,
         {
-          credentials: 'include', // if using cookies for auth
+          credentials: 'include',
           headers: {
             Authorization: `Bearer ${JWT}`,
           },

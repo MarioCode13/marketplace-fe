@@ -17,7 +17,6 @@ interface PreviewModalProps {
     lightOrDark: string
     logoUrl: string
     bannerUrl: string
-    slug: string
   }
   setShowPreview: (show: boolean) => void
 }

@@ -170,8 +170,8 @@ export default function ProStoreRoute() {
       {bannerUrl && (
         <div className='h-72  w-[100vw] max-w-[100%] overflow-hidden mb-6'>
           <Image
-            width={1600}
-            height={1200}
+            width={2000}
+            height={1500}
             src={bannerUrl}
             alt='Store banner'
             className='w-full h-full object-cover'

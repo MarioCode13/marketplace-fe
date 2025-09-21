@@ -36,40 +36,40 @@ export default function Login() {
       // Fetch business context after login
       const { data: businessData } = await getMyBusiness()
       const business = businessData?.myBusiness
-      dispatch(
-        setUserContext({
-          userId: payload.user.userId,
-          username: payload.user.username,
-          businessId: business?.id || null,
-          businessName: business?.name || null,
-          role:
-            business?.businessUsers?.find(
-              (bu: { user: { id: string }; role: string }) =>
-                bu.user.id === payload.user.userId
-            )?.role || null,
-          isBusinessUser: !!business,
-          isBusinessOwner:
-            business?.businessUsers?.find(
-              (bu: { user: { id: string }; role: string }) =>
-                bu.user.id === payload.user.userId &&
-                (bu.role === 'OWNER' || bu.role === 'ADMIN')
-            ) !== undefined,
-          canEditListing:
-            business?.businessUsers?.find(
-              (bu: { user: { id: string }; role: string }) =>
-                bu.user.id === payload.user.userId &&
-                (bu.role === 'OWNER' ||
-                  bu.role === 'ADMIN' ||
-                  bu.role === 'MEMBER')
-            ) !== undefined,
-          canViewBusinessTransactions:
-            business?.businessUsers?.find(
-              (bu: { user: { id: string }; role: string }) =>
-                bu.user.id === payload.user.userId &&
-                (bu.role === 'OWNER' || bu.role === 'ADMIN')
-            ) !== undefined,
-        })
-      )
+      const userContext = {
+        userId: payload.user.userId,
+        username: payload.user.username,
+        businessId: business?.id || null,
+        businessName: business?.name || null,
+        role:
+          business?.businessUsers?.find(
+            (bu: { user: { id: string }; role: string }) =>
+              bu.user.id === payload.user.userId
+          )?.role || null,
+        isBusinessUser: !!business,
+        isBusinessOwner:
+          business?.businessUsers?.find(
+            (bu: { user: { id: string }; role: string }) =>
+              bu.user.id === payload.user.userId &&
+              (bu.role === 'OWNER' || bu.role === 'ADMIN')
+          ) !== undefined,
+        canEditListing:
+          business?.businessUsers?.find(
+            (bu: { user: { id: string }; role: string }) =>
+              bu.user.id === payload.user.userId &&
+              (bu.role === 'OWNER' ||
+                bu.role === 'ADMIN' ||
+                bu.role === 'MEMBER')
+          ) !== undefined,
+        canViewBusinessTransactions:
+          business?.businessUsers?.find(
+            (bu: { user: { id: string }; role: string }) =>
+              bu.user.id === payload.user.userId &&
+              (bu.role === 'OWNER' || bu.role === 'ADMIN')
+          ) !== undefined,
+      }
+      dispatch(setUserContext(userContext))
+      console.log('User context:', userContext)
       toast.success('Login successful!')
       router.push('/')
     } else {

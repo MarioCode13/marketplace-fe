@@ -123,7 +123,7 @@
       {
         "kind": "OBJECT",
         "name": "Business",
-        "description": " Business domain",
+        "description": null,
         "isOneOf": null,
         "fields": [
           {
@@ -312,7 +312,7 @@
           },
           {
             "name": "verificationDocuments",
-            "description": " Added",
+            "description": null,
             "args": [],
             "type": {
               "kind": "NON_NULL",
@@ -992,6 +992,18 @@
         "interfaces": null,
         "enumValues": [
           {
+            "name": "BANK_ACCOUNT_VERIFICATION",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "BUSINESS_REGISTRATION",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "DRIVERS_LICENSE",
             "description": null,
             "isDeprecated": false,
@@ -1004,6 +1016,12 @@
             "deprecationReason": null
           },
           {
+            "name": "OWNER_IDENTITY",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "PROFILE_PHOTO",
             "description": null,
             "isDeprecated": false,
@@ -1011,6 +1029,12 @@
           },
           {
             "name": "PROOF_OF_ADDRESS",
+            "description": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "TAX_CLEARANCE",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
@@ -2397,6 +2421,76 @@
             "deprecationReason": null
           },
           {
+            "name": "updateBusiness",
+            "description": null,
+            "args": [
+              {
+                "name": "input",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "INPUT_OBJECT",
+                    "name": "UpdateBusinessInput",
+                    "ofType": null
+                  }
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              }
+            ],
+            "type": {
+              "kind": "OBJECT",
+              "name": "Business",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "updateBusinessAndBranding",
+            "description": null,
+            "args": [
+              {
+                "name": "branding",
+                "description": null,
+                "type": {
+                  "kind": "INPUT_OBJECT",
+                  "name": "UpdateStoreBrandingInput",
+                  "ofType": null
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              },
+              {
+                "name": "business",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "INPUT_OBJECT",
+                    "name": "UpdateBusinessInput",
+                    "ofType": null
+                  }
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              }
+            ],
+            "type": {
+              "kind": "OBJECT",
+              "name": "Business",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "updateListing",
             "description": null,
             "args": [
@@ -3102,25 +3196,19 @@
         "interfaces": null,
         "enumValues": [
           {
-            "name": "BASIC_MONTHLY",
+            "name": "PRO_STORE",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
           },
           {
-            "name": "BASIC_YEARLY",
+            "name": "RESELLER",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
           },
           {
-            "name": "PREMIUM_MONTHLY",
-            "description": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "PREMIUM_YEARLY",
+            "name": "VERIFIED_USER",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
@@ -3546,6 +3634,47 @@
               "kind": "OBJECT",
               "name": "VerificationDocument",
               "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "getBusinessTransactions",
+            "description": null,
+            "args": [
+              {
+                "name": "businessId",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "SCALAR",
+                    "name": "ID",
+                    "ofType": null
+                  }
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              }
+            ],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "LIST",
+                "name": null,
+                "ofType": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "OBJECT",
+                    "name": "Transaction",
+                    "ofType": null
+                  }
+                }
+              }
             },
             "isDeprecated": false,
             "deprecationReason": null
@@ -6527,6 +6656,18 @@
             "defaultValue": null,
             "isDeprecated": false,
             "deprecationReason": null
+          },
+          {
+            "name": "slug",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
           }
         ],
         "interfaces": null,
@@ -6758,18 +6899,6 @@
           },
           {
             "name": "secondaryColor",
-            "description": null,
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            },
-            "defaultValue": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "slug",
             "description": null,
             "type": {
               "kind": "SCALAR",

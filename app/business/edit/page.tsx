@@ -1,6 +1,7 @@
 'use client'
+
 import { useApolloClient } from '@apollo/client'
-import { checkSlugAvailable } from '@/lib/utils/slugUtils'
+import { gql, useLazyQuery } from '@apollo/client'
 
 import { useQuery, useMutation } from '@apollo/client'
 import { useEffect, useState } from 'react'
@@ -22,6 +23,7 @@ import { Loader2, LoaderCircle, Users, Eye } from 'lucide-react'
 import { GET_MY_BUSINESS } from '@/lib/graphql/queries/getMyBusiness'
 import { GET_ME } from '@/lib/graphql/queries/getMe'
 import { UPDATE_STORE_BRANDING } from '@/lib/graphql/mutations/businessMutations'
+import { UPDATE_BUSINESS } from '@/lib/graphql/mutations/updateBusiness'
 import { BusinessUser, UpdateStoreBrandingInput } from '@/lib/graphql/generated'
 import PreviewModal from '@/components/modals/PreviewModal'
 import Link from 'next/link'
@@ -31,10 +33,6 @@ export default function BusinessEditPage() {
   const router = useRouter()
 
   const client = useApolloClient()
-  const [slugFocused, setSlugFocused] = useState(false)
-  const [slugValid, setSlugValid] = useState(true)
-  const [slugWarning, setSlugWarning] = useState<string | null>(null)
-  const [slugLoading, setSlugLoading] = useState(false)
 
   // Get user data to get the proper user ID
   const { data: userData } = useQuery(GET_ME)
@@ -66,6 +64,36 @@ export default function BusinessEditPage() {
     addressLine1: '',
     addressLine2: '',
     postalCode: '',
+    slug: '',
+  })
+
+  const [slugWarning, setSlugWarning] = useState<string | null>(null)
+  const [slugLoading, setSlugLoading] = useState(false)
+  const [slugValid, setSlugValid] = useState(true)
+
+  // Slug availability query
+  const IS_STORE_SLUG_AVAILABLE = gql`
+    query IsStoreSlugAvailable($slug: String!) {
+      isStoreSlugAvailable(slug: $slug)
+    }
+  `
+  const [checkSlugAvailable] = useLazyQuery(IS_STORE_SLUG_AVAILABLE, {
+    fetchPolicy: 'network-only',
+    onCompleted: (data) => {
+      if (data?.isStoreSlugAvailable) {
+        setSlugWarning(null)
+        setSlugValid(true)
+      } else {
+        setSlugWarning('This slug is already in use.')
+        setSlugValid(false)
+      }
+      setSlugLoading(false)
+    },
+    onError: () => {
+      setSlugWarning('Error checking slug availability.')
+      setSlugValid(false)
+      setSlugLoading(false)
+    },
   })
 
   // Branding form state
@@ -81,14 +109,16 @@ export default function BusinessEditPage() {
     lightOrDark: 'dark',
     logoUrl: '',
     bannerUrl: '',
-    slug: '',
   })
 
   const [showPreview, setShowPreview] = useState(false)
 
-  const [updateBusinessAndBranding, { loading: saving }] = useMutation(
+  const [updateStoreBranding, { loading: brandingSaving }] = useMutation(
     UPDATE_STORE_BRANDING
   )
+  const [updateBusiness, { loading: businessSaving }] =
+    useMutation(UPDATE_BUSINESS)
+  const saving = brandingSaving || businessSaving
 
   const [uploadingLogo, setUploadingLogo] = useState(false)
   const [uploadingBanner, setUploadingBanner] = useState(false)
@@ -112,7 +142,6 @@ export default function BusinessEditPage() {
         lightOrDark: branding.lightOrDark || 'light',
         logoUrl: branding.logoUrl || '',
         bannerUrl: branding.bannerUrl || '',
-        slug: business?.slug || '',
       })
     }
   }, [business])
@@ -127,6 +156,7 @@ export default function BusinessEditPage() {
         addressLine1: business.addressLine1 || '',
         addressLine2: business.addressLine2 || '',
         postalCode: business.postalCode || '',
+        slug: business.slug || '',
       })
     }
   }, [business])
@@ -135,13 +165,6 @@ export default function BusinessEditPage() {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     setForm({ ...form, [e.target.name]: e.target.value })
-    if (e.target.name === 'slug' && isProStore) {
-      setSlugLoading(true)
-      const result = await checkSlugAvailable(e.target.value, client)
-      setSlugValid(result.valid)
-      setSlugWarning(result.reason || null)
-      setSlugLoading(false)
-    }
   }
 
   const handleColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -155,7 +178,20 @@ export default function BusinessEditPage() {
   const handleBusinessChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    setBusinessForm({ ...businessForm, [e.target.name]: e.target.value })
+    const { name, value } = e.target
+    setBusinessForm({ ...businessForm, [name]: value })
+    if (name === 'slug') {
+      setSlugLoading(true)
+      setSlugWarning(null)
+      setSlugValid(false)
+      if (value && value !== business.slug) {
+        checkSlugAvailable({ variables: { slug: value } })
+      } else {
+        setSlugLoading(false)
+        setSlugWarning(null)
+        setSlugValid(true)
+      }
+    }
   }
 
   const handleLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -227,12 +263,35 @@ export default function BusinessEditPage() {
       return
     }
 
-    if (!slugValid && isProStore) {
-      toast.error('Invalid slug')
-      return
-    }
-
     try {
+      // 1. Update business details if changed and allowed
+      if (canEditBusiness) {
+        const businessChanged =
+          businessForm.name !== (business.name || '') ||
+          businessForm.email !== (business.email || '') ||
+          businessForm.contactNumber !== (business.contactNumber || '') ||
+          businessForm.addressLine1 !== (business.addressLine1 || '') ||
+          businessForm.addressLine2 !== (business.addressLine2 || '') ||
+          businessForm.postalCode !== (business.postalCode || '')
+
+        if (businessChanged || businessForm.slug !== (business.slug || '')) {
+          await updateBusiness({
+            variables: {
+              input: {
+                businessId: business.id,
+                email: businessForm.email,
+                contactNumber: businessForm.contactNumber,
+                addressLine1: businessForm.addressLine1,
+                addressLine2: businessForm.addressLine2,
+                postalCode: businessForm.postalCode,
+                slug: businessForm.slug,
+              },
+            },
+          })
+        }
+      }
+
+      // 2. Update store branding (no slug)
       const brandingInput: Partial<UpdateStoreBrandingInput> = {
         logoUrl: form.logoUrl,
         bannerUrl: form.bannerUrl,
@@ -245,36 +304,13 @@ export default function BusinessEditPage() {
         lightOrDark: form.lightOrDark,
         about: form.about,
         storeName: form.storeName,
-        slug: form.slug,
       }
-
-      // Only include slug for Pro stores
-      if (isProStore) {
-        brandingInput.slug = form.slug
-      }
-
-      await updateBusinessAndBranding({
+      await updateStoreBranding({
         variables: {
-          businessId: String(business.id), // Using businessId to match updated backend
+          businessId: String(business.id),
           input: brandingInput,
         },
       })
-
-      // TODO: Update business details when backend mutation is available
-      if (canEditBusiness) {
-        // Check if business details have changed
-        const businessChanged =
-          businessForm.name !== (business.name || '') ||
-          businessForm.email !== (business.email || '') ||
-          businessForm.contactNumber !== (business.contactNumber || '') ||
-          businessForm.addressLine1 !== (business.addressLine1 || '') ||
-          businessForm.addressLine2 !== (business.addressLine2 || '') ||
-          businessForm.postalCode !== (business.postalCode || '')
-
-        if (businessChanged) {
-          toast.info('Business details changes noted (backend update pending)')
-        }
-      }
 
       await client.refetchQueries({
         include: [GET_ME, GET_MY_BUSINESS],
@@ -282,7 +318,9 @@ export default function BusinessEditPage() {
 
       toast.success('Changes saved successfully!')
       // Redirect based on plan type
-      const redirectUrl = isProStore ? `/${form.slug}` : `/store/${business.id}`
+      const redirectUrl = isProStore
+        ? `/${business.slug}`
+        : `/store/${business.id}`
       router.push(redirectUrl)
     } catch (error) {
       toast.error(
@@ -334,6 +372,32 @@ export default function BusinessEditPage() {
         <div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
           {/* Business Details */}
           <div className='space-y-4'>
+            <div>
+              <label className='block font-medium mb-1'>Store Slug (URL)</label>
+              <Input
+                name='slug'
+                value={businessForm.slug}
+                onChange={handleBusinessChange}
+                disabled={!canEditBusiness}
+                required
+                placeholder='e.g. my-cool-store'
+              />
+              {slugLoading && (
+                <span className='text-xs text-gray-500 ml-2'>
+                  Checking availability...
+                </span>
+              )}
+              {!slugLoading && slugWarning && (
+                <span className='block text-red-600 text-xs mt-1'>
+                  {slugWarning}
+                </span>
+              )}
+              {!slugLoading && slugValid && businessForm.slug && (
+                <span className='block text-green-600 text-xs mt-1'>
+                  Slug is available!
+                </span>
+              )}
+            </div>
             <h2 className='text-xl font-semibold'>Business Details</h2>
             {!canEditBusiness && (
               <p className='text-sm text-gray-600 mb-4'>
@@ -425,47 +489,7 @@ export default function BusinessEditPage() {
                 required
               />
             </div>
-            {isProStore && (
-              <div>
-                <label className='block font-medium mb-1'>
-                  Store Slug (URL)
-                </label>
-                <Input
-                  name='slug'
-                  value={form.slug}
-                  onChange={handleChange}
-                  required
-                  placeholder='e.g. my-cool-store'
-                  onFocus={() => setSlugFocused(true)}
-                  onBlur={() => setSlugFocused(false)}
-                />
-                {slugFocused && (
-                  <div className='text-xs mt-1'>
-                    <span className='text-yellow-700'>
-                      <strong>SEO Tip:</strong> Choose a short, memorable, and
-                      relevant slug for your store URL. Avoid spaces and special
-                      characters. Good slugs help your store appear higher in
-                      search results.
-                      <br />
-                      <strong>Warning:</strong> Changing your slug after your
-                      store is live may affect your search engine ranking and
-                      break existing links to your store. Only change it if
-                      absolutely necessary.
-                    </span>
-                    {slugLoading && (
-                      <span className='text-gray-500 ml-2'>
-                        Checking availability...
-                      </span>
-                    )}
-                    {!slugLoading && slugWarning && (
-                      <span className='block text-red-600 mt-1'>
-                        {slugWarning}
-                      </span>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
+
             <div>
               <label className='block font-medium mb-1'>About</label>
               <textarea
@@ -642,7 +666,7 @@ export default function BusinessEditPage() {
             color='secondary'
             onClick={() => {
               const cancelUrl = isProStore
-                ? `/${form.slug}`
+                ? `/${business.slug}`
                 : `/store/${business.id}`
               router.push(cancelUrl)
             }}

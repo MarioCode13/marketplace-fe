@@ -30,7 +30,6 @@ export enum BillingCycle {
   Yearly = 'YEARLY'
 }
 
-/**  Business domain */
 export type Business = {
   __typename?: 'Business';
   addressLine1?: Maybe<Scalars['String']['output']>;
@@ -46,7 +45,6 @@ export type Business = {
   postalCode?: Maybe<Scalars['String']['output']>;
   slug?: Maybe<Scalars['String']['output']>;
   storeBranding?: Maybe<StoreBranding>;
-  /**  Added */
   verificationDocuments: Array<VerificationDocument>;
 };
 
@@ -128,10 +126,14 @@ export type CreateStoreBrandingInput = {
 };
 
 export enum DocumentType {
+  BankAccountVerification = 'BANK_ACCOUNT_VERIFICATION',
+  BusinessRegistration = 'BUSINESS_REGISTRATION',
   DriversLicense = 'DRIVERS_LICENSE',
   IdCard = 'ID_CARD',
+  OwnerIdentity = 'OWNER_IDENTITY',
   ProfilePhoto = 'PROFILE_PHOTO',
-  ProofOfAddress = 'PROOF_OF_ADDRESS'
+  ProofOfAddress = 'PROOF_OF_ADDRESS',
+  TaxClearance = 'TAX_CLEARANCE'
 }
 
 export type Listing = {
@@ -184,6 +186,8 @@ export type Mutation = {
   register: AuthResponse;
   transferBusinessOwnership: Scalars['Boolean']['output'];
   unlinkUserFromBusiness: Scalars['Boolean']['output'];
+  updateBusiness?: Maybe<Business>;
+  updateBusinessAndBranding?: Maybe<Business>;
   updateListing: Listing;
   updateListingDescription: Listing;
   updateListingPrice: Listing;
@@ -317,6 +321,17 @@ export type MutationUnlinkUserFromBusinessArgs = {
 };
 
 
+export type MutationUpdateBusinessArgs = {
+  input: UpdateBusinessInput;
+};
+
+
+export type MutationUpdateBusinessAndBrandingArgs = {
+  branding?: InputMaybe<UpdateStoreBrandingInput>;
+  business: UpdateBusinessInput;
+};
+
+
 export type MutationUpdateListingArgs = {
   input: UpdateListingInput;
 };
@@ -396,10 +411,9 @@ export type Notification = {
 };
 
 export enum PlanType {
-  BasicMonthly = 'BASIC_MONTHLY',
-  BasicYearly = 'BASIC_YEARLY',
-  PremiumMonthly = 'PREMIUM_MONTHLY',
-  PremiumYearly = 'PREMIUM_YEARLY'
+  ProStore = 'PRO_STORE',
+  Reseller = 'RESELLER',
+  VerifiedUser = 'VERIFIED_USER'
 }
 
 export type ProfileCompletion = {
@@ -428,6 +442,7 @@ export type Query = {
   getAvailablePlans: Array<Scalars['String']['output']>;
   getBusinessBySlug?: Maybe<Business>;
   getBusinessDocumentByType?: Maybe<VerificationDocument>;
+  getBusinessTransactions: Array<Transaction>;
   getBusinessUsers: Array<BusinessUser>;
   getBusinessVerificationDocuments: Array<VerificationDocument>;
   getBuyerForListing?: Maybe<Scalars['String']['output']>;
@@ -500,6 +515,11 @@ export type QueryGetBusinessBySlugArgs = {
 export type QueryGetBusinessDocumentByTypeArgs = {
   businessId: Scalars['ID']['input'];
   documentType: DocumentType;
+};
+
+
+export type QueryGetBusinessTransactionsArgs = {
+  businessId: Scalars['ID']['input'];
 };
 
 
@@ -816,6 +836,7 @@ export type UpdateBusinessInput = {
   contactNumber?: InputMaybe<Scalars['String']['input']>;
   email?: InputMaybe<Scalars['String']['input']>;
   postalCode?: InputMaybe<Scalars['String']['input']>;
+  slug?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type UpdateListingInput = {
@@ -839,7 +860,6 @@ export type UpdateStoreBrandingInput = {
   logoUrl?: InputMaybe<Scalars['String']['input']>;
   primaryColor?: InputMaybe<Scalars['String']['input']>;
   secondaryColor?: InputMaybe<Scalars['String']['input']>;
-  slug?: InputMaybe<Scalars['String']['input']>;
   storeName?: InputMaybe<Scalars['String']['input']>;
   textColor?: InputMaybe<Scalars['String']['input']>;
   themeColor?: InputMaybe<Scalars['String']['input']>;
@@ -1066,6 +1086,13 @@ export type CancelTransactionMutationVariables = Exact<{
 
 export type CancelTransactionMutation = { __typename?: 'Mutation', cancelTransaction: { __typename?: 'Transaction', id: string, status: TransactionStatus, notes?: string | null, updatedAt: string } };
 
+export type UpdateBusinessMutationVariables = Exact<{
+  input: UpdateBusinessInput;
+}>;
+
+
+export type UpdateBusinessMutation = { __typename?: 'Mutation', updateBusiness?: { __typename?: 'Business', id: string, name: string, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, postalCode?: string | null } | null };
+
 export type GetBusinessByIdQueryVariables = Exact<{
   id: Scalars['ID']['input'];
 }>;
@@ -1079,6 +1106,13 @@ export type GetBusinessBySlugQueryVariables = Exact<{
 
 
 export type GetBusinessBySlugQuery = { __typename?: 'Query', getBusinessBySlug?: { __typename?: 'Business', id: string, name: string, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, postalCode?: string | null, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, lightOrDark?: string | null, primaryColor?: string | null, secondaryColor?: string | null, about?: string | null, storeName?: string | null, backgroundColor?: string | null, textColor?: string | null, cardTextColor?: string | null } | null, businessUsers: Array<{ __typename?: 'BusinessUser', id: string, role: BusinessUserRole, user: { __typename?: 'User', id: string, username: string, email: string, profileImageUrl?: string | null, planType?: string | null, trustRating?: { __typename?: 'TrustRating', starRating: number, trustLevel: string, overallScore: number, totalReviews: number, totalTransactions: number, successfulTransactions: number } | null } }> } | null };
+
+export type BusinessTrustRatingQueryVariables = Exact<{
+  businessId: Scalars['ID']['input'];
+}>;
+
+
+export type BusinessTrustRatingQuery = { __typename?: 'Query', businessTrustRating?: { __typename?: 'BusinessTrustRating', averageRating: number, reviewCount: number } | null };
 
 export type GetCategoriesQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -2208,6 +2242,45 @@ export function useCancelTransactionMutation(baseOptions?: Apollo.MutationHookOp
 export type CancelTransactionMutationHookResult = ReturnType<typeof useCancelTransactionMutation>;
 export type CancelTransactionMutationResult = Apollo.MutationResult<CancelTransactionMutation>;
 export type CancelTransactionMutationOptions = Apollo.BaseMutationOptions<CancelTransactionMutation, CancelTransactionMutationVariables>;
+export const UpdateBusinessDocument = gql`
+    mutation UpdateBusiness($input: UpdateBusinessInput!) {
+  updateBusiness(input: $input) {
+    id
+    name
+    email
+    contactNumber
+    addressLine1
+    addressLine2
+    postalCode
+  }
+}
+    `;
+export type UpdateBusinessMutationFn = Apollo.MutationFunction<UpdateBusinessMutation, UpdateBusinessMutationVariables>;
+
+/**
+ * __useUpdateBusinessMutation__
+ *
+ * To run a mutation, you first call `useUpdateBusinessMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateBusinessMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateBusinessMutation, { data, loading, error }] = useUpdateBusinessMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useUpdateBusinessMutation(baseOptions?: Apollo.MutationHookOptions<UpdateBusinessMutation, UpdateBusinessMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpdateBusinessMutation, UpdateBusinessMutationVariables>(UpdateBusinessDocument, options);
+      }
+export type UpdateBusinessMutationHookResult = ReturnType<typeof useUpdateBusinessMutation>;
+export type UpdateBusinessMutationResult = Apollo.MutationResult<UpdateBusinessMutation>;
+export type UpdateBusinessMutationOptions = Apollo.BaseMutationOptions<UpdateBusinessMutation, UpdateBusinessMutationVariables>;
 export const GetBusinessByIdDocument = gql`
     query GetBusinessById($id: ID!) {
   business(id: $id) {
@@ -2381,6 +2454,47 @@ export type GetBusinessBySlugQueryHookResult = ReturnType<typeof useGetBusinessB
 export type GetBusinessBySlugLazyQueryHookResult = ReturnType<typeof useGetBusinessBySlugLazyQuery>;
 export type GetBusinessBySlugSuspenseQueryHookResult = ReturnType<typeof useGetBusinessBySlugSuspenseQuery>;
 export type GetBusinessBySlugQueryResult = Apollo.QueryResult<GetBusinessBySlugQuery, GetBusinessBySlugQueryVariables>;
+export const BusinessTrustRatingDocument = gql`
+    query BusinessTrustRating($businessId: ID!) {
+  businessTrustRating(businessId: $businessId) {
+    averageRating
+    reviewCount
+  }
+}
+    `;
+
+/**
+ * __useBusinessTrustRatingQuery__
+ *
+ * To run a query within a React component, call `useBusinessTrustRatingQuery` and pass it any options that fit your needs.
+ * When your component renders, `useBusinessTrustRatingQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useBusinessTrustRatingQuery({
+ *   variables: {
+ *      businessId: // value for 'businessId'
+ *   },
+ * });
+ */
+export function useBusinessTrustRatingQuery(baseOptions: Apollo.QueryHookOptions<BusinessTrustRatingQuery, BusinessTrustRatingQueryVariables> & ({ variables: BusinessTrustRatingQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<BusinessTrustRatingQuery, BusinessTrustRatingQueryVariables>(BusinessTrustRatingDocument, options);
+      }
+export function useBusinessTrustRatingLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<BusinessTrustRatingQuery, BusinessTrustRatingQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<BusinessTrustRatingQuery, BusinessTrustRatingQueryVariables>(BusinessTrustRatingDocument, options);
+        }
+export function useBusinessTrustRatingSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<BusinessTrustRatingQuery, BusinessTrustRatingQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<BusinessTrustRatingQuery, BusinessTrustRatingQueryVariables>(BusinessTrustRatingDocument, options);
+        }
+export type BusinessTrustRatingQueryHookResult = ReturnType<typeof useBusinessTrustRatingQuery>;
+export type BusinessTrustRatingLazyQueryHookResult = ReturnType<typeof useBusinessTrustRatingLazyQuery>;
+export type BusinessTrustRatingSuspenseQueryHookResult = ReturnType<typeof useBusinessTrustRatingSuspenseQuery>;
+export type BusinessTrustRatingQueryResult = Apollo.QueryResult<BusinessTrustRatingQuery, BusinessTrustRatingQueryVariables>;
 export const GetCategoriesDocument = gql`
     query GetCategories {
   getCategories {
