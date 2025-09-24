@@ -5,6 +5,7 @@ import { store } from '../store/store'
 import ApolloProviderWrapper from '@/context/ApolloProviderWrapper'
 import { ThemeProvider } from './ThemeContext'
 import { Toaster } from 'sonner'
+import AppInitializer from '@/context/AppInitializer'
 
 export default function Providers({
   children,
@@ -19,6 +20,7 @@ export default function Providers({
       <ApolloProviderWrapper initialState={initialApolloState}>
         <ThemeProvider>
           <Toaster position='bottom-right' />
+          <AppInitializer />
           {children}
         </ThemeProvider>
       </ApolloProviderWrapper>

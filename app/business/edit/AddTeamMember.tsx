@@ -1,3 +1,4 @@
+"use client"
 import { useState } from 'react'
 // import { useMutation } from '@apollo/client';
 import { Input } from '@/components/ui/input'

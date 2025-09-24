@@ -1,5 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import { gql } from '@apollo/client'
+import { GET_ME } from '@/lib/graphql/queries/getMe'
+
 import { jwtDecode } from 'jwt-decode'
 import { getApolloClient } from '@/lib/apollo/client'
 import { toast } from 'sonner'
@@ -25,8 +27,36 @@ type DecodedToken = {
     role: 'VISITOR' | 'HAS_ACCOUNT' | 'SUBSCRIBED'
     exp: number
     userId: string
+    email?: string
+    planType?: string
+    profileImageUrl?: string
+    profileCompletion?: {
+        complete?: boolean
+        completionPercentage?: number
+    }
+    // Add other User fields as needed
 }
-
+// Thunk to fetch full user profile after login
+export const fetchUserProfile = createAsyncThunk(
+    'auth/fetchUserProfile',
+    async (_, { rejectWithValue }) => {
+        try {
+            const client = getClient()
+            const { data } = await client.query({
+                query: GET_ME,
+                fetchPolicy: 'network-only',
+            })
+            if (data?.me) {
+                return data.me
+            } else {
+                return rejectWithValue('Failed to fetch user profile')
+            }
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } catch (error: any) {
+            return rejectWithValue(error.message || 'Failed to fetch user profile')
+        }
+    }
+)
 
 export const loginUser = createAsyncThunk(
     'auth/loginUser',
@@ -37,19 +67,18 @@ export const loginUser = createAsyncThunk(
                 variables: { emailOrUsername, password },
             })
             const token = data.login.token
-
+            // Fetch full user data after login
+            // You may need to run a GET_ME query here to get the full User object
+            // For now, assume the token contains all user fields
             const decoded: DecodedToken = jwtDecode(token)
-
             localStorage.setItem('token', token)
-
-            return { token, user: decoded }
+            // After login, fetch full user profile
+            return { token, user: decoded, fetchProfile: true }
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } catch (error: any) {
-            // Handle specific GraphQL error codes
             if (error.graphQLErrors && error.graphQLErrors.length > 0) {
                 const graphQLError = error.graphQLErrors[0]
                 const errorCode = graphQLError.extensions?.code
-
                 switch (errorCode) {
                     case 'INVALID_CREDENTIALS':
                         return rejectWithValue('Invalid email/username or password')
@@ -119,14 +148,21 @@ const authSlice = createSlice({
                 state.token = action.payload.token
                 try {
                     state.user = {
-                        ...action.payload.user,
-                        userId: action.payload.user.userId
+                        ...action.payload.user
                     }
                 } catch (error) {
                     toast.error('Error decoding token:' + (error instanceof Error ? error.message : ''))
                     state.user = null
                 }
                 state.loading = false
+                // If login succeeded, trigger fetchUserProfile thunk
+                // This should be dispatched from the component after login
+            })
+            .addCase(fetchUserProfile.fulfilled, (state, action) => {
+                state.user = action.payload
+            })
+            .addCase(fetchUserProfile.rejected, (state, action) => {
+                state.error = action.payload as string
             })
             .addCase(loginUser.rejected, (state, action) => {
                 state.loading = false

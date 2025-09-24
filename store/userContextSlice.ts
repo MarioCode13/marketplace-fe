@@ -1,4 +1,5 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { Business } from '@/lib/graphql/generated'
 
 export type UserRole = 'OWNER' | 'ADMIN' | 'MEMBER' | 'USER' | 'GUEST'
 
@@ -12,6 +13,8 @@ export interface UserContextState {
 	isBusinessOwner: boolean
 	canEditListing: boolean
 	canViewBusinessTransactions: boolean
+	business: Business | null
+	profileImageUrl?: string | null
 }
 
 const initialState: UserContextState = {
@@ -24,6 +27,7 @@ const initialState: UserContextState = {
 	isBusinessOwner: false,
 	canEditListing: false,
 	canViewBusinessTransactions: false,
+	business: null,
 }
 
 const userContextSlice = createSlice({
@@ -46,7 +50,17 @@ const userContextSlice = createSlice({
 			Object.assign(state, action.payload)
 		},
 	},
+	extraReducers: (builder) => {
+		builder.addCase(updateUserProfileImage, (state, action: PayloadAction<{ userId: string; url: string }>) => {
+			if (state.userId === action.payload.userId) {
+				state.profileImageUrl = action.payload.url
+			}
+		})
+	},
 })
+
+// Action to update user profile image URL
+export const updateUserProfileImage = createAction<{ userId: string; url: string }>('userContext/updateUserProfileImage')
 
 export const {
 	setUserContext,
@@ -54,5 +68,4 @@ export const {
 	setBusinessRole,
 	setPermissions,
 } = userContextSlice.actions
-
 export default userContextSlice.reducer

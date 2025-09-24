@@ -154,6 +154,11 @@ export default function SubscriptionsPage() {
         }
       )
       const url = await res.text()
+      // Dispatch Redux action to update user/business context after payment initiation
+      // You should implement an action like updateUserPlanType or updateBusinessStatus in your authSlice/store
+      // Example:
+      // dispatch(updateUserPlanType({ planType }))
+      // If business is created, dispatch(updateBusinessStatus(...))
       window.location.href = url
     } catch (e) {
       alert(

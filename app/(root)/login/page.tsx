@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useRouter } from 'next/navigation'
-import { loginUser } from '@/store/authSlice'
+import { loginUser, fetchUserProfile } from '@/store/authSlice'
 import { AppDispatch, RootState } from '@/store/store'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
@@ -29,49 +29,56 @@ export default function Login() {
     e.preventDefault()
     const result = await dispatch(loginUser(form))
     if (result.meta.requestStatus === 'fulfilled') {
-      // Cast payload to expected type
-      const payload = result.payload as {
-        user: { userId: string; username: string }
+      // Fetch full user profile and sync userContext
+      const profileResult = await dispatch(fetchUserProfile())
+      if (fetchUserProfile.fulfilled.match(profileResult)) {
+        const user = profileResult.payload
+        // Fetch business context after login
+        const { data: businessData } = await getMyBusiness()
+        const business = businessData?.myBusiness
+        const userContext = {
+          userId: user.id,
+          username: user.username,
+          businessId: business?.id || null,
+          businessName: business?.name || null,
+          role:
+            business?.businessUsers?.find(
+              (bu: { user: { id: string }; role: string }) =>
+                bu.user.id === user.id
+            )?.role ||
+            user.role ||
+            null,
+          isBusinessUser: !!business,
+          isBusinessOwner:
+            business?.businessUsers?.find(
+              (bu: { user: { id: string }; role: string }) =>
+                bu.user.id === user.id &&
+                (bu.role === 'OWNER' || bu.role === 'ADMIN')
+            ) !== undefined,
+          canEditListing:
+            business?.businessUsers?.find(
+              (bu: { user: { id: string }; role: string }) =>
+                bu.user.id === user.id &&
+                (bu.role === 'OWNER' ||
+                  bu.role === 'ADMIN' ||
+                  bu.role === 'MEMBER')
+            ) !== undefined,
+          canViewBusinessTransactions:
+            business?.businessUsers?.find(
+              (bu: { user: { id: string }; role: string }) =>
+                bu.user.id === user.id &&
+                (bu.role === 'OWNER' || bu.role === 'ADMIN')
+            ) !== undefined,
+          profileImageUrl: user.profileImageUrl || null,
+        }
+        dispatch(setUserContext(userContext))
+        console.log('User context:', userContext)
+        toast.success('Login successful!')
+        router.push('/')
+      } else {
+        toast.dismiss()
+        toast.error('Failed to fetch user profile.')
       }
-      // Fetch business context after login
-      const { data: businessData } = await getMyBusiness()
-      const business = businessData?.myBusiness
-      const userContext = {
-        userId: payload.user.userId,
-        username: payload.user.username,
-        businessId: business?.id || null,
-        businessName: business?.name || null,
-        role:
-          business?.businessUsers?.find(
-            (bu: { user: { id: string }; role: string }) =>
-              bu.user.id === payload.user.userId
-          )?.role || null,
-        isBusinessUser: !!business,
-        isBusinessOwner:
-          business?.businessUsers?.find(
-            (bu: { user: { id: string }; role: string }) =>
-              bu.user.id === payload.user.userId &&
-              (bu.role === 'OWNER' || bu.role === 'ADMIN')
-          ) !== undefined,
-        canEditListing:
-          business?.businessUsers?.find(
-            (bu: { user: { id: string }; role: string }) =>
-              bu.user.id === payload.user.userId &&
-              (bu.role === 'OWNER' ||
-                bu.role === 'ADMIN' ||
-                bu.role === 'MEMBER')
-          ) !== undefined,
-        canViewBusinessTransactions:
-          business?.businessUsers?.find(
-            (bu: { user: { id: string }; role: string }) =>
-              bu.user.id === payload.user.userId &&
-              (bu.role === 'OWNER' || bu.role === 'ADMIN')
-          ) !== undefined,
-      }
-      dispatch(setUserContext(userContext))
-      console.log('User context:', userContext)
-      toast.success('Login successful!')
-      router.push('/')
     } else {
       toast.dismiss()
       toast.error(error || 'Login failed. Please try again.')

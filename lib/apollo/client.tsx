@@ -4,7 +4,6 @@ import { ApolloClient, InMemoryCache, HttpLink } from '@apollo/client'
 import { ApolloProvider } from '@apollo/client'
 import { useMemo } from 'react'
 import { setContext } from '@apollo/client/link/context'
-import { getCookie } from '@/lib/auth/auth'
 
 let apolloClient: ApolloClient<unknown> | null = null
 
@@ -26,16 +25,15 @@ function createApolloClient(initialState = {}) {
     fetch,
   })
 
-  const authLink = setContext(async (_, { headers }) => {
-    const csrfToken = getCookie('csrf-token')
-
-    // The auth token will be automatically included in requests via httpOnly cookie
+  const authLink = setContext((_, { headers }) => {
+    const token =
+      typeof window !== 'undefined' ? localStorage.getItem('token') : null
     return {
       headers: {
         ...headers,
-        'X-CSRF-Token': csrfToken || '',
+        Authorization: token ? `Bearer ${token}` : '',
       },
-      credentials: 'include', // Important for cookies
+      credentials: 'include', // If you still need cookies
     }
   })
 

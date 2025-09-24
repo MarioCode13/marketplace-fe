@@ -1,11 +1,14 @@
 'use client'
 
-import { gql, useMutation, useQuery } from '@apollo/client'
+import { gql, useMutation } from '@apollo/client'
 import { ChangeEvent, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useDispatch } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { AppDispatch } from '@/store/store'
+import { RootState } from '@/store/store'
 import { logout } from '@/store/authSlice'
+import { updateUserProfileImage } from '@/store/userContextSlice'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -30,8 +33,6 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { TrustRatingDisplay } from '@/components/TrustRatingDisplay'
-import { GET_ME } from '@/lib/graphql/queries/getMe'
-import { GET_MY_BUSINESS } from '@/lib/graphql/queries/getMyBusiness'
 import { generateImageUrl } from '@/lib/utils'
 
 const UPDATE_PROFILE = gql`
@@ -46,27 +47,30 @@ const UPDATE_PROFILE = gql`
 
 export default function Profile() {
   const router = useRouter()
-  const [form, setForm] = useState({ username: '', email: '' })
+
   const [editing, setEditing] = useState(false)
   const [hovered, setHovered] = useState(false)
   const dispatch = useDispatch<AppDispatch>()
-  const { data, refetch } = useQuery(GET_ME)
-  const user = data?.me
+  const user = useSelector((state: RootState) => state.auth.user)
+  const userContext = useSelector((state: RootState) => state.userContext)
+  const business = userContext.business
   const userId = user?.id
-  const profileComplete = user?.profileComplete
-  const { data: businessData } = useQuery(GET_MY_BUSINESS)
-  const business = businessData?.myBusiness
+  const profileComplete = user?.profileCompletion?.complete || false
   const businessId = business?.id
   const [updateProfile] = useMutation(UPDATE_PROFILE)
+  const [form, setForm] = useState({
+    username: user?.username ?? '',
+    email: user?.email ?? '',
+  })
   // Always use business trust rating if businessId is present
   const { data: businessTrustData, loading: businessTrustLoading } =
     useBusinessTrustRatingQuery({
-      variables: { businessId },
+      variables: { businessId: businessId ?? '' },
       skip: !businessId,
     })
   // Only fetch user trust rating if not a business user
   const { data: trustData, loading: trustLoading } = useGetTrustRatingQuery({
-    variables: { userId },
+    variables: { userId: userId ?? '' },
     skip: !userId || !!businessId,
   })
   let isBusinessUser = false
@@ -96,13 +100,13 @@ export default function Profile() {
   }
 
   const handleEdit = () => {
-    setForm({ username: user.username, email: user.email })
+    setForm({ username: user?.username ?? '', email: user?.email ?? '' })
     setEditing(true)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    await updateProfile({ variables: { id: user.id, ...form } })
+    await updateProfile({ variables: { id: user?.id, ...form } })
     setEditing(false)
   }
 
@@ -111,13 +115,20 @@ export default function Profile() {
     router.push('/')
   }
 
+  // Debug logging for business/user context and trust rating queries
+  console.log('userContext:', userContext)
+  console.log('business:', business)
+  console.log('businessId:', businessId)
+  console.log('businessTrustData:', businessTrustData)
+  console.log('businessTrustLoading:', businessTrustLoading)
+  console.log('trustData:', trustData)
+  console.log('trustLoading:', trustLoading)
+
   const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.length) return
-
     const file = e.target.files[0]
     const formData = new FormData()
     formData.append('file', file)
-
     try {
       const token = localStorage.getItem('token')
       const response = await fetch(
@@ -130,11 +141,14 @@ export default function Profile() {
           },
         }
       )
-
       if (response.ok) {
         toast.dismiss()
+        // Get image URL from response
+        const url = await response.text()
         toast.success('Profile image updated!')
-        await refetch()
+        if (user?.id) {
+          dispatch(updateUserProfileImage({ userId: user.id, url }))
+        }
       } else {
         toast.dismiss()
         toast.error('Upload failed. Please try again.')
@@ -307,22 +321,6 @@ export default function Profile() {
                   <p className='text-sm text-gray-600'>
                     No business trust rating available.
                   </p>
-                  {isBusinessUser && canEditBusinessProfile && (
-                    <Button
-                      variant='outlined'
-                      size='sm'
-                      className='mt-2'
-                      onClick={() => router.push('/profile/business-edit')}
-                    >
-                      Complete Business Profile
-                    </Button>
-                  )}
-                  {isBusinessUser && !canEditBusinessProfile && (
-                    <div className='text-xs text-gray-500 mt-2'>
-                      Only the business owner or manager can complete the
-                      business profile.
-                    </div>
-                  )}
                 </div>
               )
             ) : trustLoading ? (
@@ -354,12 +352,26 @@ export default function Profile() {
                 </p>
               </div>
             )}
-
+            {isBusinessUser && canEditBusinessProfile && (
+              <Button
+                variant='outlined'
+                className='w-full mt-6'
+                onClick={() => router.push('/profile/business-edit')}
+              >
+                Complete Business Profile
+              </Button>
+            )}
+            {isBusinessUser && !canEditBusinessProfile && (
+              <div className='text-xs text-gray-500 mt-2'>
+                Only the business owner or manager can complete the business
+                profile.
+              </div>
+            )}
             {!profileComplete && (
               <Button
                 color={'secondary'}
                 variant={'contained'}
-                className='w-full mt-6'
+                className='w-full mt-2'
                 onClick={() => router.push('/profile/complete')}
               >
                 Complete Your Profile <ArrowRight className='w-4 h-4 ml-2' />
@@ -389,7 +401,8 @@ export default function Profile() {
             {isBusinessUser && (
               <Button
                 className='w-full mt-3'
-                variant={'outlined'}
+                color={'secondary'}
+                variant={'contained'}
                 onClick={() => router.push('/profile/subscriptions')}
               >
                 Manage Subscription

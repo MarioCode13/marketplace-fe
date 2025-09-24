@@ -1,10 +1,12 @@
 'use client'
-
-import { useApolloClient } from '@apollo/client'
+import { useDispatch } from 'react-redux'
+import { setUserContext } from '@/store/userContextSlice'
 import { gql, useLazyQuery } from '@apollo/client'
 
-import { useQuery, useMutation } from '@apollo/client'
+import { useMutation } from '@apollo/client'
 import { useEffect, useState } from 'react'
+import { useSelector } from 'react-redux'
+import { RootState } from '@/store/store'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { toast } from 'sonner'
@@ -18,10 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Loader2, LoaderCircle, Users, Eye } from 'lucide-react'
-
-import { GET_MY_BUSINESS } from '@/lib/graphql/queries/getMyBusiness'
-import { GET_ME } from '@/lib/graphql/queries/getMe'
+import { Loader2, Users, Eye } from 'lucide-react'
 import { UPDATE_STORE_BRANDING } from '@/lib/graphql/mutations/businessMutations'
 import { UPDATE_BUSINESS } from '@/lib/graphql/mutations/updateBusiness'
 import { BusinessUser, UpdateStoreBrandingInput } from '@/lib/graphql/generated'
@@ -32,29 +31,22 @@ import AddTeamMember from './AddTeamMember'
 export default function BusinessEditPage() {
   const router = useRouter()
 
-  const client = useApolloClient()
-
-  // Get user data to get the proper user ID
-  const { data: userData } = useQuery(GET_ME)
-  const userId = userData?.me?.id
-
-  // Get business data
-  const { data, loading } = useQuery(GET_MY_BUSINESS, {
-    skip: !userId,
-  })
-
-  const business = data?.myBusiness
-  const userPlanType = userData?.me?.planType
-  const userRole = userData?.me?.role
+  const user = useSelector((state: RootState) => state.auth.user)
+  const userContext = useSelector((state: RootState) => state.userContext)
+  const business = userContext.business
+  const dispatch = useDispatch()
+  const userId = user?.id
+  // Fix user type usage (ensure planType and role exist on user)
+  // Use userContext for business role and planType if available
+  const userPlanType = userContext.business?.owner?.planType || undefined
   const isProStore = userPlanType === 'PRO_STORE'
-  const isAdmin = userRole === 'ADMIN'
+  // If user or business is missing, fallback to query (optional)
+  // You can add logic here to query if store is empty
 
   // Check if user can edit business details (admin or business owner)
-  const canEditBusiness =
-    isAdmin ||
-    business?.businessUsers?.some(
-      (bu: BusinessUser) => bu.user.id === userId && bu.role === 'OWNER'
-    )
+  const canEditBusiness = business?.businessUsers?.some(
+    (bu: BusinessUser) => bu.user.id === userId && bu.role === 'OWNER'
+  )
 
   // Business form state
   const [businessForm, setBusinessForm] = useState({
@@ -184,7 +176,7 @@ export default function BusinessEditPage() {
       setSlugLoading(true)
       setSlugWarning(null)
       setSlugValid(false)
-      if (value && value !== business.slug) {
+      if (business && value && value !== business.slug) {
         checkSlugAvailable({ variables: { slug: value } })
       } else {
         setSlugLoading(false)
@@ -265,6 +257,7 @@ export default function BusinessEditPage() {
 
     try {
       // 1. Update business details if changed and allowed
+      let updatedBusiness = business
       if (canEditBusiness) {
         const businessChanged =
           businessForm.name !== (business.name || '') ||
@@ -275,7 +268,7 @@ export default function BusinessEditPage() {
           businessForm.postalCode !== (business.postalCode || '')
 
         if (businessChanged || businessForm.slug !== (business.slug || '')) {
-          await updateBusiness({
+          const { data: updated } = await updateBusiness({
             variables: {
               input: {
                 businessId: business.id,
@@ -288,6 +281,9 @@ export default function BusinessEditPage() {
               },
             },
           })
+          if (updated?.updateBusiness) {
+            updatedBusiness = updated.updateBusiness
+          }
         }
       }
 
@@ -305,22 +301,27 @@ export default function BusinessEditPage() {
         about: form.about,
         storeName: form.storeName,
       }
-      await updateStoreBranding({
+      const { data: brandingUpdated } = await updateStoreBranding({
         variables: {
           businessId: String(business.id),
           input: brandingInput,
         },
       })
+      if (brandingUpdated?.updateStoreBranding) {
+        updatedBusiness = {
+          ...updatedBusiness,
+          storeBranding: brandingUpdated.updateStoreBranding,
+        }
+      }
 
-      await client.refetchQueries({
-        include: [GET_ME, GET_MY_BUSINESS],
-      })
+      // Update Redux userContext with new business data
+      dispatch(setUserContext({ business: updatedBusiness }))
 
       toast.success('Changes saved successfully!')
       // Redirect based on plan type
       const redirectUrl = isProStore
-        ? `/${business.slug}`
-        : `/store/${business.id}`
+        ? `/${updatedBusiness.slug}`
+        : `/store/${updatedBusiness.id}`
       router.push(redirectUrl)
     } catch (error) {
       toast.error(
@@ -328,16 +329,6 @@ export default function BusinessEditPage() {
       )
     }
   }
-
-  if (loading)
-    return (
-      <div className='flex flex-col items-center justify-center min-h-[40vh]'>
-        <LoaderCircle className='animate-spin text-primary w-10 h-10 mb-4' />
-        <span className='text-lg text-gray-600'>
-          Loading business settings...
-        </span>
-      </div>
-    )
 
   if (!business) {
     return (
