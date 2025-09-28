@@ -38,10 +38,16 @@ export const GET_LISTING_BY_ID = gql`
         id
         name
         businessType
-        slug
+        slug  
+         trustRating {
+          averageRating
+           reviewCount
+         }
         storeBranding {
           storeName
-          logoUrl 
+          logoUrl
+        
+          
         }
       }
     }

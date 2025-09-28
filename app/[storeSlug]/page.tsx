@@ -39,9 +39,9 @@ export default function ProStoreRoute() {
   const slug = params?.storeSlug as string
 
   // Current user
-  const currentUserId = useSelector(
-    (state: RootState) => state.auth.user?.userId
-  )
+  const currentUser = useSelector((state: RootState) => state.auth.user)
+  const currentUserId = currentUser?.userId || currentUser?.id
+  console.log('Redux user object:', currentUser)
 
   // Business data
   const { data, loading, error } = useGetBusinessBySlugQuery({
@@ -53,15 +53,19 @@ export default function ProStoreRoute() {
     business?.businessUsers?.[0]?.user?.planType === 'PRO_STORE'
   const branding = business?.storeBranding
 
-  // Check if current user is OWNER or ADMIN in business.businessUsers
-  const isStoreOwner =
+  // Show owner controls for any user associated with the business
+  const isStoreUser =
     currentUserId &&
-    business?.businessUsers?.some(
-      (bu) =>
-        bu.user.id.toString() === currentUserId.toString() &&
-        ['OWNER', 'ADMIN'].includes(bu.role)
-    )
-
+    business?.businessUsers?.some((bu) => {
+      const match = bu.user.id.toString() === currentUserId.toString()
+      if (match) {
+        console.log('User is associated with business:', bu)
+      }
+      return match
+    })
+  // Debug logs for user association
+  console.log('Current User ID:', currentUserId)
+  console.log('Business Users:', business?.businessUsers)
   // Get business data if the current user is the store owner
   // (to show business details like address, contact info)
   const { data: businessData } = useGetMyBusinessQuery()
@@ -211,7 +215,7 @@ export default function ProStoreRoute() {
               >
                 {storeName}
               </h1>
-              {isStoreOwner && (
+              {isStoreUser && (
                 <div className='flex items-center gap-2'>
                   <Button
                     variant={'contained'}

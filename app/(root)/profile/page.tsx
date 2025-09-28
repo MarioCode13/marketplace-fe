@@ -8,7 +8,10 @@ import { useSelector } from 'react-redux'
 import { AppDispatch } from '@/store/store'
 import { RootState } from '@/store/store'
 import { logout } from '@/store/authSlice'
-import { updateUserProfileImage } from '@/store/userContextSlice'
+import {
+  updateUserProfileImage,
+  refetchUserProfile,
+} from '@/store/userContextSlice'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -51,12 +54,13 @@ export default function Profile() {
   const [editing, setEditing] = useState(false)
   const [hovered, setHovered] = useState(false)
   const dispatch = useDispatch<AppDispatch>()
+  // Use Redux selectors for user and business context
   const user = useSelector((state: RootState) => state.auth.user)
   const userContext = useSelector((state: RootState) => state.userContext)
   const business = userContext.business
-  const userId = user?.id
+  const userId = userContext.userId || user?.id
   const profileComplete = user?.profileCompletion?.complete || false
-  const businessId = business?.id
+  const businessId = userContext.businessId || business?.id
   const [updateProfile] = useMutation(UPDATE_PROFILE)
   const [form, setForm] = useState({
     username: user?.username ?? '',
@@ -73,25 +77,9 @@ export default function Profile() {
     variables: { userId: userId ?? '' },
     skip: !userId || !!businessId,
   })
-  let isBusinessUser = false
-  let canEditBusinessProfile = false
-  if (business && business.businessUsers && userId) {
-    interface BusinessUser {
-      user: {
-        id: string
-      }
-      role: 'OWNER' | 'MANAGER' | 'EMPLOYEE' | string
-    }
-    const businessUser: BusinessUser | undefined = business.businessUsers.find(
-      (bu: BusinessUser) => bu.user.id === userId
-    )
-    if (businessUser) {
-      isBusinessUser = true
-      if (businessUser.role === 'OWNER' || businessUser.role === 'MANAGER') {
-        canEditBusinessProfile = true
-      }
-    }
-  }
+  // Use userContext fields for business user logic
+  const isBusinessUser = userContext.isBusinessUser
+  const canEditBusinessProfile = userContext.isBusinessOwner
   const canUpgrade = user?.planType !== 'PRO_STORE'
   const reseller = user?.planType === 'RESELLER'
 
@@ -106,7 +94,9 @@ export default function Profile() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    await updateProfile({ variables: { id: user?.id, ...form } })
+    await updateProfile({ variables: { id: userId, ...form } })
+    // After mutation, refetch user profile via Redux thunk
+    dispatch(refetchUserProfile())
     setEditing(false)
   }
 
@@ -116,13 +106,13 @@ export default function Profile() {
   }
 
   // Debug logging for business/user context and trust rating queries
-  console.log('userContext:', userContext)
-  console.log('business:', business)
-  console.log('businessId:', businessId)
-  console.log('businessTrustData:', businessTrustData)
-  console.log('businessTrustLoading:', businessTrustLoading)
-  console.log('trustData:', trustData)
-  console.log('trustLoading:', trustLoading)
+  // console.log('userContext:', userContext)
+  // console.log('business:', business)
+  // console.log('businessId:', businessId)
+  // console.log('businessTrustData:', businessTrustData)
+  // console.log('businessTrustLoading:', businessTrustLoading)
+  // console.log('trustData:', trustData)
+  // console.log('trustLoading:', trustLoading)
 
   const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.length) return
@@ -162,7 +152,7 @@ export default function Profile() {
   return (
     <div className='w-full flex justify-center'>
       <div className='w-full flex justify-center'>
-        <div className='w-full max-w-4xl py-8 px-6'>
+        <div className='w-full max-w-4xl py-16 px-6'>
           <div className='w-full max-w-md mx-auto rounded-lg p-6 shadow-lg bg-componentBackground'>
             <div className='w-full flex justify-between items-center'>
               <h2 className='mb-4 text-2xl font-bold text-foreground'>
@@ -276,6 +266,16 @@ export default function Profile() {
                 )}
               </div>
             )}
+            {!profileComplete && (
+              <Button
+                color={'secondary'}
+                variant={'contained'}
+                className='w-full mt-2'
+                onClick={() => router.push('/profile/complete')}
+              >
+                Complete Your Profile <ArrowRight className='w-4 h-4 ml-2' />
+              </Button>
+            )}
 
             {/* Trust Rating Section */}
             {businessId ? (
@@ -354,7 +354,8 @@ export default function Profile() {
             )}
             {isBusinessUser && canEditBusinessProfile && (
               <Button
-                variant='outlined'
+                color={'secondary'}
+                variant={'contained'}
                 className='w-full mt-6'
                 onClick={() => router.push('/profile/business-edit')}
               >
@@ -366,16 +367,6 @@ export default function Profile() {
                 Only the business owner or manager can complete the business
                 profile.
               </div>
-            )}
-            {!profileComplete && (
-              <Button
-                color={'secondary'}
-                variant={'contained'}
-                className='w-full mt-2'
-                onClick={() => router.push('/profile/complete')}
-              >
-                Complete Your Profile <ArrowRight className='w-4 h-4 ml-2' />
-              </Button>
             )}
             {canUpgrade && (
               <Button
@@ -390,7 +381,8 @@ export default function Profile() {
             {isBusinessUser && (
               <Button
                 className='w-full mt-3'
-                variant={'outlined'}
+                color={'secondary'}
+                variant={'contained'}
                 onClick={() => router.push('/business/edit')}
               >
                 Configure Business
@@ -401,7 +393,7 @@ export default function Profile() {
             {isBusinessUser && (
               <Button
                 className='w-full mt-3'
-                color={'secondary'}
+                color={'gradient'}
                 variant={'contained'}
                 onClick={() => router.push('/profile/subscriptions')}
               >

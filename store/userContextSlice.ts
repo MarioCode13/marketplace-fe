@@ -1,5 +1,76 @@
-import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createAction, createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit'
+import { getApolloClient } from '@/lib/apollo/client'
+import { GET_ME } from '@/lib/graphql/queries/getMe'
+import { GET_MY_BUSINESS } from '@/lib/graphql/queries/getMyBusiness'
 import { Business } from '@/lib/graphql/generated'
+// Thunk to refetch user profile and update userContext
+export const refetchUserProfile = createAsyncThunk(
+	'userContext/refetchUserProfile',
+	async (_, { dispatch, rejectWithValue }) => {
+		try {
+			const client = getApolloClient()
+			const { data } = await client.query({
+				query: GET_ME,
+				fetchPolicy: 'network-only',
+			})
+			if (data?.me) {
+				dispatch(setUserContext({
+					userId: data.me.id,
+					username: data.me.username,
+					role: data.me.role,
+					profileImageUrl: data.me.profileImageUrl,
+					// Add other user fields as needed
+				}))
+				return data.me
+			} else {
+				return rejectWithValue('Failed to fetch user profile')
+			}
+		} catch (error: unknown) {
+			if (error instanceof Error) {
+				return rejectWithValue(error.message || 'Failed to fetch user profile')
+			}
+			return rejectWithValue('Failed to fetch user profile')
+		}
+	}
+)
+
+// Thunk to refetch business context and update userContext
+export const refetchBusinessContext = createAsyncThunk(
+	'userContext/refetchBusinessContext',
+	async (_, { dispatch, rejectWithValue }) => {
+		try {
+			const client = getApolloClient()
+			const { data } = await client.query({
+				query: GET_MY_BUSINESS,
+				fetchPolicy: 'network-only',
+			})
+			const business = data?.myBusiness
+			if (business) {
+				dispatch(setUserContext({
+					business: business,
+					businessId: business.id,
+					businessName: business.name,
+					// Add other business fields as needed
+				}))
+				return business
+			} else {
+				// Clear business context if not found
+				dispatch(setUserContext({
+					business: null,
+					businessId: null,
+					businessName: null,
+				}))
+				return null
+			}
+		} catch (error: unknown) {
+			if (error instanceof Error) {
+				return rejectWithValue(error.message || 'Failed to fetch business context')
+			}
+			return rejectWithValue('Failed to fetch business context')
+		}
+	}
+)
+
 
 export type UserRole = 'OWNER' | 'ADMIN' | 'MEMBER' | 'USER' | 'GUEST'
 

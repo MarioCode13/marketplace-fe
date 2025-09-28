@@ -6,7 +6,6 @@ import { jwtDecode } from 'jwt-decode'
 import { getApolloClient } from '@/lib/apollo/client'
 import { toast } from 'sonner'
 
-// Get the Apollo Client instance
 const getClient = () => getApolloClient()
 
 
@@ -36,7 +35,7 @@ type DecodedToken = {
     }
     // Add other User fields as needed
 }
-// Thunk to fetch full user profile after login
+// Thunk-> fetch user profile after login
 export const fetchUserProfile = createAsyncThunk(
     'auth/fetchUserProfile',
     async (_, { rejectWithValue }) => {

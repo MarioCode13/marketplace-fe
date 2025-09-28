@@ -25,6 +25,12 @@ import { useSelector } from 'react-redux'
 import { RootState } from '@/store/store'
 import { generateImageUrl } from '@/lib/utils'
 import { GET_ME } from '@/lib/graphql/queries/getMe'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 
 const Page = () => {
   const params = useParams()
@@ -97,7 +103,7 @@ const Page = () => {
 
   return (
     <div className='w-full flex justify-center'>
-      <div className='w-full max-w-5xl py-8 px-6'>
+      <div className='w-full max-w-5xl py-16 px-6'>
         <div className='flex flex-col md:flex-row gap-6'>
           <div className='md:w-1/2 relative'>
             <div className='relative w-full h-[460px] rounded-lg shadow-lg overflow-hidden'>
@@ -166,17 +172,18 @@ const Page = () => {
           <div className='md:w-1/2 space-y-6 flex flex-col justify-between'>
             <div>
               <h1
-                className='text-3xl font-bold'
+                className='text-3xl font-bold mb-2'
                 data-testid='listing-title'
               >
                 {listing.title}
               </h1>
-              <p className='text-gray-600'>{listing.description}</p>
+              <Badge className='w-fit'>{listing.condition}</Badge>
+              <p className='text-gray-600 my-4'>{listing.description}</p>
               <p
-                className='text-2xl font-semibold text-green-600'
+                className='text-2xl font-semibold text-green-600 mb-2'
                 data-testid='listing-price'
               >
-                ${listing.price}
+                R{listing.price}
               </p>
               <p className='text-sm text-gray-500'>
                 Location:{' '}
@@ -185,7 +192,6 @@ const Page = () => {
                     ? `${listing.city.name}, ${listing.city.region.name}, ${listing.city.region.country.name}`
                     : '')}
               </p>
-              <Badge className='w-fit'>{listing.condition}</Badge>
             </div>
 
             <Card>
@@ -221,7 +227,14 @@ const Page = () => {
                     </p>
                     {listing.business ? (
                       <Link
-                        href={`/${listing.business?.slug || ''}`}
+                        href={
+                          listing.business.businessType === 'PRO_STORE' &&
+                          listing.business.slug
+                            ? `/${listing.business.slug}`
+                            : listing.business.businessType === 'RESELLER'
+                            ? `/store/${listing.business.id}`
+                            : '/'
+                        }
                         className='hover:underline'
                       >
                         <h2 className='text-lg font-semibold'>
@@ -268,8 +281,7 @@ const Page = () => {
                       </Button>
                     </div>
                   ) : (
-                    <div className='flex gap-2'>
-                      {/* Refactored: Render store/profile button in a simpler way */}
+                    <div className='flex flex-col gap-3 p-2'>
                       {(() => {
                         if (listing.business) {
                           if (
@@ -347,29 +359,80 @@ const Page = () => {
                       <span className='text-sm font-medium'>Trust Rating</span>
                     </div>
                     <div className='flex items-center gap-2'>
-                      <div className='flex items-center gap-1'>
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <Star
-                            key={star}
-                            className={`w-4 h-4 ${
-                              star <= 4
-                                ? 'fill-yellow-400 text-yellow-400'
-                                : 'text-gray-300'
-                            }`}
-                          />
-                        ))}
-                        <span className='text-sm text-gray-600 ml-1'>4.0</span>
-                      </div>
-                      {/* <Badge
-                        variant='outline'
-                        className='bg-green-100 text-green-800 border-green-200'
-                      >
-                        <Shield className='w-3 h-3 mr-1' />
-                        VERY GOOD
-                      </Badge> */}
-                      <span className='text-sm text-gray-600'>
-                        (12 reviews)
-                      </span>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className='flex items-center gap-1 cursor-pointer'>
+                              {(() => {
+                                const rating =
+                                  listing.business?.trustRating
+                                    ?.averageRating || 0
+                                return [1, 2, 3, 4, 5].map((star) => {
+                                  if (rating >= star) {
+                                    // Full star
+                                    return (
+                                      <Star
+                                        key={star}
+                                        className='w-4 h-4 text-yellow-400 fill-yellow-400 stroke-yellow-400'
+                                      />
+                                    )
+                                  } else if (rating >= star - 0.75) {
+                                    return (
+                                      <span
+                                        key={star}
+                                        style={{
+                                          position: 'relative',
+                                          display: 'inline-block',
+                                          width: '1em',
+                                          height: '1em',
+                                        }}
+                                      >
+                                        <Star
+                                          className='w-4 h-4 text-yellow-400'
+                                          style={{
+                                            position: 'absolute',
+                                            left: 0,
+                                            top: 0,
+                                          }}
+                                        />
+                                        <Star
+                                          className='w-4 h-4 text-yellow-400 fill-yellow-400 stroke-yellow-400'
+                                          style={{
+                                            position: 'absolute',
+                                            left: 0,
+                                            top: 0,
+                                            clipPath:
+                                              'polygon(0 0, 50% 0, 50% 100%, 0 100%)',
+                                          }}
+                                        />
+                                      </span>
+                                    )
+                                  } else {
+                                    return (
+                                      <Star
+                                        key={star}
+                                        className='w-4 h-4 text-gray-300'
+                                      />
+                                    )
+                                  }
+                                })
+                              })()}
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent side='top'>
+                            <p>
+                              {listing.business?.trustRating?.averageRating}
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+
+                      {listing.business?.trustRating?.reviewCount !==
+                      undefined ? (
+                        <span className='text-sm text-gray-600'>
+                          ({listing.business.trustRating.reviewCount} reviews)
+                        </span>
+                      ) : null}
                     </div>
                   </div>
                 )}

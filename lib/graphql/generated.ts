@@ -45,6 +45,7 @@ export type Business = {
   postalCode?: Maybe<Scalars['String']['output']>;
   slug?: Maybe<Scalars['String']['output']>;
   storeBranding?: Maybe<StoreBranding>;
+  trustRating?: Maybe<BusinessTrustRating>;
   verificationDocuments: Array<VerificationDocument>;
 };
 
@@ -125,6 +126,20 @@ export type CreateStoreBrandingInput = {
   themeColor?: InputMaybe<Scalars['String']['input']>;
 };
 
+export type CreateSubscriptionInput = {
+  amount: Scalars['Float']['input'];
+  billingCycle: BillingCycle;
+  businessId?: InputMaybe<Scalars['ID']['input']>;
+  planType: PlanType;
+  stripeCustomerId?: InputMaybe<Scalars['String']['input']>;
+  stripeSubscriptionId?: InputMaybe<Scalars['String']['input']>;
+  /**
+   * 
+   * Either userId or businessId must be provided, but not both.
+   */
+  userId?: InputMaybe<Scalars['ID']['input']>;
+};
+
 export enum DocumentType {
   BankAccountVerification = 'BANK_ACCOUNT_VERIFICATION',
   BusinessRegistration = 'BUSINESS_REGISTRATION',
@@ -173,6 +188,7 @@ export type Mutation = {
   createCheckoutSession: Scalars['String']['output'];
   createListing: Listing;
   createReview: Review;
+  createSubscription: Subscription;
   createTransaction: Transaction;
   declineBusinessInvitation: Scalars['Boolean']['output'];
   deleteBusinessVerificationDocument: Scalars['Boolean']['output'];
@@ -246,6 +262,11 @@ export type MutationCreateReviewArgs = {
   rating: Scalars['Float']['input'];
   reviewedUserId: Scalars['ID']['input'];
   transactionId: Scalars['ID']['input'];
+};
+
+
+export type MutationCreateSubscriptionArgs = {
+  input: CreateSubscriptionInput;
 };
 
 
@@ -436,6 +457,7 @@ export type ProfileCompletion = {
 export type Query = {
   __typename?: 'Query';
   business?: Maybe<Business>;
+  businessSubscriptions: Array<Subscription>;
   businessTrustRating?: Maybe<BusinessTrustRating>;
   canContactSellers: Scalars['Boolean']['output'];
   getAllUsers: Array<User>;
@@ -494,11 +516,17 @@ export type Query = {
   searchUsers: Array<User>;
   storeBySlug?: Maybe<User>;
   user?: Maybe<User>;
+  userSubscriptions: Array<Subscription>;
 };
 
 
 export type QueryBusinessArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type QueryBusinessSubscriptionsArgs = {
+  businessId: Scalars['ID']['input'];
 };
 
 
@@ -718,6 +746,11 @@ export type QueryUserArgs = {
   id: Scalars['ID']['input'];
 };
 
+
+export type QueryUserSubscriptionsArgs = {
+  userId: Scalars['ID']['input'];
+};
+
 export type Region = {
   __typename?: 'Region';
   country: Country;
@@ -757,19 +790,21 @@ export type Subscription = {
   __typename?: 'Subscription';
   amount: Scalars['Float']['output'];
   billingCycle: BillingCycle;
-  cancelAtPeriodEnd: Scalars['Boolean']['output'];
+  business?: Maybe<Business>;
+  cancelAtPeriodEnd?: Maybe<Scalars['Boolean']['output']>;
   cancelledAt?: Maybe<Scalars['String']['output']>;
-  createdAt: Scalars['String']['output'];
+  createdAt?: Maybe<Scalars['String']['output']>;
   currency: Scalars['String']['output'];
   currentPeriodEnd?: Maybe<Scalars['String']['output']>;
   currentPeriodStart?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
+  payfastProfileId?: Maybe<Scalars['String']['output']>;
   planType: PlanType;
   status: SubscriptionStatus;
   stripeCustomerId?: Maybe<Scalars['String']['output']>;
   stripeSubscriptionId?: Maybe<Scalars['String']['output']>;
-  updatedAt: Scalars['String']['output'];
-  user: User;
+  updatedAt?: Maybe<Scalars['String']['output']>;
+  user?: Maybe<User>;
 };
 
 export type SubscriptionStats = {
@@ -880,7 +915,11 @@ export type User = {
   idPhotoUrl?: Maybe<Scalars['String']['output']>;
   lastName?: Maybe<Scalars['String']['output']>;
   listings: Array<Listing>;
-  planType?: Maybe<Scalars['String']['output']>;
+  /**
+   * 
+   * Computed from the user's active subscription. Not stored on the user.
+   */
+  planType?: Maybe<PlanType>;
   profileCompletion?: Maybe<ProfileCompletion>;
   profileImageUrl?: Maybe<Scalars['String']['output']>;
   proofOfAddressUrl?: Maybe<Scalars['String']['output']>;
@@ -961,6 +1000,13 @@ export type GetConditionsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type GetConditionsQuery = { __typename?: 'Query', getConditions?: Array<Condition | null> | null };
+
+export type IsStoreSlugAvailableQueryVariables = Exact<{
+  slug: Scalars['String']['input'];
+}>;
+
+
+export type IsStoreSlugAvailableQuery = { __typename?: 'Query', isStoreSlugAvailable: boolean };
 
 export type GetAllUsersQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1098,14 +1144,14 @@ export type GetBusinessByIdQueryVariables = Exact<{
 }>;
 
 
-export type GetBusinessByIdQuery = { __typename?: 'Query', business?: { __typename?: 'Business', id: string, name: string, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, postalCode?: string | null, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, lightOrDark?: string | null, primaryColor?: string | null, secondaryColor?: string | null, about?: string | null, storeName?: string | null } | null, businessUsers: Array<{ __typename?: 'BusinessUser', id: string, role: BusinessUserRole, user: { __typename?: 'User', id: string, username: string, email: string, profileImageUrl?: string | null, planType?: string | null, trustRating?: { __typename?: 'TrustRating', starRating: number, trustLevel: string, overallScore: number, totalReviews: number, totalTransactions: number, successfulTransactions: number } | null } }> } | null };
+export type GetBusinessByIdQuery = { __typename?: 'Query', business?: { __typename?: 'Business', id: string, name: string, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, postalCode?: string | null, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, lightOrDark?: string | null, primaryColor?: string | null, secondaryColor?: string | null, about?: string | null, storeName?: string | null } | null, businessUsers: Array<{ __typename?: 'BusinessUser', id: string, role: BusinessUserRole, user: { __typename?: 'User', id: string, username: string, email: string, profileImageUrl?: string | null, planType?: PlanType | null, trustRating?: { __typename?: 'TrustRating', starRating: number, trustLevel: string, overallScore: number, totalReviews: number, totalTransactions: number, successfulTransactions: number } | null } }> } | null };
 
 export type GetBusinessBySlugQueryVariables = Exact<{
   slug: Scalars['String']['input'];
 }>;
 
 
-export type GetBusinessBySlugQuery = { __typename?: 'Query', getBusinessBySlug?: { __typename?: 'Business', id: string, name: string, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, postalCode?: string | null, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, lightOrDark?: string | null, primaryColor?: string | null, secondaryColor?: string | null, about?: string | null, storeName?: string | null, backgroundColor?: string | null, textColor?: string | null, cardTextColor?: string | null } | null, businessUsers: Array<{ __typename?: 'BusinessUser', id: string, role: BusinessUserRole, user: { __typename?: 'User', id: string, username: string, email: string, profileImageUrl?: string | null, planType?: string | null, trustRating?: { __typename?: 'TrustRating', starRating: number, trustLevel: string, overallScore: number, totalReviews: number, totalTransactions: number, successfulTransactions: number } | null } }> } | null };
+export type GetBusinessBySlugQuery = { __typename?: 'Query', getBusinessBySlug?: { __typename?: 'Business', id: string, name: string, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, postalCode?: string | null, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, lightOrDark?: string | null, primaryColor?: string | null, secondaryColor?: string | null, about?: string | null, storeName?: string | null, backgroundColor?: string | null, textColor?: string | null, cardTextColor?: string | null } | null, businessUsers: Array<{ __typename?: 'BusinessUser', id: string, role: BusinessUserRole, user: { __typename?: 'User', id: string, username: string, email: string, profileImageUrl?: string | null, planType?: PlanType | null, trustRating?: { __typename?: 'TrustRating', starRating: number, trustLevel: string, overallScore: number, totalReviews: number, totalTransactions: number, successfulTransactions: number } | null } }> } | null };
 
 export type BusinessTrustRatingQueryVariables = Exact<{
   businessId: Scalars['ID']['input'];
@@ -1124,7 +1170,7 @@ export type GetListingByIdQueryVariables = Exact<{
 }>;
 
 
-export type GetListingByIdQuery = { __typename?: 'Query', getListingById?: { __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, sold: boolean, customCity?: string | null, condition: Condition, createdAt: string, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, category?: { __typename?: 'Category', id: string, name: string, parentId?: string | null } | null, user?: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null, email: string, planType?: string | null } | null, business?: { __typename?: 'Business', id: string, name: string, businessType?: string | null, slug?: string | null, storeBranding?: { __typename?: 'StoreBranding', storeName?: string | null, logoUrl?: string | null } | null } | null } | null };
+export type GetListingByIdQuery = { __typename?: 'Query', getListingById?: { __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, sold: boolean, customCity?: string | null, condition: Condition, createdAt: string, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, category?: { __typename?: 'Category', id: string, name: string, parentId?: string | null } | null, user?: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null, email: string, planType?: PlanType | null } | null, business?: { __typename?: 'Business', id: string, name: string, businessType?: string | null, slug?: string | null, trustRating?: { __typename?: 'BusinessTrustRating', averageRating: number, reviewCount: number } | null, storeBranding?: { __typename?: 'StoreBranding', storeName?: string | null, logoUrl?: string | null } | null } | null } | null };
 
 export type GetListingsQueryVariables = Exact<{
   limit: Scalars['Int']['input'];
@@ -1149,12 +1195,12 @@ export type GetListingsQuery = { __typename?: 'Query', getListings: { __typename
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type MeQuery = { __typename?: 'Query', me?: { __typename?: 'User', id: string, username: string, email: string, firstName?: string | null, lastName?: string | null, bio?: string | null, profileImageUrl?: string | null, planType?: string | null, role: string, customCity?: string | null, contactNumber?: string | null, idPhotoUrl?: string | null, driversLicenseUrl?: string | null, proofOfAddressUrl?: string | null, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, subscription?: { __typename?: 'Subscription', status: SubscriptionStatus, planType: PlanType } | null } | null };
+export type MeQuery = { __typename?: 'Query', me?: { __typename?: 'User', id: string, username: string, email: string, firstName?: string | null, lastName?: string | null, bio?: string | null, profileImageUrl?: string | null, planType?: PlanType | null, role: string, customCity?: string | null, contactNumber?: string | null, idPhotoUrl?: string | null, driversLicenseUrl?: string | null, proofOfAddressUrl?: string | null, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, subscription?: { __typename?: 'Subscription', status: SubscriptionStatus, planType: PlanType } | null } | null };
 
 export type GetMyBusinessQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetMyBusinessQuery = { __typename?: 'Query', myBusiness?: { __typename?: 'Business', id: string, slug?: string | null, name: string, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, postalCode?: string | null, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, primaryColor?: string | null, secondaryColor?: string | null, lightOrDark?: string | null, about?: string | null, storeName?: string | null, textColor?: string | null, cardTextColor?: string | null, backgroundColor?: string | null } | null, businessUsers: Array<{ __typename?: 'BusinessUser', id: string, role: BusinessUserRole, user: { __typename?: 'User', id: string, planType?: string | null, username: string, email: string, profileImageUrl?: string | null } }> } | null };
+export type GetMyBusinessQuery = { __typename?: 'Query', myBusiness?: { __typename?: 'Business', id: string, slug?: string | null, name: string, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, postalCode?: string | null, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, primaryColor?: string | null, secondaryColor?: string | null, lightOrDark?: string | null, about?: string | null, storeName?: string | null, textColor?: string | null, cardTextColor?: string | null, backgroundColor?: string | null } | null, businessUsers: Array<{ __typename?: 'BusinessUser', id: string, role: BusinessUserRole, user: { __typename?: 'User', id: string, planType?: PlanType | null, username: string, email: string, profileImageUrl?: string | null } }> } | null };
 
 export type GetNotificationsQueryVariables = Exact<{
   userId: Scalars['ID']['input'];
@@ -1175,21 +1221,21 @@ export type GetMyStoreBrandingQueryVariables = Exact<{
 }>;
 
 
-export type GetMyStoreBrandingQuery = { __typename?: 'Query', user?: { __typename?: 'User', id: string, planType?: string | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, primaryColor?: string | null, secondaryColor?: string | null, lightOrDark?: string | null, about?: string | null, storeName?: string | null, backgroundColor?: string | null, textColor?: string | null, cardTextColor?: string | null } | null } | null };
+export type GetMyStoreBrandingQuery = { __typename?: 'Query', user?: { __typename?: 'User', id: string, planType?: PlanType | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, primaryColor?: string | null, secondaryColor?: string | null, lightOrDark?: string | null, about?: string | null, storeName?: string | null, backgroundColor?: string | null, textColor?: string | null, cardTextColor?: string | null } | null } | null };
 
 export type GetStoreBySlugFullQueryVariables = Exact<{
   slug: Scalars['String']['input'];
 }>;
 
 
-export type GetStoreBySlugFullQuery = { __typename?: 'Query', storeBySlug?: { __typename?: 'User', id: string, username: string, planType?: string | null, business?: { __typename?: 'Business', id: string } | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, lightOrDark?: string | null, primaryColor?: string | null, secondaryColor?: string | null, backgroundColor?: string | null, textColor?: string | null, cardTextColor?: string | null, about?: string | null, storeName?: string | null } | null, trustRating?: { __typename?: 'TrustRating', starRating: number, trustLevel: string, overallScore: number, totalReviews: number, positiveReviews: number } | null, listings: Array<{ __typename?: 'Listing', id: string, title: string, description: string, price: number, images: Array<string>, condition: Condition, customCity?: string | null, createdAt: string, expiresAt: string, sold: boolean, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null }> } | null };
+export type GetStoreBySlugFullQuery = { __typename?: 'Query', storeBySlug?: { __typename?: 'User', id: string, username: string, planType?: PlanType | null, business?: { __typename?: 'Business', id: string } | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, lightOrDark?: string | null, primaryColor?: string | null, secondaryColor?: string | null, backgroundColor?: string | null, textColor?: string | null, cardTextColor?: string | null, about?: string | null, storeName?: string | null } | null, trustRating?: { __typename?: 'TrustRating', starRating: number, trustLevel: string, overallScore: number, totalReviews: number, positiveReviews: number } | null, listings: Array<{ __typename?: 'Listing', id: string, title: string, description: string, price: number, images: Array<string>, condition: Condition, customCity?: string | null, createdAt: string, expiresAt: string, sold: boolean, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null }> } | null };
 
 export type GetStoreBySlugMinimalQueryVariables = Exact<{
   slug: Scalars['String']['input'];
 }>;
 
 
-export type GetStoreBySlugMinimalQuery = { __typename?: 'Query', storeBySlug?: { __typename?: 'User', id: string, username: string, planType?: string | null, storeBranding?: { __typename?: 'StoreBranding', storeName?: string | null, logoUrl?: string | null } | null } | null };
+export type GetStoreBySlugMinimalQuery = { __typename?: 'Query', storeBySlug?: { __typename?: 'User', id: string, username: string, planType?: PlanType | null, storeBranding?: { __typename?: 'StoreBranding', storeName?: string | null, logoUrl?: string | null } | null } | null };
 
 export type GetMyPurchasesQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1237,7 +1283,7 @@ export type GetUserByIdQueryVariables = Exact<{
 }>;
 
 
-export type GetUserByIdQuery = { __typename?: 'Query', getUserById?: { __typename?: 'User', id: string, username: string, planType?: string | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, lightOrDark?: string | null, primaryColor?: string | null, secondaryColor?: string | null, about?: string | null, storeName?: string | null } | null, trustRating?: { __typename?: 'TrustRating', starRating: number, trustLevel: string, overallScore: number, totalReviews: number, totalTransactions: number, successfulTransactions: number } | null } | null };
+export type GetUserByIdQuery = { __typename?: 'Query', getUserById?: { __typename?: 'User', id: string, username: string, planType?: PlanType | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, lightOrDark?: string | null, primaryColor?: string | null, secondaryColor?: string | null, about?: string | null, storeName?: string | null } | null, trustRating?: { __typename?: 'TrustRating', starRating: number, trustLevel: string, overallScore: number, totalReviews: number, totalTransactions: number, successfulTransactions: number } | null } | null };
 
 export type GetUserReviewsQueryVariables = Exact<{
   userId: Scalars['ID']['input'];
@@ -1314,13 +1360,6 @@ export type SearchCitiesQueryVariables = Exact<{
 
 
 export type SearchCitiesQuery = { __typename?: 'Query', searchCities: Array<{ __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', id: string, name: string, country: { __typename?: 'Country', id: string, name: string, code: string } } }> };
-
-export type IsStoreSlugAvailableQueryVariables = Exact<{
-  slug: Scalars['String']['input'];
-}>;
-
-
-export type IsStoreSlugAvailableQuery = { __typename?: 'Query', isStoreSlugAvailable: boolean };
 
 export type LoginMutationVariables = Exact<{
   emailOrUsername: Scalars['String']['input'];
@@ -1548,6 +1587,44 @@ export type GetConditionsQueryHookResult = ReturnType<typeof useGetConditionsQue
 export type GetConditionsLazyQueryHookResult = ReturnType<typeof useGetConditionsLazyQuery>;
 export type GetConditionsSuspenseQueryHookResult = ReturnType<typeof useGetConditionsSuspenseQuery>;
 export type GetConditionsQueryResult = Apollo.QueryResult<GetConditionsQuery, GetConditionsQueryVariables>;
+export const IsStoreSlugAvailableDocument = gql`
+    query IsStoreSlugAvailable($slug: String!) {
+  isStoreSlugAvailable(slug: $slug)
+}
+    `;
+
+/**
+ * __useIsStoreSlugAvailableQuery__
+ *
+ * To run a query within a React component, call `useIsStoreSlugAvailableQuery` and pass it any options that fit your needs.
+ * When your component renders, `useIsStoreSlugAvailableQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useIsStoreSlugAvailableQuery({
+ *   variables: {
+ *      slug: // value for 'slug'
+ *   },
+ * });
+ */
+export function useIsStoreSlugAvailableQuery(baseOptions: Apollo.QueryHookOptions<IsStoreSlugAvailableQuery, IsStoreSlugAvailableQueryVariables> & ({ variables: IsStoreSlugAvailableQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<IsStoreSlugAvailableQuery, IsStoreSlugAvailableQueryVariables>(IsStoreSlugAvailableDocument, options);
+      }
+export function useIsStoreSlugAvailableLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<IsStoreSlugAvailableQuery, IsStoreSlugAvailableQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<IsStoreSlugAvailableQuery, IsStoreSlugAvailableQueryVariables>(IsStoreSlugAvailableDocument, options);
+        }
+export function useIsStoreSlugAvailableSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<IsStoreSlugAvailableQuery, IsStoreSlugAvailableQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<IsStoreSlugAvailableQuery, IsStoreSlugAvailableQueryVariables>(IsStoreSlugAvailableDocument, options);
+        }
+export type IsStoreSlugAvailableQueryHookResult = ReturnType<typeof useIsStoreSlugAvailableQuery>;
+export type IsStoreSlugAvailableLazyQueryHookResult = ReturnType<typeof useIsStoreSlugAvailableLazyQuery>;
+export type IsStoreSlugAvailableSuspenseQueryHookResult = ReturnType<typeof useIsStoreSlugAvailableSuspenseQuery>;
+export type IsStoreSlugAvailableQueryResult = Apollo.QueryResult<IsStoreSlugAvailableQuery, IsStoreSlugAvailableQueryVariables>;
 export const GetAllUsersDocument = gql`
     query GetAllUsers {
   getAllUsers {
@@ -2575,6 +2652,10 @@ export const GetListingByIdDocument = gql`
       name
       businessType
       slug
+      trustRating {
+        averageRating
+        reviewCount
+      }
       storeBranding {
         storeName
         logoUrl
@@ -4362,44 +4443,6 @@ export type SearchCitiesQueryHookResult = ReturnType<typeof useSearchCitiesQuery
 export type SearchCitiesLazyQueryHookResult = ReturnType<typeof useSearchCitiesLazyQuery>;
 export type SearchCitiesSuspenseQueryHookResult = ReturnType<typeof useSearchCitiesSuspenseQuery>;
 export type SearchCitiesQueryResult = Apollo.QueryResult<SearchCitiesQuery, SearchCitiesQueryVariables>;
-export const IsStoreSlugAvailableDocument = gql`
-    query IsStoreSlugAvailable($slug: String!) {
-  isStoreSlugAvailable(slug: $slug)
-}
-    `;
-
-/**
- * __useIsStoreSlugAvailableQuery__
- *
- * To run a query within a React component, call `useIsStoreSlugAvailableQuery` and pass it any options that fit your needs.
- * When your component renders, `useIsStoreSlugAvailableQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useIsStoreSlugAvailableQuery({
- *   variables: {
- *      slug: // value for 'slug'
- *   },
- * });
- */
-export function useIsStoreSlugAvailableQuery(baseOptions: Apollo.QueryHookOptions<IsStoreSlugAvailableQuery, IsStoreSlugAvailableQueryVariables> & ({ variables: IsStoreSlugAvailableQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<IsStoreSlugAvailableQuery, IsStoreSlugAvailableQueryVariables>(IsStoreSlugAvailableDocument, options);
-      }
-export function useIsStoreSlugAvailableLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<IsStoreSlugAvailableQuery, IsStoreSlugAvailableQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<IsStoreSlugAvailableQuery, IsStoreSlugAvailableQueryVariables>(IsStoreSlugAvailableDocument, options);
-        }
-export function useIsStoreSlugAvailableSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<IsStoreSlugAvailableQuery, IsStoreSlugAvailableQueryVariables>) {
-          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
-          return Apollo.useSuspenseQuery<IsStoreSlugAvailableQuery, IsStoreSlugAvailableQueryVariables>(IsStoreSlugAvailableDocument, options);
-        }
-export type IsStoreSlugAvailableQueryHookResult = ReturnType<typeof useIsStoreSlugAvailableQuery>;
-export type IsStoreSlugAvailableLazyQueryHookResult = ReturnType<typeof useIsStoreSlugAvailableLazyQuery>;
-export type IsStoreSlugAvailableSuspenseQueryHookResult = ReturnType<typeof useIsStoreSlugAvailableSuspenseQuery>;
-export type IsStoreSlugAvailableQueryResult = Apollo.QueryResult<IsStoreSlugAvailableQuery, IsStoreSlugAvailableQueryVariables>;
 export const LoginDocument = gql`
     mutation Login($emailOrUsername: String!, $password: String!) {
   login(emailOrUsername: $emailOrUsername, password: $password) {

@@ -1,12 +1,13 @@
 'use client'
 import { useDispatch } from 'react-redux'
 import { setUserContext } from '@/store/userContextSlice'
-import { gql, useLazyQuery } from '@apollo/client'
+import { useLazyQuery } from '@apollo/client'
 
 import { useMutation } from '@apollo/client'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/store/store'
+import { gql, useQuery } from '@apollo/client'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { toast } from 'sonner'
@@ -23,6 +24,8 @@ import {
 import { Loader2, Users, Eye } from 'lucide-react'
 import { UPDATE_STORE_BRANDING } from '@/lib/graphql/mutations/businessMutations'
 import { UPDATE_BUSINESS } from '@/lib/graphql/mutations/updateBusiness'
+import { GET_BUSINESS_BY_ID } from '@/lib/graphql/queries/getBusinessById'
+
 import { BusinessUser, UpdateStoreBrandingInput } from '@/lib/graphql/generated'
 import PreviewModal from '@/components/modals/PreviewModal'
 import Link from 'next/link'
@@ -33,13 +36,24 @@ export default function BusinessEditPage() {
 
   const user = useSelector((state: RootState) => state.auth.user)
   const userContext = useSelector((state: RootState) => state.userContext)
-  const business = userContext.business
+  // Fetch business and branding via query instead of relying on Redux state
+  // Use the shared query from lib/graphql/queries
+  const businessId = userContext.businessId
+  const {
+    data: businessData,
+    loading: businessLoading,
+    error: businessError,
+  } = useQuery(GET_BUSINESS_BY_ID, {
+    variables: { id: businessId },
+    skip: !businessId,
+    fetchPolicy: 'network-only',
+  })
+  const business = businessData?.business
   const dispatch = useDispatch()
   const userId = user?.id
-  // Fix user type usage (ensure planType and role exist on user)
-  // Use userContext for business role and planType if available
-  const userPlanType = userContext.business?.owner?.planType || undefined
-  const isProStore = userPlanType === 'PRO_STORE'
+  // Use business owner's planType for permission logic
+  const ownerPlanType = business?.owner?.planType || undefined
+  const isProStore = ownerPlanType === 'PRO_STORE'
   // If user or business is missing, fallback to query (optional)
   // You can add logic here to query if store is empty
 
@@ -330,6 +344,18 @@ export default function BusinessEditPage() {
     }
   }
 
+  if (businessLoading) {
+    return (
+      <div className='max-w-5xl mx-auto p-6'>Loading business details...</div>
+    )
+  }
+  if (businessError) {
+    return (
+      <div className='max-w-5xl mx-auto p-6'>
+        Error loading business details.
+      </div>
+    )
+  }
   if (!business) {
     return (
       <div className='max-w-5xl mx-auto p-6'>
