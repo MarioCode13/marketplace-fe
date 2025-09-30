@@ -42,6 +42,7 @@ export type Business = {
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
   owner: User;
+  planType?: Maybe<PlanType>;
   postalCode?: Maybe<Scalars['String']['output']>;
   slug?: Maybe<Scalars['String']['output']>;
   storeBranding?: Maybe<StoreBranding>;

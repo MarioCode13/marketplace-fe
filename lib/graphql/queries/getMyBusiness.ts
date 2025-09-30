@@ -10,6 +10,7 @@ export const GET_MY_BUSINESS = gql`
       contactNumber
       addressLine1
       addressLine2
+      planType
       city {
         id
         name

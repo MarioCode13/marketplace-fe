@@ -275,6 +275,18 @@
             "deprecationReason": null
           },
           {
+            "name": "planType",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "ENUM",
+              "name": "PlanType",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "postalCode",
             "description": null,
             "args": [],

@@ -66,6 +66,7 @@ export default function Profile() {
     username: user?.username ?? '',
     email: user?.email ?? '',
   })
+
   // Always use business trust rating if businessId is present
   const { data: businessTrustData, loading: businessTrustLoading } =
     useBusinessTrustRatingQuery({

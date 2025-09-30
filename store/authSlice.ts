@@ -159,6 +159,11 @@ const authSlice = createSlice({
             })
             .addCase(fetchUserProfile.fulfilled, (state, action) => {
                 state.user = action.payload
+                // Ensure token is set after profile fetch (refresh)
+                const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+                if (token) {
+                    state.token = token
+                }
             })
             .addCase(fetchUserProfile.rejected, (state, action) => {
                 state.error = action.payload as string

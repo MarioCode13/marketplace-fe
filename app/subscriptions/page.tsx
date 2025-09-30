@@ -11,8 +11,6 @@ import { RootState } from '@/store/store'
 import { ShieldCheck, User, Store, Star, UserPlus } from 'lucide-react'
 import { useState } from 'react'
 import { useSelector } from 'react-redux'
-import { useQuery } from '@apollo/client'
-import { GET_ME } from '@/lib/graphql/queries/getMe'
 
 const tiers = [
   {
@@ -58,7 +56,7 @@ const tiers = [
   },
   {
     name: 'Reseller',
-    price: 'R99/mo',
+    price: 'R149/mo',
     icon: Store,
     accountType: 'Business',
     features: [
@@ -106,9 +104,12 @@ const tiers = [
 export default function SubscriptionsPage() {
   const [loadingTier, setLoadingTier] = useState<string | null>(null)
   const JWT = useSelector((state: RootState) => state.auth.token)
-  const { data: meData } = useQuery(GET_ME)
-  const userEmail = meData?.me?.email || ''
-  const isLoggedIn = !!JWT && !!meData?.me
+  const userContext = useSelector((state: RootState) => state.userContext)
+  const userEmail = userContext.email || ''
+  const isLoggedIn = !!JWT && !!userContext.userId
+  // Get user's planType (personal) and business planType (if business user)
+  const userPlanType = userContext.planType || ''
+  const businessPlanType = userContext.business?.planType || ''
 
   const handleSubscribe = async (tier: (typeof tiers)[0]) => {
     // Free plan doesn't require payment
@@ -145,7 +146,9 @@ export default function SubscriptionsPage() {
         userEmail,
       })
       const res = await fetch(
-        `http://localhost:8080/api/payments/payfast/subscription-url?${params.toString()}`,
+        `${
+          process.env.NEXT_PUBLIC_GRAPHQL_URL
+        }/api/payments/payfast/subscription-url?${params.toString()}`,
         {
           credentials: 'include',
           headers: {
@@ -169,6 +172,8 @@ export default function SubscriptionsPage() {
     }
   }
 
+  // Debug: log current plan type
+  console.log('Current plan type:', userPlanType, businessPlanType)
   return (
     <div className='min-h-screen w-full bg-gradient-to-br from-blue-50 via-white to-indigo-100 dark:from-gray-900 dark:via-gray-950 dark:to-gray-900 py-12 px-4'>
       <h1 className='text-4xl font-extrabold mb-2 text-center text-gray-900 dark:text-white drop-shadow-sm'>
@@ -183,6 +188,75 @@ export default function SubscriptionsPage() {
         {tiers.map((tier) => {
           const Icon = tier.icon
           const isPaid = tier.name !== 'Free User'
+          const tierPlanTypeMap: Record<string, string> = {
+            'Free User': 'FREE_USER',
+            'Verified User': 'VERIFIED_USER',
+            Reseller: 'RESELLER',
+            'Pro Store': 'PRO_STORE',
+          }
+          const tierPlanType = tierPlanTypeMap[tier.name] || ''
+          const currentPlanType = userContext.businessId
+            ? businessPlanType
+            : userPlanType
+          const planOrder = [
+            'FREE_USER',
+            'VERIFIED_USER',
+            'RESELLER',
+            'PRO_STORE',
+          ]
+          const currentPlanIndex = planOrder.indexOf(
+            (currentPlanType || '').toUpperCase()
+          )
+          const tierPlanIndex = planOrder.indexOf(
+            (tierPlanType || '').toUpperCase()
+          )
+          console.log('Is Logged In: ', isLoggedIn)
+          console.log('JWT:', JWT, 'userContext:', userContext)
+
+          // Button and tooltip logic
+          let isDisabled = false
+          let buttonText = ''
+          let tooltipText = ''
+          if (!isLoggedIn) {
+            isDisabled = true
+            buttonText = isPaid ? 'Subscribe' : 'Current Plan'
+            tooltipText = 'Please create an account first'
+          } else if (loadingTier === tier.name) {
+            isDisabled = true
+            buttonText = 'Redirecting...'
+            tooltipText = ''
+          } else if (tierPlanType === 'FREE_USER') {
+            if (currentPlanIndex === tierPlanIndex) {
+              isDisabled = true
+              buttonText = 'Current Plan'
+              tooltipText = 'You are already subscribed to this plan.'
+            } else if (currentPlanIndex > tierPlanIndex) {
+              isDisabled = true
+              buttonText = 'N/A'
+              tooltipText =
+                'You are on a higher plan. Downgrades to Free are not supported.'
+            } else {
+              isDisabled = true
+              buttonText = 'Upgrade'
+              tooltipText = 'Upgrade to a paid plan for more features.'
+            }
+          } else if (currentPlanIndex === tierPlanIndex) {
+            isDisabled = true
+            buttonText = 'Current Plan'
+            tooltipText = 'You are already subscribed to this plan.'
+          } else if (currentPlanIndex > tierPlanIndex) {
+            isDisabled = true
+            buttonText = 'N/A'
+            tooltipText =
+              tierPlanType === 'FREE_USER'
+                ? 'You are on a paid plan. Downgrades to Free are not supported.'
+                : 'You are on a higher plan. Downgrades are not supported from here.'
+          } else {
+            isDisabled = false
+            buttonText = 'Upgrade'
+            tooltipText = 'Upgrade to this plan for more features.'
+          }
+
           return (
             <div
               key={tier.name}
@@ -240,7 +314,7 @@ export default function SubscriptionsPage() {
                     ✓ Included Features
                   </h4>
                   <ul className='text-gray-700 dark:text-gray-200 text-sm space-y-1'>
-                    {tier.features.map((feature) => (
+                    {tier.features.map((feature: string) => (
                       <li
                         key={feature}
                         className='flex items-start'
@@ -259,7 +333,7 @@ export default function SubscriptionsPage() {
                       ⚠ Limitations
                     </h4>
                     <ul className='text-gray-600 dark:text-gray-300 text-sm space-y-1'>
-                      {tier.limitations.map((limitation) => (
+                      {tier.limitations.map((limitation: string) => (
                         <li
                           key={limitation}
                           className='flex items-start'
@@ -279,28 +353,22 @@ export default function SubscriptionsPage() {
                   <TooltipTrigger asChild>
                     <div>
                       <Button
-                        disabled={!isLoggedIn || loadingTier === tier.name}
+                        disabled={isDisabled}
                         variant={tier.highlight ? 'contained' : 'outlined'}
                         className={`w-full py-2 text-base ${
                           tier.highlight
                             ? 'bg-blue-600 dark:bg-blue-700 text-white'
                             : ''
-                        } ${
-                          !isLoggedIn ? 'opacity-50 cursor-not-allowed' : ''
-                        }`}
+                        } ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
                         onClick={() => handleSubscribe(tier)}
                       >
-                        {loadingTier === tier.name
-                          ? 'Redirecting...'
-                          : isPaid
-                          ? 'Subscribe'
-                          : 'Current Plan'}
+                        {buttonText}
                       </Button>
                     </div>
                   </TooltipTrigger>
-                  {!isLoggedIn && (
+                  {tooltipText && (
                     <TooltipContent>
-                      <p>Please create an account first</p>
+                      <p>{tooltipText}</p>
                     </TooltipContent>
                   )}
                 </Tooltip>
