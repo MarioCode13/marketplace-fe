@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { useSelector, useDispatch } from 'react-redux'
 import { RootState, AppDispatch } from '@/store/store'
 import { logoutUser, selectIsLoggedIn } from '@/store/userContextSlice'
-import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { useTheme } from '@/context/ThemeContext'
 import { Menu as MenuIcon, Moon, SunMedium, User } from 'lucide-react'
@@ -20,13 +19,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useGetMyBusinessQuery } from '@/lib/graphql/generated'
-import { useApolloClient, useQuery } from '@apollo/client'
+import { useQuery } from '@apollo/client'
 import { GET_ME } from '@/lib/graphql/queries/getMe'
 
 export default function Navbar() {
   const dispatch = useDispatch<AppDispatch>()
-  const router = useRouter()
-  const client = useApolloClient()
+
   const isLoggedIn = useSelector(selectIsLoggedIn)
   const user = useSelector((state: RootState) => state.userContext)
   const { theme, setTheme } = useTheme()

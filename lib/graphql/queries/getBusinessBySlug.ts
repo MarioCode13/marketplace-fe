@@ -20,6 +20,10 @@ export const GET_BUSINESS_BY_SLUG = gql`
           }
         }
       }
+      trustRating{
+        averageRating
+        reviewCount
+      }
       storeBranding {
         logoUrl
         bannerUrl

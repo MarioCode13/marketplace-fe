@@ -53,7 +53,6 @@ export default function Profile() {
   const [editing, setEditing] = useState(false)
   const [hovered, setHovered] = useState(false)
   const dispatch = useDispatch<AppDispatch>()
-  // Use Redux selectors for user and business context
   const user = useSelector((state: RootState) => state.userContext)
   const userContext = useSelector((state: RootState) => state.userContext)
   const business = userContext.business
@@ -103,15 +102,6 @@ export default function Profile() {
   const handleLogout = () => {
     dispatch(logoutUser())
   }
-
-  // Debug logging for business/user context and trust rating queries
-  // console.log('userContext:', userContext)
-  // console.log('business:', business)
-  // console.log('businessId:', businessId)
-  // console.log('businessTrustData:', businessTrustData)
-  // console.log('businessTrustLoading:', businessTrustLoading)
-  // console.log('trustData:', trustData)
-  // console.log('trustLoading:', trustLoading)
 
   function getCookie(name: string): string | undefined {
     const value = `; ${document.cookie}`

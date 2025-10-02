@@ -8,7 +8,6 @@ export async function POST(req: Request) {
 
         const response = NextResponse.json({ success: true })
 
-        // Set the auth token in an httpOnly cookie
         response.cookies.set({
             name: 'auth-token',
             value: token,
@@ -16,15 +15,14 @@ export async function POST(req: Request) {
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
             path: '/',
-            // Set max age based on token expiration
             maxAge: 60 * 60 * 24 * 7 // 1 week
         })
 
-        // Set CSRF token
+        // TODO: Update in prod
         response.cookies.set({
             name: 'csrf-token',
             value: csrfToken,
-            httpOnly: false, // Needs to be accessible by JS
+            httpOnly: false,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'lax',
             path: '/'

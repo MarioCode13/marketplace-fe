@@ -92,7 +92,7 @@ const Page = () => {
     return <p className='text-center mt-6'>Listing not found.</p>
 
   const listing = data.getListingById
-  const currentUserId = meData?.me?.id || user?.id || user?.userId
+  const currentUserId = meData?.me?.id || user?.userId
   // Check if the current user is the owner (user or business owner)
   let isOwner = false
   if (listing.user && currentUserId) {

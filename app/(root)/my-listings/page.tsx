@@ -55,21 +55,17 @@ export default function MyListingsPage() {
   const userContext = useSelector((state: RootState) => state.userContext)
   const userId = userContext.userId
 
-  // Query for user's business association
   const { data: myBusinessData } = useQuery(GET_MY_BUSINESS)
 
-  // If user is associated with a business, show business listings
   const isBusinessUser = !!myBusinessData?.myBusiness
   const businessId = myBusinessData?.myBusiness?.id
 
-  // Listings query: use GET_LISTINGS with businessId for business users, else use MY_LISTINGS
   const { loading, error, data, refetch } = useQuery(
     isBusinessUser ? GET_LISTINGS : MY_LISTINGS,
     {
       variables: isBusinessUser
         ? { limit, offset, businessId }
         : { limit, offset },
-      // No Authorization header needed, session cookie is used
     }
   )
 

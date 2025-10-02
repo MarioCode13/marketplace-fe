@@ -23,6 +23,9 @@ function createApolloClient(initialState = {}) {
   const httpLink = new HttpLink({
     uri: `${process.env.NEXT_PUBLIC_GRAPHQL_URL}/graphql`,
     fetch,
+    // Ensure cookies (like jwt) are sent with every request
+    // Apollo forwards this to fetch as the credentials option
+    credentials: 'include',
   })
 
   // Add CSRF token to requests
@@ -46,7 +49,6 @@ function createApolloClient(initialState = {}) {
         ...headers,
         ...(xsrfToken && { 'X-XSRF-TOKEN': xsrfToken }),
       },
-      credentials: 'include', // Ensure cookies are sent
     }
   })
 

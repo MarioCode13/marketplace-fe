@@ -7,7 +7,6 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
-import { Upload, Check, Loader2 } from 'lucide-react'
 import CityAutocomplete from '@/components/drawers/CityAutocomplete'
 import { GET_ME } from '@/lib/graphql/queries/getMe'
 import { useRouter } from 'next/navigation'
@@ -53,9 +52,7 @@ export default function CompleteProfilePage() {
     customCity: user?.customCity || '',
     contactNumber: user?.contactNumber || '',
   })
-  const [uploading, setUploading] = useState({
-    profile: false,
-  })
+
   const [showCustomCity, setShowCustomCity] = useState(false)
   const [showTermsModal, setShowTermsModal] = useState(false)
 
@@ -79,8 +76,6 @@ export default function CompleteProfilePage() {
   if (loading) return <p>Loading...</p>
   if (error) return <p>Error loading profile</p>
 
-  // Completion logic
-  // Robust location check: true if city is a non-empty string or non-zero number, or customCity is a non-empty string
   const hasLocation =
     (typeof form.city === 'string' && form.city.trim() !== '') ||
     (typeof form.city === 'number' && form.city !== 0) ||
@@ -92,48 +87,15 @@ export default function CompleteProfilePage() {
     form.contactNumber,
     hasLocation,
     user?.profileImageUrl,
-    user?.idVerified, // Assume this is set after API verification
+    user?.idVerified,
   ]
   const completedCount = completionItems.filter(Boolean).length
   const completionPercent = Math.round(
     (completedCount / completionItems.length) * 100
   )
 
-  // Upload handlers
-  const uploadFile = async (type: 'profile', file: File) => {
-    setUploading((u) => ({ ...u, [type]: true }))
-    const endpoint = `${process.env.NEXT_PUBLIC_GRAPHQL_URL}/api/users/upload-profile-image`
-    const formData = new FormData()
-    formData.append('file', file)
-    try {
-      const res = await fetch(endpoint, {
-        method: 'POST',
-        body: formData,
-        credentials: 'include',
-      })
-      if (!res.ok) throw new Error('Upload failed')
-      toast.success('Upload successful!')
-      await refetch()
-    } catch {
-      toast.error('Upload failed')
-    } finally {
-      setUploading((u) => ({ ...u, [type]: false }))
-    }
-  }
-
-  const handleFileChange = (
-    type: 'profile',
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    uploadFile(type, file)
-  }
-
-  // ID Verification handler (placeholder)
   const handleVerifyID = async () => {
     try {
-      // Replace with your actual API call
       const res = await fetch('/api/verify-id', {
         method: 'POST',
         credentials: 'include',

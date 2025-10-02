@@ -36,8 +36,6 @@ export default function BusinessEditPage() {
 
   const user = useSelector((state: RootState) => state.userContext)
   const userContext = useSelector((state: RootState) => state.userContext)
-  // Fetch business and branding via query instead of relying on Redux state
-  // Use the shared query from lib/graphql/queries
   const businessId = userContext.businessId
   const {
     data: businessData,
@@ -51,18 +49,12 @@ export default function BusinessEditPage() {
   const business = businessData?.business
   const dispatch = useDispatch()
   const userId = user?.userId
-  // Use business owner's planType for permission logic
   const ownerPlanType = business?.owner?.planType || undefined
   const isProStore = ownerPlanType === 'PRO_STORE'
-  // If user or business is missing, fallback to query (optional)
-  // You can add logic here to query if store is empty
-
-  // Check if user can edit business details (admin or business owner)
   const canEditBusiness = business?.businessUsers?.some(
     (bu: BusinessUser) => bu.user.id === userId && bu.role === 'OWNER'
   )
 
-  // Business form state
   const [businessForm, setBusinessForm] = useState({
     name: '',
     email: '',
@@ -268,7 +260,6 @@ export default function BusinessEditPage() {
     }
 
     try {
-      // 1. Update business details if changed and allowed
       let updatedBusiness = business
       if (canEditBusiness) {
         const businessChanged =

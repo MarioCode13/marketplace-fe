@@ -17,11 +17,9 @@ export default async function Page({
 }: {
   searchParams?: NextSearchParams
 }) {
-  // Ensure searchParams is resolved and defaulted to empty object if undefined
   const resolvedParams = (await searchParams) || {}
   const client = getServerApolloClient()
 
-  // Helper function to safely get a single value from search params
   const getParamValue = (key: string): string | undefined => {
     const value = resolvedParams[key]
     return value ? (Array.isArray(value) ? value[0] : value) : undefined

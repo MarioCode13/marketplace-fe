@@ -37,19 +37,15 @@ import { buildCategoryTree, FlatCategory, formatEnum } from '@/lib/utils'
 import CityAutocomplete from '@/components/drawers/CityAutocomplete'
 
 export default function EditListingPage() {
-  // ...existing code...
-  // ...existing code...
   const router = useRouter()
   const params = useParams()
   const listingId = params?.id as string
   const userContext = useSelector((state: RootState) => state.userContext)
   const userId = userContext.userId
 
-  // Query for user's business association
   const { data: myBusinessData } = useQuery(GET_MY_BUSINESS)
   const isBusinessUser = !!myBusinessData?.myBusiness
   const businessId = myBusinessData?.myBusiness?.id
-  // Removed duplicate declarations
 
   const [uploading, setUploading] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -67,7 +63,6 @@ export default function EditListingPage() {
 
   const [images, setImages] = useState<string[]>([])
 
-  // Fetch listing data
   const {
     data: listingData,
     loading: listingLoading,
@@ -79,13 +74,11 @@ export default function EditListingPage() {
 
   const [showCustomCity, setShowCustomCity] = useState(false)
 
-  // Fetch conditions and categories
   const { data: conditionsData, loading: conditionsLoading } =
     useQuery(GET_CONDITIONS)
   const { data: categoriesData, loading: categoriesLoading } =
     useGetCategoriesQuery()
 
-  // Fetch current user data
   const { data: meData } = useQuery(GET_ME)
 
   const categoriesTree: CategoryNode[] = useMemo(() => {
@@ -97,11 +90,10 @@ export default function EditListingPage() {
 
   const [formKey, setFormKey] = useState('')
 
-  // Initialize form with listing data
+  // Initialise
   useEffect(() => {
     if (!listingData?.getListingById) return
 
-    // Only initialize if formKey is empty (not yet initialized)
     if (!formKey) {
       const listing = listingData.getListingById
 

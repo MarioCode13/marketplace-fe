@@ -9,8 +9,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-// import { useSelector } from 'react-redux' // Not used
-// import { RootState } from '@/store/store' // Not used
 
 interface ContactSellerModalProps {
   isOpen: boolean

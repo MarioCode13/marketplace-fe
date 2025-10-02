@@ -96,10 +96,6 @@ export default function SellPage() {
     setImages(images.filter((_, i) => i !== index))
   }
 
-  // const [uploadImage] = useMutation(UPLOAD_IMAGE, {
-  //   context: { headers: { Authorization: `Bearer ${token}` } },
-  // })
-
   const [createListing, { loading, error }] = useMutation(CREATE_LISTING)
 
   const handleChange = (
