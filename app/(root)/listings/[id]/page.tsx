@@ -39,7 +39,7 @@ const Page = () => {
   const [modalOpen, setModalOpen] = useState(false)
   const [markAsSoldModalOpen, setMarkAsSoldModalOpen] = useState(false)
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
-  const { user } = useSelector((state: RootState) => state.auth)
+  const user = useSelector((state: RootState) => state.userContext)
 
   const { data: meData } = useQuery(GET_ME, {
     skip: !user,
@@ -92,7 +92,7 @@ const Page = () => {
     return <p className='text-center mt-6'>Listing not found.</p>
 
   const listing = data.getListingById
-  const currentUserId = meData?.me?.id || user?.id || user?.userId
+  const currentUserId = meData?.me?.id || user?.userId
   // Check if the current user is the owner (user or business owner)
   let isOwner = false
   if (listing.user && currentUserId) {

@@ -37,25 +37,15 @@ import { buildCategoryTree, FlatCategory, formatEnum } from '@/lib/utils'
 import CityAutocomplete from '@/components/drawers/CityAutocomplete'
 
 export default function EditListingPage() {
-  // ...existing code...
-  // ...existing code...
   const router = useRouter()
   const params = useParams()
   const listingId = params?.id as string
-  const token = useSelector((state: RootState) => state.auth.token)
-  const userId = useSelector((state: RootState) => state.auth.user?.userId)
+  const userContext = useSelector((state: RootState) => state.userContext)
+  const userId = userContext.userId
 
-  // Query for user's business association
-  const { data: myBusinessData } = useQuery(GET_MY_BUSINESS, {
-    context: {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    },
-  })
+  const { data: myBusinessData } = useQuery(GET_MY_BUSINESS)
   const isBusinessUser = !!myBusinessData?.myBusiness
   const businessId = myBusinessData?.myBusiness?.id
-  // Removed duplicate declarations
 
   const [uploading, setUploading] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -73,7 +63,6 @@ export default function EditListingPage() {
 
   const [images, setImages] = useState<string[]>([])
 
-  // Fetch listing data
   const {
     data: listingData,
     loading: listingLoading,
@@ -85,33 +74,26 @@ export default function EditListingPage() {
 
   const [showCustomCity, setShowCustomCity] = useState(false)
 
-  // Fetch conditions and categories
   const { data: conditionsData, loading: conditionsLoading } =
     useQuery(GET_CONDITIONS)
   const { data: categoriesData, loading: categoriesLoading } =
     useGetCategoriesQuery()
 
-  // Fetch current user data
-  const { data: meData } = useQuery(GET_ME, {
-    skip: !token,
-  })
+  const { data: meData } = useQuery(GET_ME)
 
   const categoriesTree: CategoryNode[] = useMemo(() => {
     if (!categoriesData?.getCategories) return []
     return buildCategoryTree(categoriesData.getCategories as FlatCategory[])
   }, [categoriesData])
 
-  const [updateListing] = useMutation(UPDATE_LISTING, {
-    context: { headers: { Authorization: `Bearer ${token}` } },
-  })
+  const [updateListing] = useMutation(UPDATE_LISTING)
 
   const [formKey, setFormKey] = useState('')
 
-  // Initialize form with listing data
+  // Initialise
   useEffect(() => {
     if (!listingData?.getListingById) return
 
-    // Only initialize if formKey is empty (not yet initialized)
     if (!formKey) {
       const listing = listingData.getListingById
 
@@ -169,12 +151,23 @@ export default function EditListingPage() {
     setImages(images.filter((_, i) => i !== index))
   }
 
+  function getCookie(name: string): string | undefined {
+    const value = `; ${document.cookie}`
+    const parts = value.split(`; ${name}=`)
+    if (parts.length === 2) {
+      const part = parts.pop()
+      if (part) return part.split(';').shift()
+    }
+    return undefined
+  }
+
   const handleImageUpload = async (file: File) => {
     if (images.length >= 5) return
 
     setUploading(true)
     const formData = new FormData()
     formData.append('images', file)
+    const xsrfToken = getCookie('XSRF-TOKEN')
 
     try {
       const res = await fetch(
@@ -182,8 +175,9 @@ export default function EditListingPage() {
         {
           method: 'POST',
           body: formData,
+          credentials: 'include',
           headers: {
-            Authorization: `Bearer ${token}`,
+            ...(xsrfToken ? { 'X-XSRF-TOKEN': xsrfToken } : {}),
           },
         }
       )
@@ -231,7 +225,7 @@ export default function EditListingPage() {
     setSaving(false)
   }
 
-  if (!token) {
+  if (!userId) {
     return (
       <div className='flex min-h-screen items-center justify-center bg-background'>
         <div className='w-full max-w-md rounded-lg p-6 shadow-lg bg-componentBackground text-center'>

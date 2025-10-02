@@ -76,7 +76,6 @@ const Listings: React.FC<ListingsProps> = ({
 
   const totalPages = Math.ceil(serverListings.totalCount / itemsPerPage)
 
-  // Update query string helper
   const updateQuery = (params: Record<string, string | undefined>) => {
     const newParams = new URLSearchParams(searchParams.toString())
 
@@ -88,7 +87,6 @@ const Listings: React.FC<ListingsProps> = ({
       }
     })
 
-    // Use router.push with { forceOptimisticNavigation: true } to trigger loading state
     router.push(`/listings?${newParams.toString()}`)
   }
 
@@ -120,12 +118,10 @@ const Listings: React.FC<ListingsProps> = ({
   }
 
   const clearAllFilters = () => {
-    // Clear all filters including the page parameter
     router.replace('/listings')
   }
 
   const hasActiveFilters = [...searchParams.entries()].some(([key, value]) => {
-    // Ignore page parameter when determining if filters are active
     return key !== 'page' && value !== undefined && value !== ''
   })
 
@@ -171,32 +167,26 @@ const Listings: React.FC<ListingsProps> = ({
               {(() => {
                 const params = Object.fromEntries(searchParams.entries())
                 const filterLabels: string[] = []
-                // Category
                 if (params.categoryId && categoriesData?.getCategories) {
                   const cat = categoriesData.getCategories.find(
                     (c) => c && c.id === params.categoryId
                   )
                   if (cat) filterLabels.push(`Category: ${cat.name}`)
                 }
-                // Price
                 if (params.minPrice || params.maxPrice) {
                   let priceLabel = 'Price:'
                   if (params.minPrice) priceLabel += ` from $${params.minPrice}`
                   if (params.maxPrice) priceLabel += ` to $${params.maxPrice}`
                   filterLabels.push(priceLabel)
                 }
-                // Condition
                 if (params.condition)
                   filterLabels.push(`Condition: ${params.condition}`)
-                // City
                 if (params.customCity)
                   filterLabels.push(`City: ${params.customCity}`)
                 else if (params.cityId)
                   filterLabels.push(`City ID: ${params.cityId}`)
-                // Search term
                 if (params.searchTerm)
                   filterLabels.push(`Search: "${params.searchTerm}"`)
-                // Sort
                 if (params.sortBy)
                   filterLabels.push(`Sort by: ${params.sortBy}`)
                 if (params.sortOrder)

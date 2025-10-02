@@ -34,10 +34,8 @@ import AddTeamMember from './AddTeamMember'
 export default function BusinessEditPage() {
   const router = useRouter()
 
-  const user = useSelector((state: RootState) => state.auth.user)
+  const user = useSelector((state: RootState) => state.userContext)
   const userContext = useSelector((state: RootState) => state.userContext)
-  // Fetch business and branding via query instead of relying on Redux state
-  // Use the shared query from lib/graphql/queries
   const businessId = userContext.businessId
   const {
     data: businessData,
@@ -50,19 +48,13 @@ export default function BusinessEditPage() {
   })
   const business = businessData?.business
   const dispatch = useDispatch()
-  const userId = user?.id
-  // Use business owner's planType for permission logic
+  const userId = user?.userId
   const ownerPlanType = business?.owner?.planType || undefined
   const isProStore = ownerPlanType === 'PRO_STORE'
-  // If user or business is missing, fallback to query (optional)
-  // You can add logic here to query if store is empty
-
-  // Check if user can edit business details (admin or business owner)
   const canEditBusiness = business?.businessUsers?.some(
     (bu: BusinessUser) => bu.user.id === userId && bu.role === 'OWNER'
   )
 
-  // Business form state
   const [businessForm, setBusinessForm] = useState({
     name: '',
     email: '',
@@ -206,14 +198,13 @@ export default function BusinessEditPage() {
       setUploadLogoError(null)
       const formData = new FormData()
       formData.append('image', e.target.files[0])
-      const token = localStorage.getItem('token')
       try {
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_GRAPHQL_URL}/api/store/upload-logo`,
           {
             method: 'POST',
-            headers: { Authorization: `Bearer ${token}` },
             body: formData,
+            credentials: 'include', // Send cookies for authentication
           }
         )
         if (!res.ok) throw new Error('Failed to upload logo')
@@ -233,14 +224,13 @@ export default function BusinessEditPage() {
       setUploadBannerError(null)
       const formData = new FormData()
       formData.append('image', e.target.files[0])
-      const token = localStorage.getItem('token')
       try {
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_GRAPHQL_URL}/api/store/upload-banner`,
           {
             method: 'POST',
-            headers: { Authorization: `Bearer ${token}` },
             body: formData,
+            credentials: 'include', // Send cookies for authentication
           }
         )
         if (!res.ok) throw new Error('Failed to upload banner')
@@ -270,7 +260,6 @@ export default function BusinessEditPage() {
     }
 
     try {
-      // 1. Update business details if changed and allowed
       let updatedBusiness = business
       if (canEditBusiness) {
         const businessChanged =

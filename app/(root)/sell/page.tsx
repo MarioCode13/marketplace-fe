@@ -70,8 +70,8 @@ const GET_CONDITIONS = gql`
 
 export default function SellPage() {
   const router = useRouter()
-  const token = useSelector((state: RootState) => state.auth.token)
-  const userId = useSelector((state: RootState) => state.auth.user?.userId)
+  const userContext = useSelector((state: RootState) => state.userContext)
+  const userId = userContext.userId
   const { data } = useQuery(GET_ME)
   const user = data?.me
   const [uploading, setUploading] = useState(false)
@@ -96,13 +96,7 @@ export default function SellPage() {
     setImages(images.filter((_, i) => i !== index))
   }
 
-  // const [uploadImage] = useMutation(UPLOAD_IMAGE, {
-  //   context: { headers: { Authorization: `Bearer ${token}` } },
-  // })
-
-  const [createListing, { loading, error }] = useMutation(CREATE_LISTING, {
-    context: { headers: { Authorization: `Bearer ${token}` } },
-  })
+  const [createListing, { loading, error }] = useMutation(CREATE_LISTING)
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -125,9 +119,7 @@ export default function SellPage() {
         {
           method: 'POST',
           body: formData,
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          credentials: 'include',
         }
       )
 
@@ -192,7 +184,7 @@ export default function SellPage() {
     return buildCategoryTree(categoriesData.getCategories as FlatCategory[])
   }, [categoriesData])
 
-  if (!token) {
+  if (!userId) {
     return (
       <div className='flex min-h-screen items-center justify-center bg-background'>
         <div className='w-full max-w-md rounded-lg p-6 shadow-lg bg-componentBackground text-center'>

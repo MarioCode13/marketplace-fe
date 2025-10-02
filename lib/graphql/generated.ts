@@ -1152,7 +1152,7 @@ export type GetBusinessBySlugQueryVariables = Exact<{
 }>;
 
 
-export type GetBusinessBySlugQuery = { __typename?: 'Query', getBusinessBySlug?: { __typename?: 'Business', id: string, name: string, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, postalCode?: string | null, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, lightOrDark?: string | null, primaryColor?: string | null, secondaryColor?: string | null, about?: string | null, storeName?: string | null, backgroundColor?: string | null, textColor?: string | null, cardTextColor?: string | null } | null, businessUsers: Array<{ __typename?: 'BusinessUser', id: string, role: BusinessUserRole, user: { __typename?: 'User', id: string, username: string, email: string, profileImageUrl?: string | null, planType?: PlanType | null, trustRating?: { __typename?: 'TrustRating', starRating: number, trustLevel: string, overallScore: number, totalReviews: number, totalTransactions: number, successfulTransactions: number } | null } }> } | null };
+export type GetBusinessBySlugQuery = { __typename?: 'Query', getBusinessBySlug?: { __typename?: 'Business', id: string, name: string, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, postalCode?: string | null, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, trustRating?: { __typename?: 'BusinessTrustRating', averageRating: number, reviewCount: number } | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, lightOrDark?: string | null, primaryColor?: string | null, secondaryColor?: string | null, about?: string | null, storeName?: string | null, backgroundColor?: string | null, textColor?: string | null, cardTextColor?: string | null } | null, businessUsers: Array<{ __typename?: 'BusinessUser', id: string, role: BusinessUserRole, user: { __typename?: 'User', id: string, username: string, email: string, profileImageUrl?: string | null, planType?: PlanType | null, trustRating?: { __typename?: 'TrustRating', starRating: number, trustLevel: string, overallScore: number, totalReviews: number, totalTransactions: number, successfulTransactions: number } | null } }> } | null };
 
 export type BusinessTrustRatingQueryVariables = Exact<{
   businessId: Scalars['ID']['input'];
@@ -1201,7 +1201,7 @@ export type MeQuery = { __typename?: 'Query', me?: { __typename?: 'User', id: st
 export type GetMyBusinessQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetMyBusinessQuery = { __typename?: 'Query', myBusiness?: { __typename?: 'Business', id: string, slug?: string | null, name: string, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, postalCode?: string | null, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, primaryColor?: string | null, secondaryColor?: string | null, lightOrDark?: string | null, about?: string | null, storeName?: string | null, textColor?: string | null, cardTextColor?: string | null, backgroundColor?: string | null } | null, businessUsers: Array<{ __typename?: 'BusinessUser', id: string, role: BusinessUserRole, user: { __typename?: 'User', id: string, planType?: PlanType | null, username: string, email: string, profileImageUrl?: string | null } }> } | null };
+export type GetMyBusinessQuery = { __typename?: 'Query', myBusiness?: { __typename?: 'Business', id: string, slug?: string | null, name: string, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, planType?: PlanType | null, postalCode?: string | null, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, primaryColor?: string | null, secondaryColor?: string | null, lightOrDark?: string | null, about?: string | null, storeName?: string | null, textColor?: string | null, cardTextColor?: string | null, backgroundColor?: string | null } | null, businessUsers: Array<{ __typename?: 'BusinessUser', id: string, role: BusinessUserRole, user: { __typename?: 'User', id: string, planType?: PlanType | null, username: string, email: string, profileImageUrl?: string | null } }> } | null };
 
 export type GetNotificationsQueryVariables = Exact<{
   userId: Scalars['ID']['input'];
@@ -1361,14 +1361,6 @@ export type SearchCitiesQueryVariables = Exact<{
 
 
 export type SearchCitiesQuery = { __typename?: 'Query', searchCities: Array<{ __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', id: string, name: string, country: { __typename?: 'Country', id: string, name: string, code: string } } }> };
-
-export type LoginMutationVariables = Exact<{
-  emailOrUsername: Scalars['String']['input'];
-  password: Scalars['String']['input'];
-}>;
-
-
-export type LoginMutation = { __typename?: 'Mutation', login: { __typename?: 'AuthResponse', token: string, email: string, role?: string | null, userId: string } };
 
 
 export const CompleteProfileDocument = gql`
@@ -2464,6 +2456,10 @@ export const GetBusinessBySlugDocument = gql`
         }
       }
     }
+    trustRating {
+      averageRating
+      reviewCount
+    }
     storeBranding {
       logoUrl
       bannerUrl
@@ -2876,6 +2872,7 @@ export const GetMyBusinessDocument = gql`
     contactNumber
     addressLine1
     addressLine2
+    planType
     city {
       id
       name
@@ -4444,40 +4441,3 @@ export type SearchCitiesQueryHookResult = ReturnType<typeof useSearchCitiesQuery
 export type SearchCitiesLazyQueryHookResult = ReturnType<typeof useSearchCitiesLazyQuery>;
 export type SearchCitiesSuspenseQueryHookResult = ReturnType<typeof useSearchCitiesSuspenseQuery>;
 export type SearchCitiesQueryResult = Apollo.QueryResult<SearchCitiesQuery, SearchCitiesQueryVariables>;
-export const LoginDocument = gql`
-    mutation Login($emailOrUsername: String!, $password: String!) {
-  login(emailOrUsername: $emailOrUsername, password: $password) {
-    token
-    email
-    role
-    userId
-  }
-}
-    `;
-export type LoginMutationFn = Apollo.MutationFunction<LoginMutation, LoginMutationVariables>;
-
-/**
- * __useLoginMutation__
- *
- * To run a mutation, you first call `useLoginMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useLoginMutation` returns a tuple that includes:
- * - A mutate function that you can call at any time to execute the mutation
- * - An object with fields that represent the current status of the mutation's execution
- *
- * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
- *
- * @example
- * const [loginMutation, { data, loading, error }] = useLoginMutation({
- *   variables: {
- *      emailOrUsername: // value for 'emailOrUsername'
- *      password: // value for 'password'
- *   },
- * });
- */
-export function useLoginMutation(baseOptions?: Apollo.MutationHookOptions<LoginMutation, LoginMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<LoginMutation, LoginMutationVariables>(LoginDocument, options);
-      }
-export type LoginMutationHookResult = ReturnType<typeof useLoginMutation>;
-export type LoginMutationResult = Apollo.MutationResult<LoginMutation>;
-export type LoginMutationOptions = Apollo.BaseMutationOptions<LoginMutation, LoginMutationVariables>;

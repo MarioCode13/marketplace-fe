@@ -9,8 +9,6 @@ import Image from 'next/image'
 import {
   GET_TRUST_RATING,
   GET_USER_REVIEWS,
-  // GET_USER_POSITIVE_REVIEWS,
-  // GET_USER_NEGATIVE_REVIEWS,
   GET_USER_AVERAGE_RATING,
   GET_USER_REVIEW_COUNT,
   GET_USER_POSITIVE_REVIEW_COUNT,
@@ -42,16 +40,6 @@ export default function TrustProfile({ userId, user }: TrustProfileProps) {
       skip: !userId,
     }
   )
-
-  // const { data: positiveReviewsData } = useQuery(GET_USER_POSITIVE_REVIEWS, {
-  //   variables: { userId },
-  //   skip: !userId,
-  // })
-
-  // const { data: negativeReviewsData } = useQuery(GET_USER_NEGATIVE_REVIEWS, {
-  //   variables: { userId },
-  //   skip: !userId,
-  // })
 
   const { data: averageRatingData } = useQuery(GET_USER_AVERAGE_RATING, {
     variables: { userId },

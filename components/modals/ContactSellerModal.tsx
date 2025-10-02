@@ -9,8 +9,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import { useSelector } from 'react-redux'
-import { RootState } from '@/store/store'
 
 interface ContactSellerModalProps {
   isOpen: boolean
@@ -30,7 +28,7 @@ const ContactSellerModal = ({
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
-  const token = useSelector((state: RootState) => state.auth.token)
+  // const userContext = useSelector((state: RootState) => state.userContext) // Not used
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -44,9 +42,9 @@ const ContactSellerModal = ({
         {
           method: 'POST',
           headers: {
-            Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
+          credentials: 'include',
           body: JSON.stringify({
             to: sellerEmail,
             subject: `Inquiry about your listing`,

@@ -16,7 +16,8 @@ const GET_ALL_USERS = gql`
 
 export default function UserList() {
   const { loading, error, data } = useQuery(GET_ALL_USERS)
-  const loggedIn = useSelector((state: RootState) => state.auth.token)
+  const userContext = useSelector((state: RootState) => state.userContext)
+  const loggedIn = !!userContext.userId
   if (loading) return <p>Loading...</p>
   if (error) return <p>Error: {error.message}</p>
 

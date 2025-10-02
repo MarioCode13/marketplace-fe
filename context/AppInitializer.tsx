@@ -1,43 +1,49 @@
 // context/AppInitializer.tsx
 'use client'
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useDispatch } from 'react-redux'
 import {
   refetchUserProfile,
   refetchBusinessContext,
 } from '@/store/userContextSlice'
-import { fetchUserProfile } from '@/store/authSlice'
 
 import { AppDispatch } from '@/store/store'
 
 export default function AppInitializer() {
   const dispatch = useDispatch<AppDispatch>()
-  // Removed unused getMyBusiness
 
   useEffect(() => {
-    const token =
-      typeof window !== 'undefined' ? localStorage.getItem('token') : null
-    console.log('[AppInitializer] Token in localStorage:', token)
-    if (token) {
-      dispatch(fetchUserProfile()).then((authResult) => {
-        console.log('[AppInitializer] fetchUserProfile result:', authResult)
-        dispatch(refetchUserProfile()).then((result) => {
-          console.log('[AppInitializer] refetchUserProfile result:', result)
-          if (refetchUserProfile.fulfilled.match(result)) {
-            dispatch(refetchBusinessContext()).then((bizResult) => {
-              console.log(
-                '[AppInitializer] refetchBusinessContext result:',
-                bizResult
-              )
-            })
-          }
-        })
-      })
-    } else {
-      console.log(
-        '[AppInitializer] No token found, skipping context population.'
-      )
+    // Prevent infinite loop after redirect by using localStorage
+    if (
+      typeof window !== 'undefined' &&
+      localStorage.getItem('loggedOut') === 'true'
+    ) {
+      localStorage.removeItem('loggedOut')
+      return
     }
+    dispatch(refetchUserProfile()).then((result) => {
+      console.log('[AppInitializer] refetchUserProfile result:', result)
+      if (
+        refetchUserProfile.fulfilled.match(result) &&
+        result.payload &&
+        result.payload.id
+      ) {
+        // Only refetch business context if user is authenticated
+        dispatch(refetchBusinessContext()).then((bizResult) => {
+          console.log(
+            '[AppInitializer] refetchBusinessContext result:',
+            bizResult
+          )
+        })
+      } else {
+        // Always clear state if not authenticated
+        dispatch({ type: 'userContext/logout' })
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('loggedOut', 'true')
+          window.location.href = '/'
+        }
+      }
+    })
   }, [dispatch])
 
   return null

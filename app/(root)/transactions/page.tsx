@@ -56,9 +56,7 @@ export default function TransactionsPage() {
   const handleReviewClick = async (transaction: Transaction) => {
     setSelectedTransaction(transaction)
 
-    // Check if user already reviewed this transaction
     try {
-      // For now, we'll assume no existing review
       setExistingReview(null)
     } catch {
       setExistingReview(null)
@@ -68,7 +66,6 @@ export default function TransactionsPage() {
   }
 
   const handleReviewSubmitted = () => {
-    // Refetch data to show updated review status
     window.location.reload()
   }
 

@@ -11,16 +11,13 @@ function createApolloClient(initialState = {}) {
     fetch,
   })
 
+  // No longer set Authorization header from localStorage token
   const authLink = setContext((_, { headers }) => {
-    let token = null
-    if (typeof window !== 'undefined') {
-      token = localStorage.getItem('token')
-    }
     return {
       headers: {
         ...headers,
-        Authorization: token ? `Bearer ${token}` : '',
       },
+      credentials: 'include', // Ensure cookies are sent
     }
   })
 

@@ -32,18 +32,23 @@ import {
   buildCategoryTree,
   FlatCategory,
 } from '@/lib/utils'
+import { Star } from 'lucide-react'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 
 export default function ProStoreRoute() {
   const params = useParams()
   const router = useRouter()
   const slug = params?.storeSlug as string
 
-  // Current user
-  const currentUser = useSelector((state: RootState) => state.auth.user)
-  const currentUserId = currentUser?.userId || currentUser?.id
-  console.log('Redux user object:', currentUser)
+  const userContext = useSelector((state: RootState) => state.userContext)
+  const currentUserId = userContext.userId
+  console.log('Redux user object:', userContext)
 
-  // Business data
   const { data, loading, error } = useGetBusinessBySlugQuery({
     variables: { slug },
     skip: !slug,
@@ -53,7 +58,6 @@ export default function ProStoreRoute() {
     business?.businessUsers?.[0]?.user?.planType === 'PRO_STORE'
   const branding = business?.storeBranding
 
-  // Show owner controls for any user associated with the business
   const isStoreUser =
     currentUserId &&
     business?.businessUsers?.some((bu) => {
@@ -126,9 +130,8 @@ export default function ProStoreRoute() {
   // Business details
   const bannerUrl = branding?.bannerUrl
   const logoUrl = branding?.logoUrl
-  const trustRating =
-    business?.businessUsers?.[0]?.user?.trustRating?.starRating?.toFixed(1)
-  const trustLevel = business?.businessUsers?.[0]?.user?.trustRating?.trustLevel
+  // Use the business's real trust rating
+  const trustRating = business?.trustRating?.averageRating.toFixed(1)
   const about = branding?.about
   const storeName =
     branding?.storeName ||
@@ -249,25 +252,71 @@ export default function ProStoreRoute() {
               </p>
             )}
             <div className='mt-2 flex items-center gap-2'>
-              {trustRating && (
-                <span
-                  className='font-semibold'
-                  style={{ color: secondaryColor }}
-                >
-                  ★ {trustRating}
-                </span>
+              {trustRating !== undefined && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className='flex items-center gap-1 cursor-pointer'>
+                        {(() => {
+                          const rating = Number(trustRating) || 0
+                          return [1, 2, 3, 4, 5].map((star) => {
+                            if (rating >= star) {
+                              return (
+                                <Star
+                                  key={star}
+                                  className='w-4 h-4 text-yellow-400 fill-yellow-400 stroke-yellow-400'
+                                />
+                              )
+                            } else if (rating >= star - 0.75) {
+                              return (
+                                <span
+                                  key={star}
+                                  style={{
+                                    position: 'relative',
+                                    display: 'inline-block',
+                                    width: '1em',
+                                    height: '1em',
+                                  }}
+                                >
+                                  <Star
+                                    className='w-4 h-4 text-yellow-400'
+                                    style={{
+                                      position: 'absolute',
+                                      left: 0,
+                                      top: 0,
+                                    }}
+                                  />
+                                  <Star
+                                    className='w-4 h-4 text-yellow-400 fill-yellow-400 stroke-yellow-400'
+                                    style={{
+                                      position: 'absolute',
+                                      left: 0,
+                                      top: 0,
+                                      clipPath:
+                                        'polygon(0 0, 50% 0, 50% 100%, 0 100%)',
+                                    }}
+                                  />
+                                </span>
+                              )
+                            } else {
+                              return (
+                                <Star
+                                  key={star}
+                                  className='w-4 h-4 text-gray-300'
+                                />
+                              )
+                            }
+                          })
+                        })()}
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side='top'>
+                      <p>{trustRating}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               )}
-              {trustLevel && (
-                <span
-                  className='text-xs px-2 py-1 rounded'
-                  style={{
-                    backgroundColor: secondaryColor,
-                    color: getTextColor(secondaryColor),
-                  }}
-                >
-                  {trustLevel}
-                </span>
-              )}
+
               {badgeLabel && (
                 <span
                   className='text-xs px-2 py-1 rounded ml-2 '

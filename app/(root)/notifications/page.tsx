@@ -31,11 +31,10 @@ interface Notification {
 export default function NotificationsPage() {
   const router = useRouter()
   const [processingId, setProcessingId] = useState<string | null>(null)
-  const token = useSelector((state: RootState) => state.auth.token)
+  const userContext = useSelector((state: RootState) => state.userContext)
+  const userId = userContext.userId
 
-  const { data: meData } = useQuery(GET_ME, {
-    skip: !token,
-  })
+  const { data: meData } = useQuery(GET_ME)
 
   const {
     data: notificationsData,
@@ -43,7 +42,7 @@ export default function NotificationsPage() {
     refetch,
   } = useQuery(GET_NOTIFICATIONS, {
     variables: { userId: meData?.me?.id },
-    skip: !token || !meData?.me?.id,
+    skip: !userId || !meData?.me?.id,
     fetchPolicy: 'cache-and-network',
   })
 
@@ -76,7 +75,7 @@ export default function NotificationsPage() {
     },
   })
 
-  if (!token) {
+  if (!userId) {
     router.push('/login')
     return null
   }

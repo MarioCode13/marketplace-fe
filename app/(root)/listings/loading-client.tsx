@@ -19,25 +19,19 @@ export default function ClientLoadingWrapper({
   }, [pathname, searchParams])
 
   useEffect(() => {
-    // Add global click listener for pagination and filter actions
     const handleClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement
-
-      // Check for pagination buttons
       const paginationButton = target.closest('button[data-pagination]')
       if (paginationButton && !paginationButton.hasAttribute('disabled')) {
         setIsNavigating(true)
         return
       }
-
-      // Check for filter actions
       const filterActionButton = target.closest('button[data-filter-action]')
       if (filterActionButton && !filterActionButton.hasAttribute('disabled')) {
         setIsNavigating(true)
         return
       }
 
-      // Check for Apply Filters button in the drawer
       const applyButton = target.closest('button')
       if (
         applyButton?.getAttribute('type') === 'submit' &&

@@ -103,18 +103,14 @@ const tiers = [
 
 export default function SubscriptionsPage() {
   const [loadingTier, setLoadingTier] = useState<string | null>(null)
-  const JWT = useSelector((state: RootState) => state.auth.token)
   const userContext = useSelector((state: RootState) => state.userContext)
   const userEmail = userContext.email || ''
-  const isLoggedIn = !!JWT && !!userContext.userId
-  // Get user's planType (personal) and business planType (if business user)
+  const isLoggedIn = !!userContext.userId
   const userPlanType = userContext.planType || ''
   const businessPlanType = userContext.business?.planType || ''
 
   const handleSubscribe = async (tier: (typeof tiers)[0]) => {
-    // Free plan doesn't require payment
     if (tier.name === 'Free User') {
-      // Handle free plan selection (redirect to registration or account setup)
       return
     }
 
@@ -151,9 +147,6 @@ export default function SubscriptionsPage() {
         }/api/payments/payfast/subscription-url?${params.toString()}`,
         {
           credentials: 'include',
-          headers: {
-            Authorization: `Bearer ${JWT}`,
-          },
         }
       )
       const url = await res.text()
@@ -211,7 +204,6 @@ export default function SubscriptionsPage() {
             (tierPlanType || '').toUpperCase()
           )
           console.log('Is Logged In: ', isLoggedIn)
-          console.log('JWT:', JWT, 'userContext:', userContext)
 
           // Button and tooltip logic
           let isDisabled = false

@@ -14,7 +14,7 @@ export default function ProfileSubscriptionsPage() {
   const subscription = data?.me?.subscription
   const userId = data?.me?.id
 
-  // Determine if user is OWNER or MANAGER on the business
+  // Check if user is OWNER or MANAGER of business
   let canManageSubscription = false
   const business = businessData?.myBusiness
   if (business && business.businessUsers) {

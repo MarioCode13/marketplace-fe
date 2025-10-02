@@ -5,10 +5,9 @@ import { ChangeEvent, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useDispatch } from 'react-redux'
 import { useSelector } from 'react-redux'
-import { AppDispatch } from '@/store/store'
-import { RootState } from '@/store/store'
-import { logout } from '@/store/authSlice'
+import { AppDispatch, RootState } from '@/store/store'
 import {
+  logoutUser,
   updateUserProfileImage,
   refetchUserProfile,
 } from '@/store/userContextSlice'
@@ -54,11 +53,10 @@ export default function Profile() {
   const [editing, setEditing] = useState(false)
   const [hovered, setHovered] = useState(false)
   const dispatch = useDispatch<AppDispatch>()
-  // Use Redux selectors for user and business context
-  const user = useSelector((state: RootState) => state.auth.user)
+  const user = useSelector((state: RootState) => state.userContext)
   const userContext = useSelector((state: RootState) => state.userContext)
   const business = userContext.business
-  const userId = userContext.userId || user?.id
+  const userId = userContext.userId
   const profileComplete = user?.profileCompletion?.complete || false
   const businessId = userContext.businessId || business?.id
   const [updateProfile] = useMutation(UPDATE_PROFILE)
@@ -102,33 +100,34 @@ export default function Profile() {
   }
 
   const handleLogout = () => {
-    dispatch(logout())
-    router.push('/')
+    dispatch(logoutUser())
   }
 
-  // Debug logging for business/user context and trust rating queries
-  // console.log('userContext:', userContext)
-  // console.log('business:', business)
-  // console.log('businessId:', businessId)
-  // console.log('businessTrustData:', businessTrustData)
-  // console.log('businessTrustLoading:', businessTrustLoading)
-  // console.log('trustData:', trustData)
-  // console.log('trustLoading:', trustLoading)
+  function getCookie(name: string): string | undefined {
+    const value = `; ${document.cookie}`
+    const parts = value.split(`; ${name}=`)
+    if (parts.length === 2) {
+      const part = parts.pop()
+      if (part) return part.split(';').shift()
+    }
+    return undefined
+  }
 
   const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.length) return
     const file = e.target.files[0]
     const formData = new FormData()
     formData.append('file', file)
+    const xsrfToken = getCookie('XSRF-TOKEN')
     try {
-      const token = localStorage.getItem('token')
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_GRAPHQL_URL}/api/users/upload-profile-image`,
         {
           method: 'POST',
           body: formData,
+          credentials: 'include', // Send cookies for authentication
           headers: {
-            Authorization: `Bearer ${token}`,
+            ...(xsrfToken ? { 'X-XSRF-TOKEN': xsrfToken } : {}),
           },
         }
       )
@@ -137,8 +136,8 @@ export default function Profile() {
         // Get image URL from response
         const url = await response.text()
         toast.success('Profile image updated!')
-        if (user?.id) {
-          dispatch(updateUserProfileImage({ userId: user.id, url }))
+        if (userId) {
+          dispatch(updateUserProfileImage({ userId: userId, url }))
         }
       } else {
         toast.dismiss()

@@ -2,9 +2,8 @@
 
 import Link from 'next/link'
 import { useSelector, useDispatch } from 'react-redux'
-import { RootState } from '@/store/store'
-import { logout } from '@/store/authSlice'
-import { useRouter } from 'next/navigation'
+import { RootState, AppDispatch } from '@/store/store'
+import { logoutUser, selectIsLoggedIn } from '@/store/userContextSlice'
 import Image from 'next/image'
 import { useTheme } from '@/context/ThemeContext'
 import { Menu as MenuIcon, Moon, SunMedium, User } from 'lucide-react'
@@ -20,33 +19,32 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useGetMyBusinessQuery } from '@/lib/graphql/generated'
-import { useApolloClient, useQuery } from '@apollo/client'
+import { useQuery } from '@apollo/client'
 import { GET_ME } from '@/lib/graphql/queries/getMe'
 
 export default function Navbar() {
-  const dispatch = useDispatch()
-  const router = useRouter()
-  const client = useApolloClient()
-  const token = useSelector((state: RootState) => state.auth.token)
+  const dispatch = useDispatch<AppDispatch>()
+
+  const isLoggedIn = useSelector(selectIsLoggedIn)
+  const user = useSelector((state: RootState) => state.userContext)
   const { theme, setTheme } = useTheme()
   const { data, loading } = useQuery(GET_ME, {
-    skip: !token,
+    skip: !isLoggedIn,
     fetchPolicy: 'no-cache',
   })
   const { data: businessData } = useGetMyBusinessQuery({
-    skip: !token,
+    skip: !isLoggedIn,
   })
 
   const profileImageUrl = data?.me?.profileImageUrl
-  const user = data?.me
+  // const user = data?.me
   const isStoreUser =
     user?.planType === 'RESELLER' || user?.planType === 'PRO_STORE'
   const [drawerOpen, setDrawerOpen] = useState(false)
 
-  const handleLogout = () => {
-    dispatch(logout())
-    client.clearStore()
-    router.push('/')
+  const handleLogout = async () => {
+    console.log('Dispatching logoutUser')
+    await dispatch(logoutUser())
   }
 
   return (
@@ -78,7 +76,7 @@ export default function Navbar() {
               Browse
             </Link>
           </li>
-          {isStoreUser && businessData?.myBusiness ? (
+          {isLoggedIn && isStoreUser && businessData?.myBusiness ? (
             <li>
               <Link
                 href={
@@ -102,7 +100,7 @@ export default function Navbar() {
             </li>
           ) : null}
 
-          {token && (
+          {isLoggedIn && (
             <>
               <li>
                 <Link
@@ -150,7 +148,7 @@ export default function Navbar() {
           </Button>
 
           {/* Notifications - only show for logged in users */}
-          {token && <NotificationDropdown />}
+          {isLoggedIn && <NotificationDropdown />}
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -160,7 +158,7 @@ export default function Navbar() {
                 size='icon'
                 className='rounded-full w-12 h-12'
               >
-                {!token ? (
+                {!isLoggedIn ? (
                   <User className='w-6 h-6' />
                 ) : loading ? (
                   <div className='w-6 h-6 bg-gray-300 rounded-full animate-pulse' />
@@ -182,7 +180,7 @@ export default function Navbar() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align='end'>
-              {token ? (
+              {isLoggedIn ? (
                 <>
                   <DropdownMenuItem asChild>
                     <Link href='/profile'>Profile</Link>
@@ -216,7 +214,7 @@ export default function Navbar() {
       >
         <div className='flex flex-col gap-6 mt-2'>
           {/* Profile Image Link (only if logged in) */}
-          {token && (
+          {isLoggedIn && (
             <Link
               href='/profile'
               onClick={() => setDrawerOpen(false)}
@@ -254,7 +252,7 @@ export default function Navbar() {
                   href={
                     user.planType === 'PRO_STORE'
                       ? `/${businessData?.myBusiness?.slug}`
-                      : `/store/${businessData?.myBusiness?.id || user.id}`
+                      : `/store/${businessData?.myBusiness?.id}`
                   }
                   onClick={() => setDrawerOpen(false)}
                   className='hover:text-primary transition'
@@ -263,7 +261,7 @@ export default function Navbar() {
                 </Link>
               </li>
             )}
-            {token && (
+            {isLoggedIn && (
               <>
                 <li>
                   <Link
@@ -297,7 +295,7 @@ export default function Navbar() {
                 <SunMedium className='w-5 h-5' />
               )}
             </Button>
-            {token ? (
+            {isLoggedIn ? (
               <Button
                 onClick={() => {
                   setDrawerOpen(false)
