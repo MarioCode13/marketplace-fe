@@ -25,15 +25,28 @@ function createApolloClient(initialState = {}) {
     fetch,
   })
 
+  // Add CSRF token to requests
   const authLink = setContext((_, { headers }) => {
-    const token =
-      typeof window !== 'undefined' ? localStorage.getItem('token') : null
+    // Get CSRF token from cookie
+    function getCookie(name: string): string | undefined {
+      if (typeof window === 'undefined') return undefined
+      const value = `; ${document.cookie}`
+      const parts = value.split(`; ${name}=`)
+      if (parts.length === 2) {
+        const part = parts.pop()
+        if (part) return part.split(';').shift()
+      }
+      return undefined
+    }
+
+    const xsrfToken = getCookie('XSRF-TOKEN')
+    
     return {
       headers: {
         ...headers,
-        Authorization: token ? `Bearer ${token}` : '',
+        ...(xsrfToken && { 'X-XSRF-TOKEN': xsrfToken }),
       },
-      credentials: 'include', // If you still need cookies
+      credentials: 'include', // Ensure cookies are sent
     }
   })
 

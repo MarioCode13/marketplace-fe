@@ -39,9 +39,9 @@ export default function ProStoreRoute() {
   const slug = params?.storeSlug as string
 
   // Current user
-  const currentUser = useSelector((state: RootState) => state.auth.user)
-  const currentUserId = currentUser?.userId || currentUser?.id
-  console.log('Redux user object:', currentUser)
+  const userContext = useSelector((state: RootState) => state.userContext)
+  const currentUserId = userContext.userId
+  console.log('Redux user object:', userContext)
 
   // Business data
   const { data, loading, error } = useGetBusinessBySlugQuery({

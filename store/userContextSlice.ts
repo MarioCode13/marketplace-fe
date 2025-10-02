@@ -4,6 +4,102 @@ import { GET_ME } from '@/lib/graphql/queries/getMe'
 import { GET_MY_BUSINESS } from '@/lib/graphql/queries/getMyBusiness'
 import { Business } from '@/lib/graphql/generated'
 import { MeQuery } from '@/lib/graphql/generated'
+
+// Thunk to handle login flow
+export const loginUser = createAsyncThunk(
+	'userContext/loginUser',
+	async (form: { emailOrUsername: string; password: string }, { dispatch, rejectWithValue }) => {
+		try {
+			// Call login API
+			const res = await fetch(
+				`${process.env.NEXT_PUBLIC_GRAPHQL_URL}/api/auth/login`,
+				{
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify(form),
+					credentials: 'include',
+				}
+			)
+			if (!res.ok) throw new Error('Login failed')
+			
+			// After login, call /api/csrf to set CSRF token cookie
+			const csrfRes = await fetch(`${process.env.NEXT_PUBLIC_GRAPHQL_URL}/api/csrf`, {
+				credentials: 'include',
+				method: 'GET'
+			})
+			
+			if (csrfRes.ok) {
+				const csrfToken = await csrfRes.text()
+				console.log('CSRF token received:', csrfToken)
+				console.log('CSRF token cookie should be set now')
+			} else {
+				console.warn('Failed to get CSRF token')
+			}
+
+			// Refetch user profile and business context
+			await dispatch(refetchUserProfile())
+			await dispatch(refetchBusinessContext())
+			return 'success'
+		} catch (err) {
+			const errorMsg = err instanceof Error ? err.message : 'Login failed. Please try again.'
+			return rejectWithValue(errorMsg)
+		}
+	}
+)
+
+
+
+// Thunk to handle logout flow
+export const logoutUser = createAsyncThunk(
+	'userContext/logoutUser',
+	async (_, { dispatch, getState }) => {
+		function getCookie(name: string): string | undefined {
+			const value = `; ${document.cookie}`
+			const parts = value.split(`; ${name}=`)
+			if (parts.length === 2) {
+				const part = parts.pop()
+				if (part) return part.split(';').shift()
+			}
+			return undefined
+		}
+		const xsrfToken = getCookie('XSRF-TOKEN')
+		const state = getState() as { userContext: { userId: string | null } }
+		const isLoggedIn = !!state.userContext.userId
+		const client = getApolloClient()
+		console.log('LOGGING OUT')
+
+		if (!isLoggedIn) {
+			console.log('Not logged in or no CSRF token, clearing state and redirecting')
+			console.log('isLoggedIn:', isLoggedIn, 'xsrfToken:', xsrfToken)
+
+			// If not logged in or no CSRF token, just clear state and redirect
+			dispatch(logout())
+			await client.clearStore()
+			window.location.href = '/login'
+			return
+		}
+
+		const headers: HeadersInit = { 'Content-Type': 'application/json' }
+		if (xsrfToken) {
+			headers['X-XSRF-TOKEN'] = xsrfToken
+		}
+		const res = await fetch('/api/logout', {
+			method: 'POST',
+			credentials: 'include',
+			headers,
+		})
+		if (res.ok) {
+			dispatch(logout())
+			await client.clearStore()
+			window.location.href = '/login'
+		} else {
+			alert('Logout failed')
+		}
+	}
+)
+
+export const selectIsLoggedIn = (state: { userContext: { userId: string | null } }) => !!state.userContext.userId
+
 // Thunk to refetch user profile and update userContext
 export const refetchUserProfile = createAsyncThunk(
 	'userContext/refetchUserProfile',
@@ -15,23 +111,27 @@ export const refetchUserProfile = createAsyncThunk(
 				fetchPolicy: 'network-only',
 			})
 			console.log('[refetchUserProfile] GET_ME result:', data)
-			if (data?.me) {
+			if (data?.me && data.me.id) {
 				// Populate all user fields from GET_ME result
 				const userContextPayload: Partial<UserContextState> = {
-					userId: data.me.id ?? null,
+					userId: data.me.id,
 					username: data.me.username ?? null,
 					role: (data.me.role as UserRole) ?? null,
 					profileImageUrl: data.me.profileImageUrl ?? null,
 					email: data.me.email ?? null,
 					planType: data.me.planType ?? null,
+					// Add any other fields needed for UI/permissions
 				}
-				// Only set isBusinessOwner based on role
 				userContextPayload.isBusinessOwner = data.me.role === 'OWNER' || data.me.role === 'ADMIN'
-				console.log('[refetchUserProfile] Dispatching setUserContext:', userContextPayload)
+				userContextPayload.canEditListing = true // or your logic
+				userContextPayload.canViewBusinessTransactions = true // or your logic
+				console.log('[refetchUserProfile] [LOGIN PERSISTENCE] Dispatching setUserContext:', userContextPayload)
 				dispatch(setUserContext(userContextPayload))
 				return data.me
 			} else {
-				console.log('[refetchUserProfile] No user data returned')
+				// Only clear context if GET_ME returns null or missing id
+				console.log('[refetchUserProfile] [LOGIN PERSISTENCE] No user data returned, clearing user context')
+				dispatch(clearUserContext())
 				return rejectWithValue('Failed to fetch user profile')
 			}
 		} catch (error: unknown) {
@@ -58,7 +158,7 @@ export const refetchBusinessContext = createAsyncThunk(
 			const business = data?.myBusiness
 			if (business) {
 				const state = getState() as import('@/store/store').RootState
-				const currentUserId = state?.auth?.user?.id
+				const currentUserId = state?.userContext?.userId
 				// Merge with existing user context
 				const prevUserContext = state?.userContext || {}
 				let isBusinessUser = false
@@ -98,11 +198,7 @@ export const refetchBusinessContext = createAsyncThunk(
 				// Clear business context if not found
 				console.log('[refetchBusinessContext] No business found, clearing context')
 				dispatch(setUserContext({
-					business: null,
-					businessId: null,
-					businessName: null,
-					isBusinessUser: false,
-					isBusinessOwner: false,
+					...initialState
 				}))
 				return null
 			}
@@ -162,6 +258,9 @@ const userContextSlice = createSlice({
 		clearUserContext(state) {
 			Object.assign(state, initialState)
 		},
+		logout(state) {
+			Object.assign(state, initialState)
+		},
 		setBusinessRole(state, action: PayloadAction<UserRole>) {
 			state.role = action.payload
 			state.isBusinessOwner =
@@ -187,6 +286,7 @@ export const updateUserProfileImage = createAction<{ userId: string; url: string
 export const {
 	setUserContext,
 	clearUserContext,
+	logout,
 	setBusinessRole,
 	setPermissions,
 } = userContextSlice.actions

@@ -11,6 +11,7 @@ import { Upload, Check, Loader2 } from 'lucide-react'
 import CityAutocomplete from '@/components/drawers/CityAutocomplete'
 import { GET_ME } from '@/lib/graphql/queries/getMe'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 
 const COMPLETE_PROFILE = gql`
   mutation CompleteProfile(
@@ -54,11 +55,9 @@ export default function CompleteProfilePage() {
   })
   const [uploading, setUploading] = useState({
     profile: false,
-    id: false,
-    license: false,
-    address: false,
   })
   const [showCustomCity, setShowCustomCity] = useState(false)
+  const [showTermsModal, setShowTermsModal] = useState(false)
 
   useEffect(() => {
     if (user) {
@@ -93,9 +92,7 @@ export default function CompleteProfilePage() {
     form.contactNumber,
     hasLocation,
     user?.profileImageUrl,
-    user?.idPhotoUrl,
-    user?.driversLicenseUrl,
-    user?.proofOfAddressUrl,
+    user?.idVerified, // Assume this is set after API verification
   ]
   const completedCount = completionItems.filter(Boolean).length
   const completionPercent = Math.round(
@@ -103,25 +100,16 @@ export default function CompleteProfilePage() {
   )
 
   // Upload handlers
-  const uploadFile = async (
-    type: 'profile' | 'id' | 'license' | 'address',
-    file: File
-  ) => {
+  const uploadFile = async (type: 'profile', file: File) => {
     setUploading((u) => ({ ...u, [type]: true }))
-    const endpointMap = {
-      profile: `${process.env.NEXT_PUBLIC_GRAPHQL_URL}/api/users/upload-profile-image`,
-      id: `${process.env.NEXT_PUBLIC_GRAPHQL_URL}/api/users/upload-id-photo`,
-      license: `${process.env.NEXT_PUBLIC_GRAPHQL_URL}/api/users/upload-drivers-license`,
-      address: `${process.env.NEXT_PUBLIC_GRAPHQL_URL}/api/users/upload-proof-of-address`,
-    }
+    const endpoint = `${process.env.NEXT_PUBLIC_GRAPHQL_URL}/api/users/upload-profile-image`
     const formData = new FormData()
     formData.append('file', file)
-    const token = localStorage.getItem('token')
     try {
-      const res = await fetch(endpointMap[type], {
+      const res = await fetch(endpoint, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
         body: formData,
+        credentials: 'include',
       })
       if (!res.ok) throw new Error('Upload failed')
       toast.success('Upload successful!')
@@ -134,12 +122,28 @@ export default function CompleteProfilePage() {
   }
 
   const handleFileChange = (
-    type: 'profile' | 'id' | 'license' | 'address',
+    type: 'profile',
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
     const file = e.target.files?.[0]
     if (!file) return
     uploadFile(type, file)
+  }
+
+  // ID Verification handler (placeholder)
+  const handleVerifyID = async () => {
+    try {
+      // Replace with your actual API call
+      const res = await fetch('/api/verify-id', {
+        method: 'POST',
+        credentials: 'include',
+      })
+      if (!res.ok) throw new Error('Verification failed')
+      toast.success('ID verified!')
+      await refetch()
+    } catch {
+      toast.error('ID verification failed')
+    }
   }
 
   const handleChange = (
@@ -280,100 +284,68 @@ export default function CompleteProfilePage() {
               required
             />
           </div>
-          {/* Upload fields */}
-          <div>
-            <Label>ID Document</Label>
-            <div className='flex items-center gap-2'>
-              <label className='cursor-pointer flex items-center gap-2 p-2 border rounded-md hover:bg-secondary transition'>
-                <input
-                  type='file'
-                  accept='image/*'
-                  className='hidden'
-                  onChange={(e) => handleFileChange('id', e)}
-                  disabled={uploading.id}
-                />
-                {uploading.id ? (
-                  <Loader2
-                    className='animate-spin text-primary'
-                    size={20}
-                  />
-                ) : user?.idPhotoUrl ? (
-                  <Check
-                    className='text-green-600'
-                    size={20}
-                  />
-                ) : (
-                  <Upload
-                    className='text-muted-foreground'
-                    size={20}
-                  />
-                )}
-                <span className='text-sm'>Upload</span>
-              </label>
+          {/* ID Verification Section */}
+          <div className='!mb-8'>
+            <Label>ID Verification</Label>
+            <div className='flex flex-col gap-2'>
+              <Button
+                type='button'
+                variant='outlined'
+                color='primary'
+                onClick={handleVerifyID}
+                disabled={user?.idVerified}
+              >
+                {user?.idVerified ? 'ID Verified' : 'Verify with OmniCheck'}
+              </Button>
+              <span className='text-xs text-muted-foreground'>
+                By verifying your ID, you agree to our use of
+                <button
+                  type='button'
+                  className='text-blue-600 underline ml-1'
+                  onClick={() => setShowTermsModal(true)}
+                >
+                  OmniCheck terms
+                </button>
+              </span>
             </div>
           </div>
-          <div>
-            <Label>Driver&apos;s License</Label>
-            <div className='flex items-center gap-2'>
-              <label className='cursor-pointer flex items-center gap-2 p-2 border rounded-md hover:bg-secondary transition'>
-                <input
-                  type='file'
-                  accept='image/*'
-                  className='hidden'
-                  onChange={(e) => handleFileChange('license', e)}
-                  disabled={uploading.license}
+          {/* Terms Modal */}
+          {showTermsModal && (
+            <div
+              className='fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50'
+              onClick={() => setShowTermsModal(false)}
+            >
+              <div
+                className='bg-white dark:bg-componentBackground rounded-lg p-6 max-w-md w-full shadow-lg flex flex-col items-center'
+                onClick={(e) => e.stopPropagation()}
+              >
+                <h3 className='text-lg font-bold mb-2'>OmniCheck Terms</h3>
+                <p className='text-sm mb-4 text-center'>
+                  By verifying your identity, you agree to share your
+                  information with OmniCheck for the purpose of identity
+                  verification. Your data will be processed securely and in
+                  accordance with our privacy policy. For more details, please
+                  visit the OmniCheck website.
+                </p>
+                <Image
+                  src='/omnicheck.svg'
+                  alt='OmniCheck'
+                  className='h-10 mb-4'
+                  height={400}
+                  width={800}
                 />
-                {uploading.license ? (
-                  <Loader2
-                    className='animate-spin text-primary'
-                    size={20}
-                  />
-                ) : user?.driversLicenseUrl ? (
-                  <Check
-                    className='text-green-600'
-                    size={20}
-                  />
-                ) : (
-                  <Upload
-                    className='text-muted-foreground'
-                    size={20}
-                  />
-                )}
-                <span className='text-sm'>Upload</span>
-              </label>
+                <Button
+                  type='button'
+                  variant='contained'
+                  color='primary'
+                  className='w-full'
+                  onClick={() => setShowTermsModal(false)}
+                >
+                  Close
+                </Button>
+              </div>
             </div>
-          </div>
-          <div>
-            <Label>Proof of Address</Label>
-            <div className='flex items-center gap-2'>
-              <label className='cursor-pointer flex items-center gap-2 p-2 border rounded-md hover:bg-secondary transition'>
-                <input
-                  type='file'
-                  accept='image/*'
-                  className='hidden'
-                  onChange={(e) => handleFileChange('address', e)}
-                  disabled={uploading.address}
-                />
-                {uploading.address ? (
-                  <Loader2
-                    className='animate-spin text-primary'
-                    size={20}
-                  />
-                ) : user?.proofOfAddressUrl ? (
-                  <Check
-                    className='text-green-600'
-                    size={20}
-                  />
-                ) : (
-                  <Upload
-                    className='text-muted-foreground'
-                    size={20}
-                  />
-                )}
-                <span className='text-sm'>Upload</span>
-              </label>
-            </div>
-          </div>
+          )}
           <Button
             type='submit'
             className='w-full'

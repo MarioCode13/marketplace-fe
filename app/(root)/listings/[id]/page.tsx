@@ -39,7 +39,7 @@ const Page = () => {
   const [modalOpen, setModalOpen] = useState(false)
   const [markAsSoldModalOpen, setMarkAsSoldModalOpen] = useState(false)
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
-  const { user } = useSelector((state: RootState) => state.auth)
+  const user = useSelector((state: RootState) => state.userContext)
 
   const { data: meData } = useQuery(GET_ME, {
     skip: !user,

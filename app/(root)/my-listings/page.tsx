@@ -52,16 +52,11 @@ export default function MyListingsPage() {
   const [isDeleting, setIsDeleting] = useState(false)
 
   const router = useRouter()
-  const token = useSelector((state: RootState) => state.auth.token)
+  const userContext = useSelector((state: RootState) => state.userContext)
+  const userId = userContext.userId
 
   // Query for user's business association
-  const { data: myBusinessData } = useQuery(GET_MY_BUSINESS, {
-    context: {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    },
-  })
+  const { data: myBusinessData } = useQuery(GET_MY_BUSINESS)
 
   // If user is associated with a business, show business listings
   const isBusinessUser = !!myBusinessData?.myBusiness
@@ -74,21 +69,11 @@ export default function MyListingsPage() {
       variables: isBusinessUser
         ? { limit, offset, businessId }
         : { limit, offset },
-      context: {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      },
+      // No Authorization header needed, session cookie is used
     }
   )
 
-  const [deleteListing] = useMutation(DELETE_LISTING, {
-    context: {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    },
-  })
+  const [deleteListing] = useMutation(DELETE_LISTING)
 
   const listings: Listing[] = isBusinessUser
     ? data?.getListings?.listings || []
@@ -143,7 +128,7 @@ export default function MyListingsPage() {
   return (
     <div className='w-full flex justify-center'>
       <div className='flex flex-col py-12 px-6 w-full max-w-7xl'>
-        {token ? (
+        {userId ? (
           <>
             {/* Header with title and button */}
             <div className='flex items-center justify-between w-full mb-6'>

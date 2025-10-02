@@ -34,7 +34,7 @@ import AddTeamMember from './AddTeamMember'
 export default function BusinessEditPage() {
   const router = useRouter()
 
-  const user = useSelector((state: RootState) => state.auth.user)
+  const user = useSelector((state: RootState) => state.userContext)
   const userContext = useSelector((state: RootState) => state.userContext)
   // Fetch business and branding via query instead of relying on Redux state
   // Use the shared query from lib/graphql/queries
@@ -50,7 +50,7 @@ export default function BusinessEditPage() {
   })
   const business = businessData?.business
   const dispatch = useDispatch()
-  const userId = user?.id
+  const userId = user?.userId
   // Use business owner's planType for permission logic
   const ownerPlanType = business?.owner?.planType || undefined
   const isProStore = ownerPlanType === 'PRO_STORE'
@@ -206,14 +206,13 @@ export default function BusinessEditPage() {
       setUploadLogoError(null)
       const formData = new FormData()
       formData.append('image', e.target.files[0])
-      const token = localStorage.getItem('token')
       try {
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_GRAPHQL_URL}/api/store/upload-logo`,
           {
             method: 'POST',
-            headers: { Authorization: `Bearer ${token}` },
             body: formData,
+            credentials: 'include', // Send cookies for authentication
           }
         )
         if (!res.ok) throw new Error('Failed to upload logo')
@@ -233,14 +232,13 @@ export default function BusinessEditPage() {
       setUploadBannerError(null)
       const formData = new FormData()
       formData.append('image', e.target.files[0])
-      const token = localStorage.getItem('token')
       try {
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_GRAPHQL_URL}/api/store/upload-banner`,
           {
             method: 'POST',
-            headers: { Authorization: `Bearer ${token}` },
             body: formData,
+            credentials: 'include', // Send cookies for authentication
           }
         )
         if (!res.ok) throw new Error('Failed to upload banner')

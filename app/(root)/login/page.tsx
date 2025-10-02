@@ -1,25 +1,28 @@
 'use client'
 
 import { useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { useRouter } from 'next/navigation'
-import { loginUser, fetchUserProfile } from '@/store/authSlice'
-import { AppDispatch, RootState } from '@/store/store'
+import { loginUser } from '@/store/userContextSlice'
+import { AppDispatch } from '@/store/store'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
-import { useLazyQuery } from '@apollo/client'
-import { GET_MY_BUSINESS } from '@/lib/graphql/queries/getMyBusiness'
-import { setUserContext } from '@/store/userContextSlice'
+// import { useLazyQuery } from '@apollo/client' // Not used
+// import { GET_MY_BUSINESS } from '@/lib/graphql/queries/getMyBusiness' // Not used
+// import { setUserContext } from '@/store/userContextSlice' // No longer needed
 
 export default function Login() {
   const router = useRouter()
   const dispatch = useDispatch<AppDispatch>()
-  const { loading, error } = useSelector((state: RootState) => state.auth)
+  // const userContext = useSelector((state: RootState) => state.userContext) // Not used
+  // Optionally, add local loading/error state
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const [form, setForm] = useState({ emailOrUsername: '', password: '' })
-  const [getMyBusiness] = useLazyQuery(GET_MY_BUSINESS)
+  // const [getMyBusiness] = useLazyQuery(GET_MY_BUSINESS) // Not used
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value })
@@ -27,61 +30,24 @@ export default function Login() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    const result = await dispatch(loginUser(form))
-    if (result.meta.requestStatus === 'fulfilled') {
-      // Fetch full user profile and sync userContext
-      const profileResult = await dispatch(fetchUserProfile())
-      if (fetchUserProfile.fulfilled.match(profileResult)) {
-        const user = profileResult.payload
-        // Fetch business context after login
-        const { data: businessData } = await getMyBusiness()
-        const business = businessData?.myBusiness
-        const userContext = {
-          userId: user.id,
-          username: user.username,
-          businessId: business?.id || null,
-          businessName: business?.name || null,
-          role:
-            business?.businessUsers?.find(
-              (bu: { user: { id: string }; role: string }) =>
-                bu.user.id === user.id
-            )?.role ||
-            user.role ||
-            null,
-          isBusinessUser: !!business,
-          isBusinessOwner:
-            business?.businessUsers?.find(
-              (bu: { user: { id: string }; role: string }) =>
-                bu.user.id === user.id &&
-                (bu.role === 'OWNER' || bu.role === 'ADMIN')
-            ) !== undefined,
-          canEditListing:
-            business?.businessUsers?.find(
-              (bu: { user: { id: string }; role: string }) =>
-                bu.user.id === user.id &&
-                (bu.role === 'OWNER' ||
-                  bu.role === 'ADMIN' ||
-                  bu.role === 'MEMBER')
-            ) !== undefined,
-          canViewBusinessTransactions:
-            business?.businessUsers?.find(
-              (bu: { user: { id: string }; role: string }) =>
-                bu.user.id === user.id &&
-                (bu.role === 'OWNER' || bu.role === 'ADMIN')
-            ) !== undefined,
-          profileImageUrl: user.profileImageUrl || null,
-        }
-        dispatch(setUserContext(userContext))
-        console.log('User context:', userContext)
+    setLoading(true)
+    setError(null)
+    try {
+      // Use centralized login thunk
+      const resultAction = await dispatch(loginUser(form))
+      if (loginUser.fulfilled.match(resultAction)) {
         toast.success('Login successful!')
         router.push('/')
       } else {
-        toast.dismiss()
-        toast.error('Failed to fetch user profile.')
+        throw new Error((resultAction.payload as string) || 'Login failed')
       }
-    } else {
-      toast.dismiss()
-      toast.error(error || 'Login failed. Please try again.')
+    } catch (err) {
+      const errorMsg =
+        err instanceof Error ? err.message : 'Login failed. Please try again.'
+      setError(errorMsg)
+      toast.error(errorMsg)
+    } finally {
+      setLoading(false)
     }
   }
 

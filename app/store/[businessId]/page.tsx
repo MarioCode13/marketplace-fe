@@ -20,7 +20,7 @@ export default function StorePage() {
   const navigate = useRouter()
   const businessId = params?.businessId as string
   const currentUserId = useSelector(
-    (state: RootState) => state.auth.user?.userId
+    (state: RootState) => state.userContext.userId
   )
 
   // State for pagination only (no filters for resellers)
