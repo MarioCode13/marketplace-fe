@@ -33,6 +33,8 @@ export function isTokenExpired(token: string): boolean {
     }
 }
 
+// No localStorage token usage by design (httpOnly cookie + CSRF)
+
 // Cookie utilities
 export function getCookie(name: string): string | undefined {
     if (typeof window === 'undefined') return undefined

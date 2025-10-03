@@ -13,9 +13,9 @@ export function middleware(request: NextRequest) {
         return NextResponse.next()
     }
 
-    // For all other API routes, verify CSRF token
-    const csrfToken = request.headers.get('x-csrf-token')
-    const cookieCsrfToken = request.cookies.get('csrf-token')?.value
+    // For all other API routes, verify CSRF token (align with backend cookie/header names)
+    const csrfToken = request.headers.get('x-xsrf-token')
+    const cookieCsrfToken = request.cookies.get('XSRF-TOKEN')?.value
 
     if (!csrfToken || !cookieCsrfToken || csrfToken !== cookieCsrfToken) {
         return NextResponse.json(

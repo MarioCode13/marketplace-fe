@@ -28,9 +28,9 @@ function createApolloClient(initialState = {}) {
     credentials: 'include',
   })
 
-  // Add CSRF token to requests
+  // Add CSRF token to requests (auth via httpOnly cookie + credentials)
   const authLink = setContext((_, { headers }) => {
-    // Get CSRF token from cookie
+    // Get cookies
     function getCookie(name: string): string | undefined {
       if (typeof window === 'undefined') return undefined
       const value = `; ${document.cookie}`

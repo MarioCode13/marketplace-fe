@@ -1,5 +1,6 @@
 import { createAction, createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit'
 import { getApolloClient } from '@/lib/apollo/client'
+// No longer using GraphQL for login; handled by backend REST
 import { GET_ME } from '@/lib/graphql/queries/getMe'
 import { GET_MY_BUSINESS } from '@/lib/graphql/queries/getMyBusiness'
 import { Business } from '@/lib/graphql/generated'
@@ -10,31 +11,14 @@ export const loginUser = createAsyncThunk(
 	'userContext/loginUser',
 	async (form: { emailOrUsername: string; password: string }, { dispatch, rejectWithValue }) => {
 		try {
-			// Call login API
-			const res = await fetch(
-				`${process.env.NEXT_PUBLIC_GRAPHQL_URL}/api/auth/login`,
-				{
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify(form),
-					credentials: 'include',
-				}
-			)
-			if (!res.ok) throw new Error('Login failed')
-			
-			// After login, call /api/csrf to set CSRF token cookie
-			const csrfRes = await fetch(`${process.env.NEXT_PUBLIC_GRAPHQL_URL}/api/csrf`, {
+			// Call backend REST login; backend sets httpOnly cookies + CSRF
+			const cookieRes = await fetch(`${process.env.NEXT_PUBLIC_GRAPHQL_URL}/api/auth/login`, {
+				method: 'POST',
 				credentials: 'include',
-				method: 'GET'
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(form),
 			})
-			
-			if (csrfRes.ok) {
-				const csrfToken = await csrfRes.text()
-				console.log('CSRF token received:', csrfToken)
-				console.log('CSRF token cookie should be set now')
-			} else {
-				console.warn('Failed to get CSRF token')
-			}
+			if (!cookieRes.ok) throw new Error('Login failed')
 
 			// Refetch user profile and business context
 			await dispatch(refetchUserProfile())
@@ -83,7 +67,7 @@ export const logoutUser = createAsyncThunk(
 		if (xsrfToken) {
 			headers['X-XSRF-TOKEN'] = xsrfToken
 		}
-		const res = await fetch('/api/logout', {
+		const res = await fetch(`${process.env.NEXT_PUBLIC_GRAPHQL_URL}/api/auth/logout`, {
 			method: 'POST',
 			credentials: 'include',
 			headers,

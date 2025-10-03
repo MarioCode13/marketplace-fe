@@ -2,7 +2,7 @@
 
 import { Provider } from 'react-redux'
 import { store } from '../store/store'
-import ApolloProviderWrapper from '@/context/ApolloProviderWrapper'
+import ApolloProviderWrapper from '@/lib/apollo/client'
 import { ThemeProvider } from './ThemeContext'
 import { Toaster } from 'sonner'
 import AppInitializer from '@/context/AppInitializer'
