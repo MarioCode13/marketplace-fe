@@ -25,6 +25,18 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   generateEtags: false,
   reactStrictMode: true,
+  async rewrites() {
+    return [
+      {
+        source: '/graphql',
+        destination: `${process.env.NEXT_PUBLIC_GRAPHQL_URL}/graphql`,
+      },
+      {
+        source: '/api/auth/:path*',
+        destination: `${process.env.NEXT_PUBLIC_GRAPHQL_URL}/api/auth/:path*`,
+      },
+    ]
+  },
   async headers() {
     return [
       {

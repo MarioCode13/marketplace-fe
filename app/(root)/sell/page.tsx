@@ -34,6 +34,7 @@ const CREATE_LISTING = gql`
     $images: [String!]!
     $categoryId: ID!
     $price: Float!
+    $quantity: Int
     $customCity: String
     $cityId: ID
     $condition: Condition!
@@ -45,6 +46,7 @@ const CREATE_LISTING = gql`
       images: $images
       categoryId: $categoryId
       price: $price
+      quantity: $quantity
       customCity: $customCity
       cityId: $cityId
       condition: $condition
@@ -54,6 +56,7 @@ const CREATE_LISTING = gql`
       title
       description
       price
+      quantity
       createdAt
       city {
         name
@@ -76,12 +79,20 @@ export default function SellPage() {
   const user = data?.me
   const [uploading, setUploading] = useState(false)
 
+  // Permission: only users on PRO_STORE plan, business owners, or businesses of type RESELLER
+  const canSetQuantity = Boolean(
+    userContext?.planType === 'PRO_STORE' ||
+      userContext?.isBusinessOwner ||
+      userContext?.business?.businessType === 'RESELLER'
+  )
+
   const [form, setForm] = useState({
     title: '',
     description: '',
     price: '',
     categoryId: '',
     condition: 'NEW',
+    quantity: '',
     city: user?.city?.id || '',
     cityLabel: user?.city
       ? `${user.city.name}, ${user.city.region.name}, ${user.city.region.country.name}`
@@ -138,14 +149,34 @@ export default function SellPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    // Validate quantity if provided
+    if (form.quantity) {
+      // Must be a non-negative integer
+      const intVal = parseInt(form.quantity, 10)
+      if (isNaN(intVal) || intVal < 0 || !/^\d+$/.test(form.quantity)) {
+        toast.error('Quantity must be a non-negative integer')
+        return
+      }
+      // Prevent unauthorized users from submitting a quantity value
+      if (!canSetQuantity) {
+        toast.error('You are not allowed to set a quantity for listings')
+        return
+      }
+    }
+
     try {
       await createListing({
         variables: {
-          ...form,
-          price: parseFloat(form.price),
+          title: form.title,
+          description: form.description,
           images,
+          categoryId: form.categoryId,
+          price: parseFloat(form.price),
+          customCity: form.customCity || undefined,
+          cityId: form.city || undefined,
+          condition: form.condition,
           userId: userId,
-          cityId: form.city,
+          quantity: form.quantity ? parseInt(form.quantity, 10) : undefined,
         },
       })
       toast.success('Listing created successfully!')
@@ -155,6 +186,7 @@ export default function SellPage() {
         price: '',
         categoryId: '',
         condition: 'NEW',
+        quantity: '',
         city: '',
         cityLabel: '',
         customCity: '',
@@ -208,7 +240,7 @@ export default function SellPage() {
 
   return (
     <div className='flex min-h-screen items-center justify-center bg-background'>
-      <div className='w-full max-w-md rounded-lg p-6 shadow-lg bg-componentBackground'>
+      <div className='w-full max-w-md rounded-lg p-6 shadow-lg bg-componentBackground my-8'>
         <h2 className='mb-6 text-2xl font-bold text-foreground'>
           Create a New Listing
         </h2>
@@ -263,6 +295,26 @@ export default function SellPage() {
               required
             />
           </div>
+
+          {canSetQuantity && (
+            <div className='flex flex-col'>
+              <Label
+                htmlFor='quantity'
+                className='mb-2'
+              >
+                Quantity
+              </Label>
+              <Input
+                id='quantity'
+                name='quantity'
+                value={form.quantity}
+                onChange={handleChange}
+                placeholder='Enter quantity (whole number)'
+                type='number'
+                min={0}
+              />
+            </div>
+          )}
 
           {/* <div className='flex flex-col'>
              

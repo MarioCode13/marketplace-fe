@@ -58,6 +58,7 @@ export default function EditListingPage() {
     cityLabel: '',
     categoryId: '',
     condition: 'NEW',
+    quantity: '',
     customCity: '',
   })
 
@@ -101,6 +102,7 @@ export default function EditListingPage() {
         title: listing.title,
         description: listing.description,
         price: listing.price.toString(),
+        quantity: listing.quantity?.toString() || '',
         city: listing.city?.id || '',
         cityLabel: listing.city?.name || '',
         categoryId: listing.category?.id || '',
@@ -200,6 +202,16 @@ export default function EditListingPage() {
     setSaving(true)
 
     try {
+      // Validate quantity if present
+      if (form.quantity) {
+        const intVal = parseInt(form.quantity, 10)
+        if (isNaN(intVal) || intVal < 0 || !/^\d+$/.test(form.quantity)) {
+          toast.error('Quantity must be a non-negative integer')
+          setSaving(false)
+          return
+        }
+      }
+
       const input: UpdateListingInput = {
         id: listingId,
         title: form.title,
@@ -210,6 +222,7 @@ export default function EditListingPage() {
         categoryId: form.categoryId.toString(),
         cityId: form.city || null,
         customCity: form.customCity || null,
+        quantity: form.quantity ? parseInt(form.quantity, 10) : undefined,
       }
 
       await updateListing({

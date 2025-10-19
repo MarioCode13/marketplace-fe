@@ -12,7 +12,7 @@ export const loginUser = createAsyncThunk(
 	async (form: { emailOrUsername: string; password: string }, { dispatch, rejectWithValue }) => {
 		try {
 			// Call backend REST login; backend sets httpOnly cookies + CSRF
-			const cookieRes = await fetch(`${process.env.NEXT_PUBLIC_GRAPHQL_URL}/api/auth/login`, {
+            const cookieRes = await fetch(`/api/auth/login`, {
 				method: 'POST',
 				credentials: 'include',
 				headers: { 'Content-Type': 'application/json' },
@@ -67,7 +67,7 @@ export const logoutUser = createAsyncThunk(
 		if (xsrfToken) {
 			headers['X-XSRF-TOKEN'] = xsrfToken
 		}
-		const res = await fetch(`${process.env.NEXT_PUBLIC_GRAPHQL_URL}/api/auth/logout`, {
+        const res = await fetch(`/api/auth/logout`, {
 			method: 'POST',
 			credentials: 'include',
 			headers,
@@ -140,7 +140,7 @@ export const refetchBusinessContext = createAsyncThunk(
 			})
 			console.log('[refetchBusinessContext] GET_MY_BUSINESS result:', data)
 			const business = data?.myBusiness
-			if (business) {
+            if (business) {
 				const state = getState() as import('@/store/store').RootState
 				const currentUserId = state?.userContext?.userId
 				// Merge with existing user context
@@ -178,14 +178,22 @@ export const refetchBusinessContext = createAsyncThunk(
 				dispatch(setUserContext(mergedContext))
 				console.log('[refetchBusinessContext] setUserContext dispatched:', mergedContext)
 				return business
-			} else {
-				// Clear business context if not found
-				console.log('[refetchBusinessContext] No business found, clearing context')
-				dispatch(setUserContext({
-					...initialState
-				}))
-				return null
-			}
+            } else {
+                // No business found: only clear business-related fields, preserve user login context
+                console.log('[refetchBusinessContext] No business found, clearing only business-related fields')
+                const state = getState() as import('@/store/store').RootState
+                const prevUserContext = state?.userContext || {}
+                const mergedContext = {
+                    ...prevUserContext,
+                    business: null,
+                    businessId: null,
+                    businessName: null,
+                    isBusinessUser: false,
+                    isBusinessOwner: false,
+                }
+                dispatch(setUserContext(mergedContext))
+                return null
+            }
 		} catch (error: unknown) {
 			console.log('[refetchBusinessContext] Error:', error)
 			if (error instanceof Error) {

@@ -13,6 +13,7 @@ export const UPDATE_LISTING = gql`
       title
       description
       price
+      quantity
       images
       condition
       category {

@@ -152,6 +152,17 @@ export enum DocumentType {
   TaxClearance = 'TAX_CLEARANCE'
 }
 
+export type Invitation = {
+  __typename?: 'Invitation';
+  createdAt: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  recipientEmail: Scalars['String']['output'];
+  role: BusinessUserRole;
+  sender: User;
+  status: Scalars['String']['output'];
+  updatedAt: Scalars['String']['output'];
+};
+
 export type Listing = {
   __typename?: 'Listing';
   /**  Added, nullable */
@@ -168,6 +179,7 @@ export type Listing = {
   id: Scalars['ID']['output'];
   images: Array<Scalars['String']['output']>;
   price: Scalars['Float']['output'];
+  quantity: Scalars['Int']['output'];
   sold: Scalars['Boolean']['output'];
   title: Scalars['String']['output'];
   user?: Maybe<User>;
@@ -182,6 +194,7 @@ export type ListingPageResponse = {
 export type Mutation = {
   __typename?: 'Mutation';
   acceptBusinessInvitation: Scalars['Boolean']['output'];
+  acceptInvitation: Invitation;
   cancelSubscription: Subscription;
   cancelTransaction: Transaction;
   completeTransaction: Transaction;
@@ -192,6 +205,7 @@ export type Mutation = {
   createSubscription: Subscription;
   createTransaction: Transaction;
   declineBusinessInvitation: Scalars['Boolean']['output'];
+  declineInvitation: Invitation;
   deleteBusinessVerificationDocument: Scalars['Boolean']['output'];
   deleteListing: Scalars['Boolean']['output'];
   deleteReview: Scalars['Boolean']['output'];
@@ -201,6 +215,7 @@ export type Mutation = {
   markNotificationRead: Scalars['Boolean']['output'];
   reactivateSubscription: Subscription;
   register: AuthResponse;
+  sendInvitation: Invitation;
   transferBusinessOwnership: Scalars['Boolean']['output'];
   unlinkUserFromBusiness: Scalars['Boolean']['output'];
   updateBusiness?: Maybe<Business>;
@@ -220,6 +235,11 @@ export type Mutation = {
 
 export type MutationAcceptBusinessInvitationArgs = {
   notificationId: Scalars['ID']['input'];
+};
+
+
+export type MutationAcceptInvitationArgs = {
+  invitationId: Scalars['ID']['input'];
 };
 
 
@@ -253,6 +273,7 @@ export type MutationCreateListingArgs = {
   description: Scalars['String']['input'];
   images: Array<Scalars['String']['input']>;
   price: Scalars['Float']['input'];
+  quantity?: InputMaybe<Scalars['Int']['input']>;
   title: Scalars['String']['input'];
   userId: Scalars['ID']['input'];
 };
@@ -282,6 +303,11 @@ export type MutationCreateTransactionArgs = {
 
 export type MutationDeclineBusinessInvitationArgs = {
   notificationId: Scalars['ID']['input'];
+};
+
+
+export type MutationDeclineInvitationArgs = {
+  invitationId: Scalars['ID']['input'];
 };
 
 
@@ -328,6 +354,13 @@ export type MutationRegisterArgs = {
   email: Scalars['String']['input'];
   password: Scalars['String']['input'];
   username: Scalars['String']['input'];
+};
+
+
+export type MutationSendInvitationArgs = {
+  businessId: Scalars['ID']['input'];
+  recipientEmail: Scalars['String']['input'];
+  role: BusinessUserRole;
 };
 
 
@@ -884,6 +917,7 @@ export type UpdateListingInput = {
   id: Scalars['ID']['input'];
   images?: InputMaybe<Array<Scalars['String']['input']>>;
   price?: InputMaybe<Scalars['Float']['input']>;
+  quantity?: InputMaybe<Scalars['Int']['input']>;
   title?: InputMaybe<Scalars['String']['input']>;
 };
 
