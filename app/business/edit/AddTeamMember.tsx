@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { useGetAllUsersQuery, BusinessUserRole } from '@/lib/graphql/generated'
+import { BusinessUserRole } from '@/lib/graphql/generated'
 import { useMutation } from '@apollo/client'
 import { SEND_INVITATION } from '@/lib/graphql/mutations/invitationMutations'
 import {
@@ -23,7 +23,6 @@ export default function AddTeamMember({ businessId }: { businessId: string }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
-  const { data: usersData, loading: usersLoading } = useGetAllUsersQuery()
   const [sendInvitation] = useMutation(SEND_INVITATION)
 
   const handleAdd = async () => {
@@ -66,7 +65,7 @@ export default function AddTeamMember({ businessId }: { businessId: string }) {
             placeholder='Enter user email'
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            disabled={loading || usersLoading}
+            disabled={loading}
           />
         </div>
 
@@ -81,7 +80,7 @@ export default function AddTeamMember({ businessId }: { businessId: string }) {
             name='role'
             value={role ?? undefined}
             onValueChange={(value) => setRole(value as BusinessUserRole)}
-            disabled={loading || usersLoading}
+            disabled={loading}
           >
             <SelectTrigger>
               <SelectValue placeholder='Select role' />
@@ -103,7 +102,7 @@ export default function AddTeamMember({ businessId }: { businessId: string }) {
       <Button
         variant='outlined'
         onClick={handleAdd}
-        disabled={loading || usersLoading || !email || !role}
+        disabled={loading || !email || !role}
       >
         {loading ? 'Sending...' : 'Send Invitation'}
       </Button>
