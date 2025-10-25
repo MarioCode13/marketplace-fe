@@ -2,8 +2,8 @@
 
 import { useState } from 'react'
 import { useQuery, useMutation } from '@apollo/client'
-import { useSelector } from 'react-redux'
-import { RootState } from '@/store/store'
+import { useSelector, useDispatch } from 'react-redux'
+import { RootState, AppDispatch } from '@/store/store'
 import { GET_NOTIFICATIONS } from '@/lib/graphql/queries/getNotifications'
 import {
   MARK_NOTIFICATION_READ,
@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/badge'
 import { Bell, Check, CheckCircle, XCircle, Clock, Users } from 'lucide-react'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import { refetchUserProfile, refetchBusinessContext } from '@/store/userContextSlice'
 
 interface Notification {
   id: string
@@ -30,6 +31,7 @@ interface Notification {
 
 export default function NotificationsPage() {
   const router = useRouter()
+  const dispatch = useDispatch<AppDispatch>()
   const [processingId, setProcessingId] = useState<string | null>(null)
   const userContext = useSelector((state: RootState) => state.userContext)
   const userId = userContext.userId
@@ -56,9 +58,12 @@ export default function NotificationsPage() {
   })
 
   const [acceptInvitation] = useMutation(ACCEPT_BUSINESS_INVITATION, {
-    onCompleted: () => {
+    onCompleted: async () => {
       toast.success('Business invitation accepted!')
       refetch()
+      // Refetch user profile and business context to update the UI
+      await dispatch(refetchUserProfile())
+      await dispatch(refetchBusinessContext())
     },
     onError: (error) => {
       toast.error('Failed to accept invitation: ' + error.message)

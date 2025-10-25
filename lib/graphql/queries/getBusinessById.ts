@@ -5,11 +5,17 @@ export const GET_BUSINESS_BY_ID = gql`
     business(id: $id) {
       id
       name
+      slug
       email
       contactNumber
       addressLine1
       addressLine2
       postalCode
+      planType
+      owner {
+        id
+        planType
+      }
       city {
         id
         name
@@ -27,6 +33,9 @@ export const GET_BUSINESS_BY_ID = gql`
         lightOrDark
         primaryColor
         secondaryColor
+        textColor
+        cardTextColor
+        backgroundColor
         about
         storeName
       }

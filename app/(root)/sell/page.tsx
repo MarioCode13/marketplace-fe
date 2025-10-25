@@ -39,6 +39,7 @@ const CREATE_LISTING = gql`
     $cityId: ID
     $condition: Condition!
     $userId: ID!
+    $businessId: ID
   ) {
     createListing(
       title: $title
@@ -51,6 +52,7 @@ const CREATE_LISTING = gql`
       cityId: $cityId
       condition: $condition
       userId: $userId
+      businessId: $businessId
     ) {
       id
       title
@@ -177,6 +179,7 @@ export default function SellPage() {
           condition: form.condition,
           userId: userId,
           quantity: form.quantity ? parseInt(form.quantity, 10) : undefined,
+          businessId: userContext.businessId || undefined,
         },
       })
       toast.success('Listing created successfully!')

@@ -59,9 +59,15 @@ export default function BusinessEditPage() {
     userContext?.business?.planType ||
     business?.owner?.planType
   const isProStore = planType === 'PRO_STORE'
-  const canEditBusiness = business?.businessUsers?.some(
-    (bu: BusinessUser) => bu.user.id === userId && bu.role === 'OWNER'
-  )
+
+  // Get current user's role in the business
+  const currentUserBusinessRole = business?.businessUsers?.find(
+    (bu: BusinessUser) => bu.user.id === userId
+  )?.role
+
+  const canEditBusiness = currentUserBusinessRole === 'OWNER'
+  const canManageTeam =
+    currentUserBusinessRole === 'OWNER' || currentUserBusinessRole === 'MANAGER'
 
   const [businessForm, setBusinessForm] = useState({
     name: '',
@@ -164,6 +170,11 @@ export default function BusinessEditPage() {
         postalCode: business.postalCode || '',
         slug: business.slug || '',
       })
+      // If business has an existing slug, mark it as valid
+      if (business.slug) {
+        setSlugValid(true)
+        setSlugWarning(null)
+      }
     }
   }, [business])
 
@@ -731,6 +742,7 @@ export default function BusinessEditPage() {
         <div className='flex gap-2'>
           <Button
             type='submit'
+            variant={'contained'}
             disabled={saving || !slugValid}
           >
             {saving ? 'Saving...' : 'Save Changes'}
@@ -745,7 +757,7 @@ export default function BusinessEditPage() {
           </Button>
           <Button
             type='button'
-            color='secondary'
+            color='primary'
             onClick={() => {
               const cancelUrl = isProStore
                 ? `/${business.slug}`
@@ -784,7 +796,7 @@ export default function BusinessEditPage() {
                     ({businessUser.role})
                   </span>
                 </div>
-                {businessUser.role !== 'OWNER' && (
+                {canManageTeam && businessUser.role !== 'OWNER' && (
                   <Button
                     variant='outlined'
                     size='sm'
@@ -798,9 +810,10 @@ export default function BusinessEditPage() {
         )}
 
         <div className='mt-4'>
-          {isProStore ? (
+          {isProStore && canManageTeam && (
             <AddTeamMember businessId={business?.id} />
-          ) : (
+          )}
+          {!isProStore && (
             <>
               <Button
                 variant='outlined'
