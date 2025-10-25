@@ -17,6 +17,7 @@ import { MARK_NOTIFICATION_READ } from '@/lib/graphql/mutations/notificationMuta
 import { GET_ME } from '@/lib/graphql/queries/getMe'
 import Link from 'next/link'
 import { toast } from 'sonner'
+import { useRouter } from 'next/navigation'
 
 interface Notification {
   id: string
@@ -31,7 +32,7 @@ interface Notification {
 export default function NotificationDropdown() {
   const [isOpen, setIsOpen] = useState(false)
   const user = useSelector((state: RootState) => state.userContext)
-
+  const router = useRouter()
   const { data: meData } = useQuery(GET_ME, {
     skip: !user,
     fetchPolicy: 'cache-first',
@@ -169,7 +170,7 @@ export default function NotificationDropdown() {
                   if (notification.actionRequired) {
                     setIsOpen(false)
                     // Navigate to notifications page for actions
-                    window.location.href = '/notifications'
+                    router.push('/notifications')
                   }
                 }}
               >

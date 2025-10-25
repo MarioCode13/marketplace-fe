@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/tooltip'
 import { RootState } from '@/store/store'
 import { ShieldCheck, User, Store, Star, UserPlus } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { useSelector } from 'react-redux'
 
@@ -104,6 +105,7 @@ const tiers = [
 export default function SubscriptionsPage() {
   const [loadingTier, setLoadingTier] = useState<string | null>(null)
   const userContext = useSelector((state: RootState) => state.userContext)
+  const router = useRouter()
   const userEmail = userContext.email || ''
   const isLoggedIn = !!userContext.userId
   const userPlanType = userContext.planType || ''
@@ -419,7 +421,7 @@ export default function SubscriptionsPage() {
               </div>
               <Button
                 variant='outlined'
-                onClick={() => (window.location.href = '/register')}
+                onClick={() => router.push('/register')}
               >
                 Create Account
               </Button>

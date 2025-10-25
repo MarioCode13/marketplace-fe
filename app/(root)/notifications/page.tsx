@@ -144,7 +144,7 @@ export default function NotificationsPage() {
     }
   }
 
-  const isBusinessInvitation = (type: string) => type === 'BUSINESS_INVITATION'
+  const isBusinessInvitation = (type: string) => type === 'BUSINESS_INVITE'
 
   return (
     <div className='min-h-screen bg-gray-50 dark:bg-gray-900 py-8'>
@@ -275,6 +275,8 @@ export default function NotificationsPage() {
                             onClick={() =>
                               handleAcceptInvitation(notification.id)
                             }
+                            variant={'contained'}
+                            color={'gradient'}
                             disabled={processingId === notification.id}
                             className='flex items-center gap-2'
                             size='sm'
