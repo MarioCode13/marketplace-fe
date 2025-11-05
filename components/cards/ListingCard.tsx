@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import dayjs from 'dayjs'
-import { MoreVertical, Star } from 'lucide-react'
+import { MoreVertical, ShieldCheck, Star } from 'lucide-react'
 import { useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { generateImageUrl } from '@/lib/utils'
@@ -24,6 +24,7 @@ interface ListingCardProps {
         trustLevel: string
         totalReviews: number
         positiveReviews: number
+        verifiedId: boolean
       }
       storeBranding?: {
         slug: string
@@ -119,18 +120,23 @@ export default function ListingCard({
           <div className='mt-2 space-y-1'>
             {!store && (
               <>
-                <p className='text-sm text-gray-600'>
-                  {listing.user
-                    ? listing.user.username
-                    : listing.business?.name || 'Unknown'}
-                </p>
+                <div className='flex items-center gap-2'>
+                  <p className='text-sm text-gray-500'>
+                    {listing.user
+                      ? listing.user.username
+                      : listing.business?.name || 'Unknown'}
+                  </p>
+                  {listing.user?.trustRating?.verifiedId && (
+                    <ShieldCheck className='w-4 h-4 text-gray-400' />
+                  )}
+                </div>
                 {/* Only show trust rating if user exists and has trustRating */}
-                {listing.user?.trustRating && (
+                {listing.user?.trustRating?.starRating && (
                   <div className='flex items-center gap-2'>
                     <div className='flex items-center gap-1'>
                       <Star className='w-3 h-3 fill-yellow-400 text-yellow-400' />
                       <span className='text-xs font-medium'>
-                        {listing.user.trustRating.starRating.toFixed(1)}
+                        {listing.user.trustRating.starRating?.toFixed(1)}
                       </span>
                     </div>
                     {listing.user.trustRating.totalReviews > 0 && (

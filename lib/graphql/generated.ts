@@ -54,6 +54,7 @@ export type BusinessTrustRating = {
   __typename?: 'BusinessTrustRating';
   averageRating: Scalars['Float']['output'];
   reviewCount: Scalars['Int']['output'];
+  verifiedWithThirdParty: Scalars['Boolean']['output'];
 };
 
 export type BusinessUser = {
@@ -266,6 +267,7 @@ export type MutationCreateCheckoutSessionArgs = {
 
 
 export type MutationCreateListingArgs = {
+  businessId?: InputMaybe<Scalars['ID']['input']>;
   categoryId: Scalars['ID']['input'];
   cityId?: InputMaybe<Scalars['ID']['input']>;
   condition: Condition;
@@ -895,6 +897,7 @@ export type TrustRating = {
   updatedAt: Scalars['String']['output'];
   userId: Scalars['ID']['output'];
   verificationScore: Scalars['Float']['output'];
+  verifiedId: Scalars['Boolean']['output'];
 };
 
 export type UpdateBusinessInput = {
@@ -1022,14 +1025,16 @@ export type CreateListingMutationVariables = Exact<{
   images: Array<Scalars['String']['input']> | Scalars['String']['input'];
   categoryId: Scalars['ID']['input'];
   price: Scalars['Float']['input'];
+  quantity?: InputMaybe<Scalars['Int']['input']>;
   customCity?: InputMaybe<Scalars['String']['input']>;
   cityId?: InputMaybe<Scalars['ID']['input']>;
   condition: Condition;
   userId: Scalars['ID']['input'];
+  businessId?: InputMaybe<Scalars['ID']['input']>;
 }>;
 
 
-export type CreateListingMutation = { __typename?: 'Mutation', createListing: { __typename?: 'Listing', id: string, title: string, description: string, price: number, createdAt: string, city?: { __typename?: 'City', name: string } | null } };
+export type CreateListingMutation = { __typename?: 'Mutation', createListing: { __typename?: 'Listing', id: string, title: string, description: string, price: number, quantity: number, createdAt: string, city?: { __typename?: 'City', name: string } | null } };
 
 export type GetConditionsQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1080,6 +1085,15 @@ export type UnlinkUserFromBusinessMutationVariables = Exact<{
 
 export type UnlinkUserFromBusinessMutation = { __typename?: 'Mutation', unlinkUserFromBusiness: boolean };
 
+export type SendInvitationMutationVariables = Exact<{
+  businessId: Scalars['ID']['input'];
+  recipientEmail: Scalars['String']['input'];
+  role: BusinessUserRole;
+}>;
+
+
+export type SendInvitationMutation = { __typename?: 'Mutation', sendInvitation: { __typename?: 'Invitation', id: string, recipientEmail: string, role: BusinessUserRole, status: string, createdAt: string } };
+
 export type DeleteListingMutationVariables = Exact<{
   listingId: Scalars['ID']['input'];
 }>;
@@ -1092,7 +1106,7 @@ export type UpdateListingMutationVariables = Exact<{
 }>;
 
 
-export type UpdateListingMutation = { __typename?: 'Mutation', updateListing: { __typename?: 'Listing', id: string, title: string, description: string, price: number, images: Array<string>, condition: Condition, customCity?: string | null, category?: { __typename?: 'Category', id: string, name: string } | null, city?: { __typename?: 'City', id: string, name: string } | null } };
+export type UpdateListingMutation = { __typename?: 'Mutation', updateListing: { __typename?: 'Listing', id: string, title: string, description: string, price: number, quantity: number, images: Array<string>, condition: Condition, customCity?: string | null, category?: { __typename?: 'Category', id: string, name: string } | null, city?: { __typename?: 'City', id: string, name: string } | null } };
 
 export type MarkNotificationReadMutationVariables = Exact<{
   notificationId: Scalars['ID']['input'];
@@ -1179,7 +1193,7 @@ export type GetBusinessByIdQueryVariables = Exact<{
 }>;
 
 
-export type GetBusinessByIdQuery = { __typename?: 'Query', business?: { __typename?: 'Business', id: string, name: string, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, postalCode?: string | null, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, lightOrDark?: string | null, primaryColor?: string | null, secondaryColor?: string | null, about?: string | null, storeName?: string | null } | null, businessUsers: Array<{ __typename?: 'BusinessUser', id: string, role: BusinessUserRole, user: { __typename?: 'User', id: string, username: string, email: string, profileImageUrl?: string | null, planType?: PlanType | null, trustRating?: { __typename?: 'TrustRating', starRating: number, trustLevel: string, overallScore: number, totalReviews: number, totalTransactions: number, successfulTransactions: number } | null } }> } | null };
+export type GetBusinessByIdQuery = { __typename?: 'Query', business?: { __typename?: 'Business', id: string, name: string, slug?: string | null, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, postalCode?: string | null, planType?: PlanType | null, owner: { __typename?: 'User', id: string, planType?: PlanType | null }, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, lightOrDark?: string | null, primaryColor?: string | null, secondaryColor?: string | null, textColor?: string | null, cardTextColor?: string | null, backgroundColor?: string | null, about?: string | null, storeName?: string | null } | null, businessUsers: Array<{ __typename?: 'BusinessUser', id: string, role: BusinessUserRole, user: { __typename?: 'User', id: string, username: string, email: string, profileImageUrl?: string | null, planType?: PlanType | null, trustRating?: { __typename?: 'TrustRating', starRating: number, trustLevel: string, overallScore: number, totalReviews: number, totalTransactions: number, successfulTransactions: number } | null } }> } | null };
 
 export type GetBusinessBySlugQueryVariables = Exact<{
   slug: Scalars['String']['input'];
@@ -1520,22 +1534,25 @@ export type RegisterMutationHookResult = ReturnType<typeof useRegisterMutation>;
 export type RegisterMutationResult = Apollo.MutationResult<RegisterMutation>;
 export type RegisterMutationOptions = Apollo.BaseMutationOptions<RegisterMutation, RegisterMutationVariables>;
 export const CreateListingDocument = gql`
-    mutation CreateListing($title: String!, $description: String!, $images: [String!]!, $categoryId: ID!, $price: Float!, $customCity: String, $cityId: ID, $condition: Condition!, $userId: ID!) {
+    mutation CreateListing($title: String!, $description: String!, $images: [String!]!, $categoryId: ID!, $price: Float!, $quantity: Int, $customCity: String, $cityId: ID, $condition: Condition!, $userId: ID!, $businessId: ID) {
   createListing(
     title: $title
     description: $description
     images: $images
     categoryId: $categoryId
     price: $price
+    quantity: $quantity
     customCity: $customCity
     cityId: $cityId
     condition: $condition
     userId: $userId
+    businessId: $businessId
   ) {
     id
     title
     description
     price
+    quantity
     createdAt
     city {
       name
@@ -1563,10 +1580,12 @@ export type CreateListingMutationFn = Apollo.MutationFunction<CreateListingMutat
  *      images: // value for 'images'
  *      categoryId: // value for 'categoryId'
  *      price: // value for 'price'
+ *      quantity: // value for 'quantity'
  *      customCity: // value for 'customCity'
  *      cityId: // value for 'cityId'
  *      condition: // value for 'condition'
  *      userId: // value for 'userId'
+ *      businessId: // value for 'businessId'
  *   },
  * });
  */
@@ -1865,6 +1884,49 @@ export function useUnlinkUserFromBusinessMutation(baseOptions?: Apollo.MutationH
 export type UnlinkUserFromBusinessMutationHookResult = ReturnType<typeof useUnlinkUserFromBusinessMutation>;
 export type UnlinkUserFromBusinessMutationResult = Apollo.MutationResult<UnlinkUserFromBusinessMutation>;
 export type UnlinkUserFromBusinessMutationOptions = Apollo.BaseMutationOptions<UnlinkUserFromBusinessMutation, UnlinkUserFromBusinessMutationVariables>;
+export const SendInvitationDocument = gql`
+    mutation SendInvitation($businessId: ID!, $recipientEmail: String!, $role: BusinessUserRole!) {
+  sendInvitation(
+    businessId: $businessId
+    recipientEmail: $recipientEmail
+    role: $role
+  ) {
+    id
+    recipientEmail
+    role
+    status
+    createdAt
+  }
+}
+    `;
+export type SendInvitationMutationFn = Apollo.MutationFunction<SendInvitationMutation, SendInvitationMutationVariables>;
+
+/**
+ * __useSendInvitationMutation__
+ *
+ * To run a mutation, you first call `useSendInvitationMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useSendInvitationMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [sendInvitationMutation, { data, loading, error }] = useSendInvitationMutation({
+ *   variables: {
+ *      businessId: // value for 'businessId'
+ *      recipientEmail: // value for 'recipientEmail'
+ *      role: // value for 'role'
+ *   },
+ * });
+ */
+export function useSendInvitationMutation(baseOptions?: Apollo.MutationHookOptions<SendInvitationMutation, SendInvitationMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<SendInvitationMutation, SendInvitationMutationVariables>(SendInvitationDocument, options);
+      }
+export type SendInvitationMutationHookResult = ReturnType<typeof useSendInvitationMutation>;
+export type SendInvitationMutationResult = Apollo.MutationResult<SendInvitationMutation>;
+export type SendInvitationMutationOptions = Apollo.BaseMutationOptions<SendInvitationMutation, SendInvitationMutationVariables>;
 export const DeleteListingDocument = gql`
     mutation DeleteListing($listingId: ID!) {
   deleteListing(listingId: $listingId)
@@ -1903,6 +1965,7 @@ export const UpdateListingDocument = gql`
     title
     description
     price
+    quantity
     images
     condition
     category {
@@ -2390,11 +2453,17 @@ export const GetBusinessByIdDocument = gql`
   business(id: $id) {
     id
     name
+    slug
     email
     contactNumber
     addressLine1
     addressLine2
     postalCode
+    planType
+    owner {
+      id
+      planType
+    }
     city {
       id
       name
@@ -2412,6 +2481,9 @@ export const GetBusinessByIdDocument = gql`
       lightOrDark
       primaryColor
       secondaryColor
+      textColor
+      cardTextColor
+      backgroundColor
       about
       storeName
     }
