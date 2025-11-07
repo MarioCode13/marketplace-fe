@@ -6,35 +6,37 @@ import { useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { generateImageUrl } from '@/lib/utils'
 
-interface ListingCardProps {
-  listing: {
+export interface CardListing {
+  id: string
+  title: string
+  description: string
+  price: string
+  images: string[]
+  createdAt: string
+  sold?: boolean
+  user?: {
     id: string
-    title: string
-    description: string
-    price: string
-    images: string[]
-    createdAt: string
-    sold?: boolean
-    user?: {
-      id: string
-      username: string
-      trustRating?: {
-        overallScore: number
-        starRating: number
-        trustLevel: string
-        totalReviews: number
-        positiveReviews: number
-        verifiedId: boolean
-      }
-      storeBranding?: {
-        slug: string
-      }
+    username: string
+    trustRating?: {
+      overallScore: number
+      starRating: number
+      trustLevel: string
+      totalReviews: number
+      positiveReviews: number
+      verifiedId: boolean
     }
-    business?: {
-      name: string
-      // add other business fields if needed
+    storeBranding?: {
+      slug: string
     }
   }
+  business?: {
+    name: string
+    // add other business fields if needed
+  }
+}
+
+interface ListingCardProps {
+  listing: CardListing
   themeColor?: string
   primaryColor?: string
   cardTextColor?: string

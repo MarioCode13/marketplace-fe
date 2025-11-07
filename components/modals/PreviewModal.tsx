@@ -1,6 +1,6 @@
 import React from 'react'
 import Image from 'next/image'
-import ListingCard from '@/components/cards/ListingCard'
+import ListingCard, { CardListing } from '@/components/cards/ListingCard'
 import { X } from 'lucide-react'
 import { Button } from '../ui/button'
 
@@ -21,7 +21,7 @@ interface PreviewModalProps {
   setShowPreview: (show: boolean) => void
 }
 
-const dummyListings = [
+const dummyListings: CardListing[] = [
   {
     id: '1',
     title: 'Sample Listing 1',
@@ -38,6 +38,7 @@ const dummyListings = [
         trustLevel: 'Trusted',
         totalReviews: 12,
         positiveReviews: 11,
+        verifiedId: true,
       },
       storeBranding: { slug: 'demo-store' },
     },
@@ -58,6 +59,7 @@ const dummyListings = [
         trustLevel: 'Trusted',
         totalReviews: 12,
         positiveReviews: 11,
+        verifiedId: true,
       },
       storeBranding: { slug: 'demo-store' },
     },
