@@ -25,8 +25,7 @@ interface CategoryCascaderProps {
   className?: string
 }
 
-// Helper to find the path to a category by id
-function findCategoryPath(
+export function findCategoryPath(
   categories: CategoryNode[],
   id?: string
 ): CategoryNode[] {

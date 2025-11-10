@@ -1,7 +1,7 @@
-import { defineConfig } from '@playwright/test';
+import { defineConfig } from '@playwright/test'
 
 export default defineConfig({
-  testDir: './tests',
+  testDir: './tests/e2e',
   fullyParallel: true,
   retries: 1,
   use: {
@@ -15,4 +15,4 @@ export default defineConfig({
     port: 3000,
     reuseExistingServer: !process.env.CI,
   },
-});
+})
