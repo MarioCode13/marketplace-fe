@@ -34,6 +34,7 @@ export const ImagePreview: React.FC<ImagePreviewProps> = ({
         {images.map((imageUrl, index) => (
           <div
             key={index}
+            data-testid='image-preview-item'
             className='relative group'
           >
             <div className='aspect-square rounded-lg overflow-hidden border border-border bg-muted'>

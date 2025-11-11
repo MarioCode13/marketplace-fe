@@ -15,4 +15,5 @@ export default defineConfig({
     timeout: 120_000,
     reuseExistingServer: !process.env.CI,
   },
+  // globalSetup: './playwright.global-setup.ts'
 })

@@ -1,0 +1,35 @@
+{
+  "cookies": [
+    {
+      "name": "auth-token",
+      "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkBhZG1pbi5jb20iLCJyb2xlIjoiU1VCU0NSSUJFRCIsInVzZXJJZCI6ImYzNTlmZTc4LTQ3MTgtNDY5OC1hN2ZmLTM1NWI4ZGZlZmQ5ZiIsImlhdCI6MTc2Mjg4ODQyNiwiZXhwIjoxNzYyOTc0ODI2fQ.zbRib6QQWYlmSyXIp50fSy49ahrUWGym70NbmXnKNnA",
+      "domain": "localhost",
+      "path": "/",
+      "expires": 1763493226.759284,
+      "httpOnly": true,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "XSRF-TOKEN",
+      "value": "414df7d1-e2e6-460a-9119-4fb8b9b358d4",
+      "domain": "localhost",
+      "path": "/",
+      "expires": 1763493226.759362,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "http://localhost:3000",
+      "localStorage": [
+        {
+          "name": "theme",
+          "value": "light"
+        }
+      ]
+    }
+  ]
+}

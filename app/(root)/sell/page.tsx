@@ -439,7 +439,10 @@ export default function SellPage() {
             )}
           </div>
 
-          <div className='flex flex-col'>
+          <div
+            className='flex flex-col'
+            data-testid='image-upload-area'
+          >
             <Label className='mb-2'>Images</Label>
             <ImageUploadArea
               onImageUpload={handleImageUpload}
@@ -449,7 +452,6 @@ export default function SellPage() {
               currentImageCount={images.length}
             />
           </div>
-
           {/* Image Preview */}
           <ImagePreview
             images={images}
@@ -457,7 +459,6 @@ export default function SellPage() {
             maxImages={5}
             loading={uploading}
           />
-
           {error && (
             <p className='text-sm text-red-500 text-center'>{error.message}</p>
           )}

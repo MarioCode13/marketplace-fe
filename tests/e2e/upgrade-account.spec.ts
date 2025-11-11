@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+// TODO: Needs implementation. Mock payment gateway interactions for a more robust test
 
 test('user can upgrade account type', async ({ page }) => {
     await page.goto('/login')
