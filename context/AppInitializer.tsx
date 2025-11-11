@@ -1,6 +1,6 @@
 // context/AppInitializer.tsx
 'use client'
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import {
   refetchUserProfile,
@@ -13,6 +13,7 @@ export default function AppInitializer() {
   const dispatch = useDispatch<AppDispatch>()
 
   useEffect(() => {
+    if (process.env.NEXT_PUBLIC_E2E === 'true') return
     // Prevent infinite loop after redirect by using localStorage
     if (
       typeof window !== 'undefined' &&

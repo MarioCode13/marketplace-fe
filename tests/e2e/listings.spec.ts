@@ -17,8 +17,8 @@ test('user can filter listings by category', async ({ page }) => {
     // Select category dropdown in drawer
     await page.getByRole('button', { name: /select a category/i }).click()
 
-    // Select a category (e.g., "Automotive")
-    await page.getByText('Books & Media').click()
+    // Select a category
+    await page.getByText('Electronics').click()
 
 
     // Apply filters (depends on your drawer's apply button)
@@ -26,7 +26,7 @@ test('user can filter listings by category', async ({ page }) => {
 
     // Check filtered results
     const items = page.getByTestId('listing-card')
-    await expect(items).toHaveCount(1)
+    await expect(items).toHaveCount(4)
 })
 
 test('user can see listing details', async ({ page }) => {

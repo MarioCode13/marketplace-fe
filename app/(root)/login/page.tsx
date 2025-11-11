@@ -19,7 +19,6 @@ export default function Login() {
   // const userContext = useSelector((state: RootState) => state.userContext) // Not used
   // Optionally, add local loading/error state
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
 
   const [form, setForm] = useState({ emailOrUsername: '', password: '' })
   // const [getMyBusiness] = useLazyQuery(GET_MY_BUSINESS) // Not used
@@ -31,7 +30,6 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    setError(null)
     try {
       // Use centralized login thunk
       const resultAction = await dispatch(loginUser(form))
@@ -44,7 +42,6 @@ export default function Login() {
     } catch (err) {
       const errorMsg =
         err instanceof Error ? err.message : 'Login failed. Please try again.'
-      setError(errorMsg)
       toast.error(errorMsg)
     } finally {
       setLoading(false)
@@ -91,8 +88,6 @@ export default function Login() {
               required
             />
           </div>
-
-          {error && <p className='text-sm text-red-500'>{error}</p>}
 
           <div className='space-y-3'>
             <Button
