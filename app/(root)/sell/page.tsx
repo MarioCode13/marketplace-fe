@@ -442,6 +442,7 @@ export default function SellPage() {
           <div
             className='flex flex-col'
             data-testid='image-upload-area'
+            data-disabled={images.length >= 5}
           >
             <Label className='mb-2'>Images</Label>
             <ImageUploadArea

@@ -7,7 +7,7 @@ export default defineConfig({
   use: {
     baseURL: 'http://localhost:3000',
     headless: true,
-    storageState: undefined,
+    storageState: 'auth.json',
   },
   webServer: {
     command: 'npm run dev',
@@ -15,5 +15,5 @@ export default defineConfig({
     timeout: 120_000,
     reuseExistingServer: !process.env.CI,
   },
-  // globalSetup: './playwright.global-setup.ts'
+  globalSetup: './playwright.global-setup.ts',
 })
