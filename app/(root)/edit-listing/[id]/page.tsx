@@ -471,6 +471,7 @@ export default function EditListingPage() {
               </Button>
               <Button
                 type='submit'
+                variant={'contained'}
                 disabled={saving}
                 className='flex-1'
               >
