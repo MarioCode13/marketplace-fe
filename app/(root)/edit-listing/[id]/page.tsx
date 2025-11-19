@@ -422,7 +422,10 @@ export default function EditListingPage() {
                     setForm({ ...form, condition: value })
                   }
                 >
-                  <SelectTrigger className='mt-1'>
+                  <SelectTrigger
+                    id='condition'
+                    className='mt-1'
+                  >
                     <SelectValue placeholder='Select condition' />
                   </SelectTrigger>
                   <SelectContent>

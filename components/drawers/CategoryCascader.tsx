@@ -120,6 +120,7 @@ const CategoryCascader: React.FC<CategoryCascaderProps> = ({
           className={`w-full justify-between bg-transparent px-3  ${
             className || ''
           }`}
+          aria-label='Category selector'
         >
           <span
             className={`block truncate ${

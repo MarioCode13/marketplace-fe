@@ -47,6 +47,8 @@ export const ImageUploadArea: React.FC<ImageUploadAreaProps> = ({
   return (
     <div
       {...getRootProps()}
+      data-testid='image-upload-area'
+      aria-label='Image upload area'
       data-disabled={disabled || loading || isAtLimit}
       className={cn(
         'border-2 border-dashed rounded-lg p-6 text-center transition-all duration-200',
