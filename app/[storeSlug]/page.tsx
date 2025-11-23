@@ -21,6 +21,7 @@ import {
   Plus,
 } from 'lucide-react'
 import { useState } from 'react'
+import StoreReviewsModal from '@/components/modals/StoreReviewsModal'
 import { Button } from '@/components/ui/button'
 import { notFound } from 'next/navigation'
 import { useParams, useRouter } from 'next/navigation'
@@ -92,6 +93,7 @@ export default function ProStoreRoute() {
   const [filters, setFilters] = useState<Filters>({})
   const [offset, setOffset] = useState(0)
   const limit = 8
+  const [showReviewsModal, setShowReviewsModal] = useState(false)
 
   const { data: categoriesData } = useGetCategoriesQuery()
   const categories = categoriesData?.getCategories
@@ -256,7 +258,10 @@ export default function ProStoreRoute() {
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <div className='flex items-center gap-1 cursor-pointer'>
+                      <div
+                        className='flex items-center gap-1 cursor-pointer'
+                        onClick={() => setShowReviewsModal(true)}
+                      >
                         {(() => {
                           const rating = Number(trustRating) || 0
                           return [1, 2, 3, 4, 5].map((star) => {
@@ -586,6 +591,12 @@ export default function ProStoreRoute() {
           </div>
         )}
       </div>
+      <StoreReviewsModal
+        isOpen={Boolean(showReviewsModal)}
+        onClose={() => setShowReviewsModal(false)}
+        userId={business?.businessUsers?.[0]?.user?.id || ''}
+        title={storeName}
+      />
     </div>
   )
 }

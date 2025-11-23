@@ -8,12 +8,19 @@ import { useParams, useRouter } from 'next/navigation'
 import ListingCard from '@/components/cards/ListingCard'
 import SkeletonListingCard from '@/components/cards/SkeletonListingCard'
 import Image from 'next/image'
-import { Settings, ChevronLeft, ChevronRight, Plus } from 'lucide-react'
+import { Settings, ChevronLeft, ChevronRight, Plus, Star } from 'lucide-react'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/store/store'
 import { Button } from '@/components/ui/button'
 import { useState } from 'react'
+import StoreReviewsModal from '@/components/modals/StoreReviewsModal'
 import { getTextColor } from '@/lib/utils'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 
 export default function StorePage() {
   const params = useParams()
@@ -26,6 +33,7 @@ export default function StorePage() {
   // State for pagination only (no filters for resellers)
   const [offset, setOffset] = useState(0)
   const limit = 8
+  const [showReviewsModal, setShowReviewsModal] = useState(false)
 
   // Get business data for this business store
   const {
@@ -68,6 +76,8 @@ export default function StorePage() {
   const themeColor = branding?.themeColor || '#1f1b30'
   const primaryColor = branding?.primaryColor || '#1f1b30'
   const badgeLabel = 'Business Store'
+  const trustRating =
+    business?.businessUsers?.[0]?.user?.trustRating?.starRating?.toFixed(1)
 
   // Check ownership/management permissions
   // For business stores: current user must be a member of the business with OWNER or ADMIN role
@@ -148,7 +158,74 @@ export default function StorePage() {
               <p className='text-gray-600 mt-1'>{branding.about}</p>
             )}
             <div className='mt-2 flex items-center gap-2'>
-              {/* Business stores don't have individual trust ratings */}
+              {trustRating !== undefined && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div
+                        className='flex items-center gap-1 cursor-pointer'
+                        onClick={() => setShowReviewsModal(true)}
+                      >
+                        {(() => {
+                          const rating = Number(trustRating) || 0
+                          return [1, 2, 3, 4, 5].map((star) => {
+                            if (rating >= star) {
+                              return (
+                                <Star
+                                  key={star}
+                                  className='w-4 h-4 text-yellow-400 fill-yellow-400 stroke-yellow-400'
+                                />
+                              )
+                            } else if (rating >= star - 0.75) {
+                              return (
+                                <span
+                                  key={star}
+                                  style={{
+                                    position: 'relative',
+                                    display: 'inline-block',
+                                    width: '1em',
+                                    height: '1em',
+                                  }}
+                                >
+                                  <Star
+                                    className='w-4 h-4 text-yellow-400'
+                                    style={{
+                                      position: 'absolute',
+                                      left: 0,
+                                      top: 0,
+                                    }}
+                                  />
+                                  <Star
+                                    className='w-4 h-4 text-yellow-400 fill-yellow-400 stroke-yellow-400'
+                                    style={{
+                                      position: 'absolute',
+                                      left: 0,
+                                      top: 0,
+                                      clipPath:
+                                        'polygon(0 0, 50% 0, 50% 100%, 0 100%)',
+                                    }}
+                                  />
+                                </span>
+                              )
+                            } else {
+                              return (
+                                <Star
+                                  key={star}
+                                  className='w-4 h-4 text-gray-300'
+                                />
+                              )
+                            }
+                          })
+                        })()}
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side='top'>
+                      <p>{trustRating}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+
               {badgeLabel && (
                 <span
                   className='text-xs px-2 py-1 rounded ml-2 text-white'
@@ -156,6 +233,17 @@ export default function StorePage() {
                 >
                   {badgeLabel}
                 </span>
+              )}
+
+              {isOwner && (
+                <Button
+                  variant={'outlined'}
+                  size={'sm'}
+                  className='ml-2'
+                  onClick={() => setShowReviewsModal(true)}
+                >
+                  Reviews
+                </Button>
               )}
             </div>
           </div>
@@ -248,6 +336,12 @@ export default function StorePage() {
           )}
         </div>
       </div>
+      <StoreReviewsModal
+        isOpen={Boolean(showReviewsModal)}
+        onClose={() => setShowReviewsModal(false)}
+        userId={business.businessUsers?.[0]?.user?.id || ''}
+        title={branding?.storeName || business.name}
+      />
     </div>
   )
 }
