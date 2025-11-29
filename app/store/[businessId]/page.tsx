@@ -69,8 +69,10 @@ export default function StorePage() {
 
   const business = businessData.business
   const branding = business.storeBranding
-  const listings = listingsData?.getListings?.listings || []
-  const totalCount = listingsData?.getListings?.totalCount || 0
+  const allListings = listingsData?.getListings?.listings || []
+  // Filter out sold listings
+  const listings = allListings.filter((listing) => !listing.sold)
+  const totalCount = listings.length
 
   // For business stores, we show "Business Store" instead of plan type
   const themeColor = branding?.themeColor || '#1f1b30'

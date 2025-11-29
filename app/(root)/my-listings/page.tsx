@@ -58,12 +58,13 @@ export default function MyListingsPage() {
 
   const [deleteListing] = useMutation(DELETE_LISTING)
 
-  const listings: TrustListing[] = isBusinessUser
+  const allListings: TrustListing[] = isBusinessUser
     ? data?.getListings?.listings || []
     : data?.myListings?.listings || []
-  const totalCount: number = isBusinessUser
-    ? data?.getListings?.totalCount || listings.length
-    : data?.myListings?.totalCount || listings.length
+
+  // Filter out sold listings
+  const listings = allListings.filter((listing) => !listing.sold)
+  const totalCount: number = listings.length
 
   const handleNext = () => {
     if (offset + limit < totalCount) setOffset(offset + limit)
@@ -113,9 +114,8 @@ export default function MyListingsPage() {
       <div className='flex flex-col py-12 px-6 w-full max-w-7xl'>
         {userId ? (
           <>
-            {/* Header with title and button */}
             <div className='flex items-center justify-between w-full mb-6'>
-              <div className='w-12'></div> {/* Spacer to balance the button */}
+              <div className='w-32'></div> {/* Spacer to balance the button */}
               <div className='flex items-center gap-4'>
                 <h1 className='text-2xl font-bold'>
                   {isBusinessUser
@@ -129,7 +129,7 @@ export default function MyListingsPage() {
                     color={'secondary'}
                     variant={'contained'}
                   >
-                    {isBusinessUser ? 'Add Business Listing' : 'Sell New Item'}
+                    Sell New Item
                   </Button>
                 </Link>
               </div>

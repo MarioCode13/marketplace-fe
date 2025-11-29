@@ -16,6 +16,7 @@ interface Listing {
   price: string
   images: string[]
   createdAt: string
+  sold?: boolean
   category: {
     id: string
     name: string
@@ -214,38 +215,44 @@ const Listings: React.FC<ListingsProps> = ({
           </div>
         )}
 
-        <div className='w-full mb-4 text-sm text-muted-foreground'>
-          {`${serverListings.totalCount} listing${
-            serverListings.totalCount !== 1 ? 's' : ''
-          } found`}
-        </div>
-
-        {serverListings.listings.length > 0 ? (
-          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full pb-8'>
-            {serverListings.listings.map((listing) => (
-              <ListingCard
-                key={listing.id}
-                listing={listing}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className='text-center py-12'>
-            <p className='text-lg text-muted-foreground mb-2'>
-              No listings found
-            </p>
-            {hasActiveFilters && (
-              <Button
-                variant='outlined'
-                color='primary'
-                onClick={clearAllFilters}
-                className='mt-2'
-              >
-                Clear Filters
-              </Button>
-            )}
-          </div>
-        )}
+        {(() => {
+          const activeListings = serverListings.listings.filter(
+            (listing) => !listing.sold
+          )
+          return activeListings.length > 0 ? (
+            <>
+              <div className='w-full mb-4 text-sm text-muted-foreground'>
+                {`${activeListings.length} listing${
+                  activeListings.length !== 1 ? 's' : ''
+                } found`}
+              </div>
+              <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full pb-8'>
+                {activeListings.map((listing) => (
+                  <ListingCard
+                    key={listing.id}
+                    listing={listing}
+                  />
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className='text-center py-12'>
+              <p className='text-lg text-muted-foreground mb-2'>
+                No listings found
+              </p>
+              {hasActiveFilters && (
+                <Button
+                  variant='outlined'
+                  color='primary'
+                  onClick={clearAllFilters}
+                  className='mt-2'
+                >
+                  Clear Filters
+                </Button>
+              )}
+            </div>
+          )
+        })()}
 
         {totalPages > 1 && (
           <div className='flex items-center justify-center gap-4 mt-8'>

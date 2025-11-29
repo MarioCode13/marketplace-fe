@@ -115,8 +115,10 @@ export default function ProStoreRoute() {
     variables: listingsQueryVars,
     skip: shouldSkipListings,
   })
-  const listings = listingsData?.getListings?.listings || []
-  const totalCount = listingsData?.getListings?.totalCount || 0
+  const allListings = listingsData?.getListings?.listings || []
+  // Filter out sold listings
+  const listings = allListings.filter((listing) => !listing.sold)
+  const totalCount = listings.length
 
   if (loading) return <div className='p-8 text-center'>Loading store...</div>
   if (error || !business || !isProStore) return notFound()
