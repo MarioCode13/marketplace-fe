@@ -482,7 +482,7 @@ const Page = () => {
 				<ContactSellerModal
 					isOpen={modalOpen}
 					onClose={() => setModalOpen(false)}
-					sellerEmail={listing.user?.email}
+					sellerId={listing.user?.id || ''}
 				/>
 
 				<MarkAsSoldModal

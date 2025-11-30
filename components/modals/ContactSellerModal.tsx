@@ -13,13 +13,13 @@ import { Label } from '@/components/ui/label'
 interface ContactSellerModalProps {
   isOpen: boolean
   onClose: () => void
-  sellerEmail: string
+  sellerId: string // User ID - email looked up server-side for security
 }
 
 const ContactSellerModal = ({
   isOpen,
   onClose,
-  sellerEmail,
+  sellerId,
 }: ContactSellerModalProps) => {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -46,7 +46,7 @@ const ContactSellerModal = ({
           },
           credentials: 'include',
           body: JSON.stringify({
-            to: sellerEmail,
+            sellerId: sellerId,
             subject: `Inquiry about your listing`,
             message: `Name: ${name}\nEmail: ${email}\n\n${message}`,
           }),

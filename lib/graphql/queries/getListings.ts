@@ -62,12 +62,19 @@ export const GET_LISTINGS = gql`
           id
           username
           profileImageUrl
-          trustRating{
+          trustRating {
             verifiedId
+            starRating
+            totalReviews
           }
         }
         business{
           name
+          trustRating {
+            verifiedWithThirdParty
+            averageRating
+            reviewCount
+          }
         }
       }
       totalCount

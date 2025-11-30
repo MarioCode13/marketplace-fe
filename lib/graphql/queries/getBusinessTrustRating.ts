@@ -5,6 +5,7 @@ export const GET_BUSINESS_TRUST_RATING = gql`
     businessTrustRating(businessId: $businessId) {
       averageRating
       reviewCount
+      verifiedWithThirdParty
     }
   }
 `

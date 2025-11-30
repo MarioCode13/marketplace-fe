@@ -10,7 +10,8 @@ import { toast } from 'sonner'
 import CityAutocomplete from '@/components/drawers/CityAutocomplete'
 import { GET_ME } from '@/lib/graphql/queries/getMe'
 import { useRouter } from 'next/navigation'
-import Image from 'next/image'
+import { CheckCircle } from 'lucide-react'
+import OmnicheckTermsModal from '@/components/modals/OmnicheckTermsModal'
 
 const COMPLETE_PROFILE = gql`
   mutation CompleteProfile(
@@ -21,6 +22,7 @@ const COMPLETE_PROFILE = gql`
     $cityId: ID
     $customCity: String
     $contactNumber: String
+    $idNumber: String
   ) {
     updateUser(
       id: $id
@@ -30,6 +32,7 @@ const COMPLETE_PROFILE = gql`
       cityId: $cityId
       customCity: $customCity
       contactNumber: $contactNumber
+      idNumber: $idNumber
     ) {
       id
     }
@@ -51,6 +54,7 @@ export default function CompleteProfilePage() {
       : '',
     customCity: user?.customCity || '',
     contactNumber: user?.contactNumber || '',
+    idNumber: user?.idNumber || '',
   })
 
   const [showCustomCity, setShowCustomCity] = useState(false)
@@ -68,6 +72,7 @@ export default function CompleteProfilePage() {
           : '',
         customCity: user.customCity || '',
         contactNumber: user.contactNumber || '',
+        idNumber: user.idNumber || '',
       })
       setShowCustomCity(!!user.customCity)
     }
@@ -95,16 +100,52 @@ export default function CompleteProfilePage() {
   )
 
   const handleVerifyID = async () => {
+    if (!form.idNumber || !form.firstName || !form.lastName || !user?.id) {
+      toast.error(
+        'Please fill in your ID number, first name, and last name before verifying'
+      )
+      return
+    }
+
     try {
-      const res = await fetch('/api/verify-id', {
-        method: 'POST',
-        credentials: 'include',
-      })
-      if (!res.ok) throw new Error('Verification failed')
-      toast.success('ID verified!')
-      await refetch()
-    } catch {
-      toast.error('ID verification failed')
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_GRAPHQL_URL}/api/id-verify`,
+        {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            idNumber: form.idNumber,
+            firstName: form.firstName,
+            lastName: form.lastName,
+            userId: user.id,
+          }),
+        }
+      )
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Verification failed')
+      }
+
+      if (data.success && data.verifiedID) {
+        toast.success('ID verified successfully!')
+        await refetch()
+      } else {
+        toast.error(
+          data.error ||
+            'Verification failed. Please check your details and try again.'
+        )
+      }
+    } catch (err) {
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : 'ID verification failed. Please try again.'
+      )
     }
   }
 
@@ -126,6 +167,7 @@ export default function CompleteProfilePage() {
           cityId: form.city || undefined,
           customCity: form.customCity || undefined,
           contactNumber: form.contactNumber || undefined,
+          idNumber: form.idNumber || undefined,
         },
       })
       toast.success('Profile updated successfully')
@@ -246,67 +288,62 @@ export default function CompleteProfilePage() {
               required
             />
           </div>
+          <div>
+            <Label htmlFor='idNumber'>South African ID Number</Label>
+            <Input
+              id='idNumber'
+              name='idNumber'
+              value={form.idNumber}
+              onChange={handleChange}
+              placeholder='Enter your 13-digit ID number'
+              maxLength={13}
+              required
+            />
+            <span className='text-xs text-muted-foreground mt-1 block'>
+              Required for ID verification with OmniCheck
+            </span>
+          </div>
           {/* ID Verification Section */}
           <div className='!mb-8'>
             <Label>ID Verification</Label>
             <div className='flex flex-col gap-2'>
-              <Button
-                type='button'
-                variant='outlined'
-                color='primary'
-                onClick={handleVerifyID}
-                disabled={user?.idVerified}
-              >
-                {user?.idVerified ? 'ID Verified' : 'Verify with OmniCheck'}
-              </Button>
-              <span className='text-xs text-muted-foreground'>
-                By verifying your ID, you agree to our use of
-                <button
-                  type='button'
-                  className='text-blue-600 underline ml-1'
-                  onClick={() => setShowTermsModal(true)}
-                >
-                  OmniCheck terms
-                </button>
-              </span>
+              {user?.trustRating?.verifiedId ? (
+                <div className='inline-flex items-center gap-2 px-3 py-2 rounded-md bg-success/10 text-success'>
+                  <CheckCircle className='w-4 h-4' />
+                  <span className='font-medium'>
+                    ID Verified with OmniCheck
+                  </span>
+                </div>
+              ) : (
+                <>
+                  <Button
+                    type='button'
+                    variant='outlined'
+                    color='primary'
+                    onClick={handleVerifyID}
+                    disabled={
+                      !form.idNumber || !form.firstName || !form.lastName
+                    }
+                  >
+                    Verify with OmniCheck
+                  </Button>
+                  <span className='text-xs text-muted-foreground'>
+                    By verifying your ID, you agree to our use of
+                    <button
+                      type='button'
+                      className='text-blue-600 underline ml-1'
+                      onClick={() => setShowTermsModal(true)}
+                    >
+                      OmniCheck terms
+                    </button>
+                  </span>
+                </>
+              )}
             </div>
           </div>
           {/* Terms Modal */}
           {showTermsModal && (
-            <div
-              className='fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50'
-              onClick={() => setShowTermsModal(false)}
-            >
-              <div
-                className='bg-white dark:bg-componentBackground rounded-lg p-6 max-w-md w-full shadow-lg flex flex-col items-center'
-                onClick={(e) => e.stopPropagation()}
-              >
-                <h3 className='text-lg font-bold mb-2'>OmniCheck Terms</h3>
-                <p className='text-sm mb-4 text-center'>
-                  By verifying your identity, you agree to share your
-                  information with OmniCheck for the purpose of identity
-                  verification. Your data will be processed securely and in
-                  accordance with our privacy policy. For more details, please
-                  visit the OmniCheck website.
-                </p>
-                <Image
-                  src='/omnicheck.svg'
-                  alt='OmniCheck'
-                  className='h-10 mb-4'
-                  height={400}
-                  width={800}
-                />
-                <Button
-                  type='button'
-                  variant='contained'
-                  color='primary'
-                  className='w-full'
-                  onClick={() => setShowTermsModal(false)}
-                >
-                  Close
-                </Button>
-              </div>
-            </div>
+            <OmnicheckTermsModal setShowTermsModal={setShowTermsModal} />
           )}
           <Button
             type='submit'

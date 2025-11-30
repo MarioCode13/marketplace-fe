@@ -230,7 +230,10 @@ const Listings: React.FC<ListingsProps> = ({
                 {activeListings.map((listing) => (
                   <ListingCard
                     key={listing.id}
-                    listing={listing}
+                    listing={{
+                      ...listing,
+                      user: listing.user ?? undefined,
+                    }}
                   />
                 ))}
               </div>

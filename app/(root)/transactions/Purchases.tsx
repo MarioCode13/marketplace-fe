@@ -17,10 +17,10 @@ export default function Purchases({
   onReviewClick,
 }: PurchasesProps) {
   const [contactOpen, setContactOpen] = useState(false)
-  const [contactSellerEmail, setContactSellerEmail] = useState('')
+  const [contactSellerId, setContactSellerId] = useState('')
 
   const handleContact = (transaction: Transaction) => {
-    setContactSellerEmail(transaction?.seller?.email || '')
+    setContactSellerId(transaction?.seller?.id || '')
     setContactOpen(true)
   }
 
@@ -58,7 +58,7 @@ export default function Purchases({
       <ContactSellerModal
         isOpen={contactOpen}
         onClose={() => setContactOpen(false)}
-        sellerEmail={contactSellerEmail}
+        sellerId={contactSellerId}
       />
     </>
   )

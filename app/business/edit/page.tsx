@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Loader2, Users, Eye } from 'lucide-react'
+import { Loader2, Users, Eye, ShieldCheck } from 'lucide-react'
 import { UPDATE_STORE_BRANDING } from '@/lib/graphql/mutations/businessMutations'
 import { UPDATE_BUSINESS } from '@/lib/graphql/mutations/updateBusiness'
 import { GET_BUSINESS_BY_ID } from '@/lib/graphql/queries/getBusinessById'
@@ -30,6 +30,7 @@ import { BusinessUser, UpdateStoreBrandingInput } from '@/lib/graphql/generated'
 import PreviewModal from '@/components/modals/PreviewModal'
 import Link from 'next/link'
 import AddTeamMember from './AddTeamMember'
+import OmnicheckTermsModal from '@/components/modals/OmnicheckTermsModal'
 
 export default function BusinessEditPage() {
   const router = useRouter()
@@ -124,7 +125,7 @@ export default function BusinessEditPage() {
   })
 
   const [showPreview, setShowPreview] = useState(false)
-
+  const [showTermsModal, setShowTermsModal] = useState(false)
   const [updateStoreBranding, { loading: brandingSaving }] = useMutation(
     UPDATE_STORE_BRANDING
   )
@@ -272,23 +273,44 @@ export default function BusinessEditPage() {
       return
     }
 
+    if (!business?.name || business.name.trim() === '') {
+      toast.error(
+        'Business name is required for verification. Please update your business name first.'
+      )
+      return
+    }
+
     try {
-      const res = await fetch('/api/verify-business', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ businessId: business.id }),
-      })
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_GRAPHQL_URL}/api/verify-business`,
+        {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ businessId: business.id }),
+        }
+      )
 
-      if (!res.ok) throw new Error('Verification failed')
+      const data = await res.json()
 
-      toast.success('Business verification initiated!')
-      // Refetch business to pick up verification status
-      if (typeof refetchBusiness === 'function') await refetchBusiness()
+      if (!res.ok) {
+        throw new Error(data.error || 'Verification failed')
+      }
+
+      if (data.success && data.verified) {
+        toast.success('Business verified successfully with OmniCheck!')
+        // Refetch business to pick up verification status
+        if (typeof refetchBusiness === 'function') await refetchBusiness()
+      } else {
+        toast.error(
+          data.error ||
+            'Business verification failed. Please check your business name and try again.'
+        )
+      }
     } catch (err) {
       toast.error(
-        'Business verification failed' +
-          (err instanceof Error ? err.message : '')
+        'Business verification failed: ' +
+          (err instanceof Error ? err.message : 'Unknown error')
       )
     }
   }
@@ -553,19 +575,39 @@ export default function BusinessEditPage() {
 
             {canEditBusiness && (
               <div className='mt-3'>
-                <Button
-                  type='button'
-                  onClick={handleVerifyBusiness}
-                  disabled={!business?.id}
-                >
-                  {business?.id
-                    ? 'Verify Business with OmniCheck'
-                    : 'Verify Business'}
-                </Button>
-                <p className='text-xs text-muted-foreground mt-2'>
-                  By verifying your business, you agree to share information
-                  with OmniCheck for verification.
-                </p>
+                {business?.trustRating?.verifiedWithThirdParty ? (
+                  <div className='inline-flex items-center gap-2 px-3 py-2 rounded-md bg-success/10 text-success'>
+                    <ShieldCheck className='w-4 h-4' />
+                    <span className='font-medium'>Verified with OmniCheck</span>
+                  </div>
+                ) : (
+                  <>
+                    <Button
+                      type='button'
+                      variant={'contained'}
+                      onClick={handleVerifyBusiness}
+                      disabled={!business?.id}
+                    >
+                      Verify Business
+                    </Button>
+                    <p className='text-xs text-muted-foreground mt-2'>
+                      By verifying your ID, you agree to our use of
+                      <button
+                        type='button'
+                        className='text-blue-600 underline ml-1'
+                        onClick={() => setShowTermsModal(true)}
+                      >
+                        OmniCheck terms
+                      </button>
+                    </p>
+                    {showTermsModal && (
+                      <OmnicheckTermsModal
+                        setShowTermsModal={setShowTermsModal}
+                        business
+                      />
+                    )}
+                  </>
+                )}
               </div>
             )}
           </div>

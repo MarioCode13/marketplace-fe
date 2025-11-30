@@ -5,6 +5,12 @@ import { MoreVertical, ShieldCheck, Star } from 'lucide-react'
 import { useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { generateImageUrl } from '@/lib/utils'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 
 export interface CardListing {
   id: string
@@ -18,20 +24,21 @@ export interface CardListing {
     id: string
     username: string
     trustRating?: {
-      overallScore: number
-      starRating: number
-      trustLevel: string
-      totalReviews: number
-      positiveReviews: number
-      verifiedId: boolean
-    }
-    storeBranding?: {
-      slug: string
-    }
-  }
+      overallScore?: number
+      starRating?: number
+      trustLevel?: string
+      totalReviews?: number
+      positiveReviews?: number
+      verifiedId?: boolean
+    } | null
+  } | null
   business?: {
     name: string
-    // add other business fields if needed
+    trustRating?: {
+      verifiedWithThirdParty?: boolean
+      averageRating?: number
+      reviewCount?: number
+    } | null
   }
 }
 
@@ -128,27 +135,50 @@ export default function ListingCard({
                       ? listing.user.username
                       : listing.business?.name || 'Unknown'}
                   </p>
-                  {listing.user?.trustRating?.verifiedId && (
-                    <ShieldCheck className='w-4 h-4 text-gray-400' />
+                  {/* Verified badge for individual users (verifiedId) or businesses (verifiedWithThirdParty) */}
+                  {(listing.user?.trustRating?.verifiedId ||
+                    listing.business?.trustRating?.verifiedWithThirdParty) && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <ShieldCheck className='w-4 h-4 text-success' />
+                        </TooltipTrigger>
+                        <TooltipContent side='top'>
+                          <p>Verified</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   )}
                 </div>
                 {/* Only show trust rating if user exists and has trustRating */}
-                {listing.user?.trustRating?.starRating && (
+                {(listing.user?.trustRating?.starRating ||
+                  listing.business?.trustRating?.averageRating) && (
                   <div className='flex items-center gap-2'>
                     <div className='flex items-center gap-1'>
                       <Star className='w-3 h-3 fill-yellow-400 text-yellow-400' />
                       <span className='text-xs font-medium'>
-                        {listing.user.trustRating.starRating?.toFixed(1)}
+                        {listing.user?.trustRating?.starRating !== undefined
+                          ? listing.user.trustRating.starRating.toFixed(1)
+                          : listing.business?.trustRating?.averageRating !==
+                            undefined
+                          ? listing.business!.trustRating!.averageRating!.toFixed(
+                              1
+                            )
+                          : ''}
                       </span>
                     </div>
-                    {listing.user.trustRating.totalReviews > 0 && (
+                    {(listing.user?.trustRating?.totalReviews ||
+                      listing.business?.trustRating?.reviewCount) && (
                       <span
                         className='text-xs text-gray-500'
                         style={
                           cardTextColor ? { color: cardTextColor } : undefined
                         }
                       >
-                        ({listing.user.trustRating.totalReviews} reviews)
+                        (
+                        {listing.user?.trustRating?.totalReviews ??
+                          listing.business?.trustRating?.reviewCount}{' '}
+                        reviews)
                       </span>
                     )}
                   </div>

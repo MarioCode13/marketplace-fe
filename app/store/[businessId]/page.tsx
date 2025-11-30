@@ -278,7 +278,7 @@ export default function StorePage() {
                   listing={{
                     ...listing,
                     price: listing.price.toString(),
-                    user: listing.user === null ? undefined : listing.user,
+                    user: listing.user ?? undefined,
                     business: business ? { name: business.name } : undefined,
                   }}
                   themeColor={themeColor}

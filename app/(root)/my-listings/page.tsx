@@ -148,7 +148,7 @@ export default function MyListingsPage() {
                     listing={{
                       ...listing,
                       price: String(listing.price),
-                      user: listing.user === null ? undefined : listing.user,
+                      user: listing.user ?? undefined,
                     }}
                     showMenu
                     onEdit={() => router.push(`/edit-listing/${listing.id}`)}

@@ -433,6 +433,7 @@ export type MutationUpdateUserArgs = {
   email?: InputMaybe<Scalars['String']['input']>;
   firstName?: InputMaybe<Scalars['String']['input']>;
   id: Scalars['ID']['input'];
+  idNumber?: InputMaybe<Scalars['String']['input']>;
   lastName?: InputMaybe<Scalars['String']['input']>;
   username?: InputMaybe<Scalars['String']['input']>;
 };
@@ -950,6 +951,7 @@ export type User = {
   email: Scalars['String']['output'];
   firstName?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
+  idNumber?: Maybe<Scalars['String']['output']>;
   idPhotoUrl?: Maybe<Scalars['String']['output']>;
   lastName?: Maybe<Scalars['String']['output']>;
   listings: Array<Listing>;
@@ -996,6 +998,7 @@ export type CompleteProfileMutationVariables = Exact<{
   cityId?: InputMaybe<Scalars['ID']['input']>;
   customCity?: InputMaybe<Scalars['String']['input']>;
   contactNumber?: InputMaybe<Scalars['String']['input']>;
+  idNumber?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 
@@ -1207,7 +1210,7 @@ export type BusinessTrustRatingQueryVariables = Exact<{
 }>;
 
 
-export type BusinessTrustRatingQuery = { __typename?: 'Query', businessTrustRating?: { __typename?: 'BusinessTrustRating', averageRating: number, reviewCount: number } | null };
+export type BusinessTrustRatingQuery = { __typename?: 'Query', businessTrustRating?: { __typename?: 'BusinessTrustRating', averageRating: number, reviewCount: number, verifiedWithThirdParty: boolean } | null };
 
 export type GetCategoriesQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1239,12 +1242,12 @@ export type GetListingsQueryVariables = Exact<{
 }>;
 
 
-export type GetListingsQuery = { __typename?: 'Query', getListings: { __typename?: 'ListingPageResponse', totalCount: number, listings: Array<{ __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, sold: boolean, customCity?: string | null, condition: Condition, createdAt: string, expiresAt: string, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, category?: { __typename?: 'Category', id: string, name: string } | null, user?: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } | null, business?: { __typename?: 'Business', name: string } | null }> } };
+export type GetListingsQuery = { __typename?: 'Query', getListings: { __typename?: 'ListingPageResponse', totalCount: number, listings: Array<{ __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, sold: boolean, customCity?: string | null, condition: Condition, createdAt: string, expiresAt: string, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, category?: { __typename?: 'Category', id: string, name: string } | null, user?: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null, trustRating?: { __typename?: 'TrustRating', verifiedId: boolean, starRating: number, totalReviews: number } | null } | null, business?: { __typename?: 'Business', name: string, trustRating?: { __typename?: 'BusinessTrustRating', verifiedWithThirdParty: boolean, averageRating: number, reviewCount: number } | null } | null }> } };
 
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type MeQuery = { __typename?: 'Query', me?: { __typename?: 'User', id: string, username: string, email: string, firstName?: string | null, lastName?: string | null, bio?: string | null, profileImageUrl?: string | null, planType?: PlanType | null, role: string, customCity?: string | null, contactNumber?: string | null, idPhotoUrl?: string | null, driversLicenseUrl?: string | null, proofOfAddressUrl?: string | null, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, subscription?: { __typename?: 'Subscription', status: SubscriptionStatus, planType: PlanType } | null } | null };
+export type MeQuery = { __typename?: 'Query', me?: { __typename?: 'User', id: string, username: string, email: string, firstName?: string | null, lastName?: string | null, bio?: string | null, profileImageUrl?: string | null, planType?: PlanType | null, role: string, customCity?: string | null, contactNumber?: string | null, idNumber?: string | null, idPhotoUrl?: string | null, driversLicenseUrl?: string | null, proofOfAddressUrl?: string | null, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, subscription?: { __typename?: 'Subscription', status: SubscriptionStatus, planType: PlanType } | null, trustRating?: { __typename?: 'TrustRating', verifiedId: boolean } | null } | null };
 
 export type GetMyBusinessQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1412,7 +1415,7 @@ export type SearchCitiesQuery = { __typename?: 'Query', searchCities: Array<{ __
 
 
 export const CompleteProfileDocument = gql`
-    mutation CompleteProfile($id: ID!, $firstName: String!, $lastName: String!, $bio: String, $cityId: ID, $customCity: String, $contactNumber: String) {
+    mutation CompleteProfile($id: ID!, $firstName: String!, $lastName: String!, $bio: String, $cityId: ID, $customCity: String, $contactNumber: String, $idNumber: String) {
   updateUser(
     id: $id
     firstName: $firstName
@@ -1421,6 +1424,7 @@ export const CompleteProfileDocument = gql`
     cityId: $cityId
     customCity: $customCity
     contactNumber: $contactNumber
+    idNumber: $idNumber
   ) {
     id
   }
@@ -1448,6 +1452,7 @@ export type CompleteProfileMutationFn = Apollo.MutationFunction<CompleteProfileM
  *      cityId: // value for 'cityId'
  *      customCity: // value for 'customCity'
  *      contactNumber: // value for 'contactNumber'
+ *      idNumber: // value for 'idNumber'
  *   },
  * });
  */
@@ -2639,6 +2644,7 @@ export const BusinessTrustRatingDocument = gql`
   businessTrustRating(businessId: $businessId) {
     averageRating
     reviewCount
+    verifiedWithThirdParty
   }
 }
     `;
@@ -2847,9 +2853,19 @@ export const GetListingsDocument = gql`
         id
         username
         profileImageUrl
+        trustRating {
+          verifiedId
+          starRating
+          totalReviews
+        }
       }
       business {
         name
+        trustRating {
+          verifiedWithThirdParty
+          averageRating
+          reviewCount
+        }
       }
     }
     totalCount
@@ -2926,12 +2942,16 @@ export const MeDocument = gql`
     }
     customCity
     contactNumber
+    idNumber
     idPhotoUrl
     driversLicenseUrl
     proofOfAddressUrl
     subscription {
       status
       planType
+    }
+    trustRating {
+      verifiedId
     }
   }
 }
