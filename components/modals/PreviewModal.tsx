@@ -40,7 +40,6 @@ const dummyListings: CardListing[] = [
         positiveReviews: 11,
         verifiedId: true,
       },
-      storeBranding: { slug: 'demo-store' },
     },
   },
   {
@@ -61,7 +60,6 @@ const dummyListings: CardListing[] = [
         positiveReviews: 11,
         verifiedId: true,
       },
-      storeBranding: { slug: 'demo-store' },
     },
   },
 ]
