@@ -6,13 +6,15 @@ import { GET_MY_BUSINESS } from '@/lib/graphql/queries/getMyBusiness'
 import { Business } from '@/lib/graphql/generated'
 import { MeQuery } from '@/lib/graphql/generated'
 
+const API_BASE = "https://api.dealio.org.za"
+
 // Thunk to handle login flow
 export const loginUser = createAsyncThunk(
 	'userContext/loginUser',
 	async (form: { emailOrUsername: string; password: string }, { dispatch, rejectWithValue }) => {
 		try {
 			// Call backend REST login; backend sets httpOnly cookies + CSRF
-            const cookieRes = await fetch(`/api/auth/login`, {
+			const cookieRes = await fetch(`${API_BASE}/api/auth/login`, {
 				method: 'POST',
 				credentials: 'include',
 				headers: { 'Content-Type': 'application/json' },
@@ -67,7 +69,7 @@ export const logoutUser = createAsyncThunk(
 		if (xsrfToken) {
 			headers['X-XSRF-TOKEN'] = xsrfToken
 		}
-        const res = await fetch(`/api/auth/logout`, {
+		const res = await fetch(`/api/auth/logout`, {
 			method: 'POST',
 			credentials: 'include',
 			headers,
@@ -140,7 +142,7 @@ export const refetchBusinessContext = createAsyncThunk(
 			})
 			console.log('[refetchBusinessContext] GET_MY_BUSINESS result:', data)
 			const business = data?.myBusiness
-            if (business) {
+			if (business) {
 				const state = getState() as import('@/store/store').RootState
 				const currentUserId = state?.userContext?.userId
 				// Merge with existing user context
@@ -178,22 +180,22 @@ export const refetchBusinessContext = createAsyncThunk(
 				dispatch(setUserContext(mergedContext))
 				console.log('[refetchBusinessContext] setUserContext dispatched:', mergedContext)
 				return business
-            } else {
-                // No business found: only clear business-related fields, preserve user login context
-                console.log('[refetchBusinessContext] No business found, clearing only business-related fields')
-                const state = getState() as import('@/store/store').RootState
-                const prevUserContext = state?.userContext || {}
-                const mergedContext = {
-                    ...prevUserContext,
-                    business: null,
-                    businessId: null,
-                    businessName: null,
-                    isBusinessUser: false,
-                    isBusinessOwner: false,
-                }
-                dispatch(setUserContext(mergedContext))
-                return null
-            }
+			} else {
+				// No business found: only clear business-related fields, preserve user login context
+				console.log('[refetchBusinessContext] No business found, clearing only business-related fields')
+				const state = getState() as import('@/store/store').RootState
+				const prevUserContext = state?.userContext || {}
+				const mergedContext = {
+					...prevUserContext,
+					business: null,
+					businessId: null,
+					businessName: null,
+					isBusinessUser: false,
+					isBusinessOwner: false,
+				}
+				dispatch(setUserContext(mergedContext))
+				return null
+			}
 		} catch (error: unknown) {
 			console.log('[refetchBusinessContext] Error:', error)
 			if (error instanceof Error) {
