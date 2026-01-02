@@ -6,7 +6,7 @@ import fetch from 'cross-fetch'
 // stale data to leak between requests in a long-running Node process.
 export function getServerApolloClient(reqHeaders?: Record<string, string>) {
     const httpLink = new HttpLink({
-        uri: `${process.env.NEXT_PUBLIC_GRAPHQL_URL}/graphql`,
+        uri: process.env.NEXT_PUBLIC_GRAPHQL_URL,
         fetch,
         headers: {
             // Forward authorization header and cookies when present
