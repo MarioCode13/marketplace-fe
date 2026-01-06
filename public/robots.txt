@@ -14,10 +14,17 @@ Disallow: /private/
 Disallow: /_next/
 Disallow: /static/
 
-# Allow important pages
+# Disallow auth-only and private pages (should not be indexed)
+Disallow: /login
+Disallow: /register
+Disallow: /profile
+Disallow: /my-listings
+Disallow: /transactions
+Disallow: /verification
+Disallow: /subscriptions
+Disallow: /sell
+
+# Allow public pages
 Allow: /listings
-Allow: /sell
-Allow: /profile
 Allow: /terms
-Allow: /privacy
-Allow: /verification 
+Allow: /privacy 

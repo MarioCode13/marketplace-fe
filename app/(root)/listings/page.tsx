@@ -2,12 +2,28 @@ import { getServerApolloClient } from '@/lib/apollo/server'
 import { GET_LISTINGS } from '@/lib/graphql/queries'
 import Listings from './Listings'
 import ClientLoadingWrapper from './loading-client'
+import { Metadata } from 'next'
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic'
 // Disable static data caching
 export const fetchCache = 'force-no-store'
 export const revalidate = 0
+
+export const metadata: Metadata = {
+  title: 'Browse Listings',
+  description:
+    'Browse thousands of secondhand items on Dealio. Find great deals on electronics, furniture, clothing, and more in South Africa.',
+  openGraph: {
+    title: 'Browse Listings | Dealio',
+    description:
+      'Browse thousands of secondhand items on Dealio. Find great deals in South Africa.',
+    url: 'https://dealio.org.za/listings',
+  },
+  alternates: {
+    canonical: '/listings',
+  },
+}
 
 type SearchParams = { [key: string]: string | string[] | undefined }
 type NextSearchParams = Promise<SearchParams> | undefined

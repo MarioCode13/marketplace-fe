@@ -50,6 +50,12 @@ export const metadata: Metadata = {
         height: 630,
         alt: "Dealio - South Africa's Trusted Secondhand Marketplace",
       },
+      {
+        url: '/logo.png',
+        width: 512,
+        height: 512,
+        alt: 'Dealio Logo',
+      },
     ],
   },
   twitter: {
@@ -131,6 +137,26 @@ export default function RootLayout({
           name='ICBM'
           content='-30.5595, 22.9375'
         />
+        {/* Organization Schema - Required for Google Search Logo */}
+        <script
+          type='application/ld+json'
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'Organization',
+              name: 'Dealio',
+              url: 'https://dealio.org.za',
+              logo: 'https://dealio.org.za/logo.png',
+              description: "South Africa's trusted secondhand marketplace",
+              sameAs: [
+                // Add your social media profiles here when available
+                // 'https://twitter.com/dealio_za',
+                // 'https://facebook.com/dealio',
+              ],
+            }),
+          }}
+        />
+        {/* WebSite Schema */}
         <script
           type='application/ld+json'
           dangerouslySetInnerHTML={{
@@ -140,10 +166,21 @@ export default function RootLayout({
               name: 'Dealio',
               url: 'https://dealio.org.za',
               description: "South Africa's trusted secondhand marketplace",
+              publisher: {
+                '@type': 'Organization',
+                name: 'Dealio',
+                logo: {
+                  '@type': 'ImageObject',
+                  url: 'https://dealio.org.za/logo.png',
+                },
+              },
               potentialAction: {
                 '@type': 'SearchAction',
-                target:
-                  'https://dealio.org.za/listings?searchTerm={search_term_string}',
+                target: {
+                  '@type': 'EntryPoint',
+                  urlTemplate:
+                    'https://dealio.org.za/listings?searchTerm={search_term_string}',
+                },
                 'query-input': 'required name=search_term_string',
               },
             }),
