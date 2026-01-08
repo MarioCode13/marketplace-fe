@@ -24,6 +24,7 @@ interface FilterDrawerProps {
     maxPrice?: number
     condition?: string
     cityId?: string
+    cityLabel?: string
     customCity?: string
     searchTerm?: string
     minDate?: string
@@ -38,6 +39,7 @@ interface FilterDrawerProps {
     maxPrice?: number
     condition?: string
     cityId?: string
+    cityLabel?: string
     customCity?: string
     searchTerm?: string
     minDate?: string
@@ -71,13 +73,20 @@ export default function FilterDrawer({
   categories,
   currentFilters = {},
 }: FilterDrawerProps) {
+  const toNumber = (v: any) => {
+    if (v === undefined || v === '' || v === null) return undefined
+    const n = typeof v === 'number' ? v : parseFloat(String(v))
+    return Number.isNaN(n) ? undefined : n
+  }
+
   const [filters, setFilters] = useState({
     categoryId: currentFilters.categoryId || undefined,
-    minPrice: currentFilters.minPrice || undefined,
-    maxPrice: currentFilters.maxPrice || undefined,
+    minPrice: toNumber((currentFilters as any).minPrice),
+    maxPrice: toNumber((currentFilters as any).maxPrice),
     condition: currentFilters.condition || undefined,
     cityId: currentFilters.cityId || undefined,
     customCity: currentFilters.customCity || '',
+    cityLabel: (currentFilters as any).cityLabel || '',
     searchTerm: currentFilters.searchTerm || '',
     minDate: currentFilters.minDate || '',
     maxDate: currentFilters.maxDate || '',
@@ -92,11 +101,12 @@ export default function FilterDrawer({
     if (isOpen) {
       setFilters({
         categoryId: currentFilters.categoryId || undefined,
-        minPrice: currentFilters.minPrice || undefined,
-        maxPrice: currentFilters.maxPrice || undefined,
+        minPrice: toNumber((currentFilters as any).minPrice),
+        maxPrice: toNumber((currentFilters as any).maxPrice),
         condition: currentFilters.condition || undefined,
         cityId: currentFilters.cityId || undefined,
         customCity: currentFilters.customCity || '',
+        cityLabel: (currentFilters as any).cityLabel || '',
         searchTerm: currentFilters.searchTerm || '',
         minDate: currentFilters.minDate || '',
         maxDate: currentFilters.maxDate || '',
@@ -122,6 +132,7 @@ export default function FilterDrawer({
       condition: undefined,
       cityId: undefined,
       customCity: '',
+      cityLabel: '',
       searchTerm: '',
       minDate: '',
       maxDate: '',
@@ -134,10 +145,12 @@ export default function FilterDrawer({
     const filterParams: Record<string, string | number | undefined> = {}
 
     if (filters.categoryId) filterParams.categoryId = filters.categoryId
-    if (filters.minPrice) filterParams.minPrice = filters.minPrice
-    if (filters.maxPrice) filterParams.maxPrice = filters.maxPrice
+    if (filters.minPrice !== undefined) filterParams.minPrice = filters.minPrice
+    if (filters.maxPrice !== undefined) filterParams.maxPrice = filters.maxPrice
     if (filters.condition) filterParams.condition = filters.condition
     if (filters.cityId) filterParams.cityId = filters.cityId
+    if (filters.cityLabel && (filters.cityLabel as string).trim())
+      filterParams.cityLabel = (filters.cityLabel as string).trim()
     if (filters.customCity.trim())
       filterParams.customCity = filters.customCity.trim()
     if (filters.searchTerm.trim())
@@ -221,12 +234,16 @@ export default function FilterDrawer({
                   />
                 </Badge>
               )}
-              {filters.cityId || filters.customCity.trim() ? (
+              {filters.cityId ||
+              filters.customCity.trim() ||
+              ((filters as any).cityLabel &&
+                (filters as any).cityLabel.trim()) ? (
                 <Badge
                   variant='secondary'
                   className='flex items-center gap-1'
                 >
-                  Location: {filters.customCity || 'City'}
+                  Location:{' '}
+                  {filters.customCity || (filters as any).cityLabel || 'City'}
                   <X
                     className='w-3 h-3 cursor-pointer'
                     onClick={() => {
@@ -234,6 +251,7 @@ export default function FilterDrawer({
                         ...prev,
                         cityId: undefined,
                         customCity: '',
+                        cityLabel: '',
                       }))
                     }}
                   />
@@ -324,9 +342,14 @@ export default function FilterDrawer({
                 {!showCustomCity && (
                   <CityAutocomplete
                     value={filters.cityId}
-                    onChange={(cityId) => {
+                    onChange={(cityId, cityLabel) => {
                       updateFilter('cityId', cityId)
-                      // Optionally store cityLabel for display, but do not touch customCity
+                      // store short city name (first part before comma) for URL and display
+                      const short = cityLabel
+                        ? cityLabel.split(',')[0].trim()
+                        : ''
+                      updateFilter('cityLabel', short)
+                      // Optionally store full label elsewhere if needed
                     }}
                     noCustomCity
                     onCantFindCity={() => setShowCustomCity(true)}

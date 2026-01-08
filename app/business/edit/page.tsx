@@ -220,7 +220,7 @@ export default function BusinessEditPage() {
       formData.append('image', e.target.files[0])
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_GRAPHQL_URL}/api/store/upload-logo`,
+          `${process.env.NEXT_PUBLIC_API_BASE}/api/store/upload-logo`,
           {
             method: 'POST',
             body: formData,
@@ -246,7 +246,7 @@ export default function BusinessEditPage() {
       formData.append('image', e.target.files[0])
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_GRAPHQL_URL}/api/store/upload-banner`,
+          `${process.env.NEXT_PUBLIC_API_BASE}/api/store/upload-banner`,
           {
             method: 'POST',
             body: formData,
@@ -254,12 +254,14 @@ export default function BusinessEditPage() {
           }
         )
         if (!res.ok) throw new Error('Failed to upload banner')
+        toast.success('Image uploaded successfully!')
         const url = await res.text()
         setForm((prev) => ({ ...prev, bannerUrl: url }))
       } catch (err: unknown) {
         setUploadBannerError(
           err instanceof Error ? err.message : 'Upload failed'
         )
+        toast.error('Image upload failed: ' + err)
       } finally {
         setUploadingBanner(false)
       }

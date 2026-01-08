@@ -21,10 +21,12 @@ import {
 import { useGetMyBusinessQuery } from '@/lib/graphql/generated'
 import { useQuery } from '@apollo/client'
 import { GET_ME } from '@/lib/graphql/queries/getMe'
+import { toast } from 'sonner'
+import { useRouter } from 'next/navigation'
 
 export default function Navbar() {
   const dispatch = useDispatch<AppDispatch>()
-
+  const router = useRouter()
   const isLoggedIn = useSelector(selectIsLoggedIn)
   const user = useSelector((state: RootState) => state.userContext)
   const { theme, setTheme } = useTheme()
@@ -36,7 +38,12 @@ export default function Navbar() {
     skip: !isLoggedIn,
   })
 
-  const profileImageUrl = data?.me?.profileImageUrl
+  // const profileImageUrl = data?.me?.profileImageUrl
+  // example Navbar.tsx
+  const profileImageUrl = useSelector(
+    (state: RootState) => state.userContext.profileImageUrl
+  )
+
   // const user = data?.me
   const isStoreUser =
     user?.planType === 'RESELLER' || user?.planType === 'PRO_STORE'
@@ -45,6 +52,8 @@ export default function Navbar() {
   const handleLogout = async () => {
     console.log('Dispatching logoutUser')
     await dispatch(logoutUser())
+    toast.success('Logged out!')
+    router.push('/')
   }
 
   return (

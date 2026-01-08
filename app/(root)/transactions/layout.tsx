@@ -18,3 +18,4 @@ export default function TransactionsLayout({
 }) {
   return <>{children}</>
 }
+

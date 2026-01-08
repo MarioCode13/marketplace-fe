@@ -77,7 +77,7 @@ export default function ListingCard({
       data-testid='listing-card'
     >
       <Link
-        href={`/listings/${listing.id}`}
+        href={`/listing/${listing.id}`}
         passHref
       >
         <div

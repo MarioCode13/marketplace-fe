@@ -18,3 +18,4 @@ export default function SubscriptionsLayout({
 }) {
   return <>{children}</>
 }
+

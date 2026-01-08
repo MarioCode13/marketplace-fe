@@ -6,7 +6,7 @@ import { GET_MY_BUSINESS } from '@/lib/graphql/queries/getMyBusiness'
 import { Business } from '@/lib/graphql/generated'
 import { MeQuery } from '@/lib/graphql/generated'
 
-const API_BASE = "https://api.dealio.org.za"
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "https://api.dealio.org.za"
 
 // Thunk to handle login flow
 export const loginUser = createAsyncThunk(
@@ -38,48 +38,35 @@ export const loginUser = createAsyncThunk(
 // Thunk to handle logout flow
 export const logoutUser = createAsyncThunk(
 	'userContext/logoutUser',
-	async (_, { dispatch, getState }) => {
-		function getCookie(name: string): string | undefined {
-			const value = `; ${document.cookie}`
-			const parts = value.split(`; ${name}=`)
-			if (parts.length === 2) {
-				const part = parts.pop()
-				if (part) return part.split(';').shift()
+	async (_, { dispatch, rejectWithValue }) => {
+		try {
+			const client = getApolloClient()
+			console.log('LOGGING OUT')
+
+			// Call backend REST logout; backend clears httpOnly cookies
+			const logoutRes = await fetch(`${API_BASE}/api/auth/logout`, {
+				method: 'POST',
+				credentials: 'include',
+				headers: { 'Content-Type': 'application/json' },
+			})
+			
+			// Clear Apollo cache and dispatch logout action regardless of response status
+			dispatch(logout())
+			await client.clearStore()
+			
+			if (!logoutRes.ok) {
+				console.warn('Logout API returned non-ok status, but still clearing local state')
 			}
-			return undefined
-		}
-		const xsrfToken = getCookie('XSRF-TOKEN')
-		const state = getState() as { userContext: { userId: string | null } }
-		const isLoggedIn = !!state.userContext.userId
-		const client = getApolloClient()
-		console.log('LOGGING OUT')
-
-		if (!isLoggedIn) {
-			console.log('Not logged in or no CSRF token, clearing state and redirecting')
-			console.log('isLoggedIn:', isLoggedIn, 'xsrfToken:', xsrfToken)
-
-			// If not logged in or no CSRF token, just clear state and redirect
+			
+			return 'success'
+		} catch (err) {
+			// Even if logout fails, clear local state to allow user to log in again
+			const client = getApolloClient()
 			dispatch(logout())
 			await client.clearStore()
-			window.location.href = '/login'
-			return
-		}
-
-		const headers: HeadersInit = { 'Content-Type': 'application/json' }
-		if (xsrfToken) {
-			headers['X-XSRF-TOKEN'] = xsrfToken
-		}
-		const res = await fetch(`/api/auth/logout`, {
-			method: 'POST',
-			credentials: 'include',
-			headers,
-		})
-		if (res.ok) {
-			dispatch(logout())
-			await client.clearStore()
-			window.location.href = '/login'
-		} else {
-			alert('Logout failed')
+			const errorMsg = err instanceof Error ? err.message : 'Logout failed'
+			console.warn('Logout error:', errorMsg)
+			return rejectWithValue(errorMsg)
 		}
 	}
 )
@@ -232,6 +219,8 @@ export interface UserContextState {
 const initialState: UserContextState = {
 	userId: null,
 	username: null,
+	email: null,
+	planType: null,
 	businessId: null,
 	businessName: null,
 	role: null,
@@ -240,6 +229,7 @@ const initialState: UserContextState = {
 	canEditListing: false,
 	canViewBusinessTransactions: false,
 	business: null,
+	profileImageUrl: null,
 }
 
 const userContextSlice = createSlice({

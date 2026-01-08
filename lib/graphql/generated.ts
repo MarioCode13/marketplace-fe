@@ -75,13 +75,15 @@ export type Category = {
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
   parentId?: Maybe<Scalars['String']['output']>;
+  slug: Scalars['String']['output'];
 };
 
 export type City = {
   __typename?: 'City';
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
-  region: Region;
+  region?: Maybe<Region>;
+  slug: Scalars['String']['output'];
 };
 
 export enum Condition {
@@ -95,11 +97,17 @@ export enum Condition {
   New = 'NEW'
 }
 
+/**
+ *  Canonical GraphQL definitions for location types.
+ *  If any other .graphqls files define Country, Region or City, convert them to "extend type"
+ *  or remove the duplicate definitions to avoid "tried to redefine existing" errors.
+ */
 export type Country = {
   __typename?: 'Country';
   code: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
+  regions: Array<Region>;
 };
 
 export type CreateBusinessInput = {
@@ -626,7 +634,9 @@ export type QueryGetListingTransactionsArgs = {
 export type QueryGetListingsArgs = {
   businessId?: InputMaybe<Scalars['ID']['input']>;
   categoryId?: InputMaybe<Scalars['ID']['input']>;
+  categorySlug?: InputMaybe<Scalars['String']['input']>;
   cityId?: InputMaybe<Scalars['ID']['input']>;
+  citySlug?: InputMaybe<Scalars['String']['input']>;
   condition?: InputMaybe<Condition>;
   limit: Scalars['Int']['input'];
   maxDate?: InputMaybe<Scalars['String']['input']>;
@@ -790,6 +800,7 @@ export type QueryUserSubscriptionsArgs = {
 
 export type Region = {
   __typename?: 'Region';
+  cities: Array<City>;
   country: Country;
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
@@ -1167,7 +1178,7 @@ export type CreateTransactionMutationVariables = Exact<{
 }>;
 
 
-export type CreateTransactionMutation = { __typename?: 'Mutation', createTransaction: { __typename?: 'Transaction', id: string, salePrice: number, saleDate: string, status: TransactionStatus, paymentMethod?: string | null, notes?: string | null, createdAt: string, updatedAt: string, listing: { __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, condition: Condition, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, user?: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } | null }, seller: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null }, buyer: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } } };
+export type CreateTransactionMutation = { __typename?: 'Mutation', createTransaction: { __typename?: 'Transaction', id: string, salePrice: number, saleDate: string, status: TransactionStatus, paymentMethod?: string | null, notes?: string | null, createdAt: string, updatedAt: string, listing: { __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, condition: Condition, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, user?: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } | null }, seller: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null }, buyer: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } } };
 
 export type CompleteTransactionMutationVariables = Exact<{
   transactionId: Scalars['ID']['input'];
@@ -1196,14 +1207,14 @@ export type GetBusinessByIdQueryVariables = Exact<{
 }>;
 
 
-export type GetBusinessByIdQuery = { __typename?: 'Query', business?: { __typename?: 'Business', id: string, name: string, slug?: string | null, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, postalCode?: string | null, planType?: PlanType | null, owner: { __typename?: 'User', id: string, planType?: PlanType | null }, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, lightOrDark?: string | null, primaryColor?: string | null, secondaryColor?: string | null, textColor?: string | null, cardTextColor?: string | null, backgroundColor?: string | null, about?: string | null, storeName?: string | null } | null, businessUsers: Array<{ __typename?: 'BusinessUser', id: string, role: BusinessUserRole, user: { __typename?: 'User', id: string, username: string, email: string, profileImageUrl?: string | null, planType?: PlanType | null, trustRating?: { __typename?: 'TrustRating', starRating: number, trustLevel: string, overallScore: number, totalReviews: number, totalTransactions: number, successfulTransactions: number } | null } }> } | null };
+export type GetBusinessByIdQuery = { __typename?: 'Query', business?: { __typename?: 'Business', id: string, name: string, slug?: string | null, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, postalCode?: string | null, planType?: PlanType | null, owner: { __typename?: 'User', id: string, planType?: PlanType | null }, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, lightOrDark?: string | null, primaryColor?: string | null, secondaryColor?: string | null, textColor?: string | null, cardTextColor?: string | null, backgroundColor?: string | null, about?: string | null, storeName?: string | null } | null, businessUsers: Array<{ __typename?: 'BusinessUser', id: string, role: BusinessUserRole, user: { __typename?: 'User', id: string, username: string, email: string, profileImageUrl?: string | null, planType?: PlanType | null, trustRating?: { __typename?: 'TrustRating', starRating: number, trustLevel: string, overallScore: number, totalReviews: number, totalTransactions: number, successfulTransactions: number } | null } }> } | null };
 
 export type GetBusinessBySlugQueryVariables = Exact<{
   slug: Scalars['String']['input'];
 }>;
 
 
-export type GetBusinessBySlugQuery = { __typename?: 'Query', getBusinessBySlug?: { __typename?: 'Business', id: string, name: string, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, postalCode?: string | null, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, trustRating?: { __typename?: 'BusinessTrustRating', averageRating: number, reviewCount: number } | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, lightOrDark?: string | null, primaryColor?: string | null, secondaryColor?: string | null, about?: string | null, storeName?: string | null, backgroundColor?: string | null, textColor?: string | null, cardTextColor?: string | null } | null, businessUsers: Array<{ __typename?: 'BusinessUser', id: string, role: BusinessUserRole, user: { __typename?: 'User', id: string, username: string, email: string, profileImageUrl?: string | null, planType?: PlanType | null, trustRating?: { __typename?: 'TrustRating', starRating: number, trustLevel: string, overallScore: number, totalReviews: number, totalTransactions: number, successfulTransactions: number } | null } }> } | null };
+export type GetBusinessBySlugQuery = { __typename?: 'Query', getBusinessBySlug?: { __typename?: 'Business', id: string, name: string, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, postalCode?: string | null, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, trustRating?: { __typename?: 'BusinessTrustRating', averageRating: number, reviewCount: number } | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, lightOrDark?: string | null, primaryColor?: string | null, secondaryColor?: string | null, about?: string | null, storeName?: string | null, backgroundColor?: string | null, textColor?: string | null, cardTextColor?: string | null } | null, businessUsers: Array<{ __typename?: 'BusinessUser', id: string, role: BusinessUserRole, user: { __typename?: 'User', id: string, username: string, email: string, profileImageUrl?: string | null, planType?: PlanType | null, trustRating?: { __typename?: 'TrustRating', starRating: number, trustLevel: string, overallScore: number, totalReviews: number, totalTransactions: number, successfulTransactions: number } | null } }> } | null };
 
 export type BusinessTrustRatingQueryVariables = Exact<{
   businessId: Scalars['ID']['input'];
@@ -1215,23 +1226,25 @@ export type BusinessTrustRatingQuery = { __typename?: 'Query', businessTrustRati
 export type GetCategoriesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetCategoriesQuery = { __typename?: 'Query', getCategories?: Array<{ __typename?: 'Category', id: string, name: string, parentId?: string | null } | null> | null };
+export type GetCategoriesQuery = { __typename?: 'Query', getCategories?: Array<{ __typename?: 'Category', id: string, name: string, slug: string, parentId?: string | null } | null> | null };
 
 export type GetListingByIdQueryVariables = Exact<{
   id: Scalars['ID']['input'];
 }>;
 
 
-export type GetListingByIdQuery = { __typename?: 'Query', getListingById?: { __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, sold: boolean, customCity?: string | null, condition: Condition, createdAt: string, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, category?: { __typename?: 'Category', id: string, name: string, parentId?: string | null } | null, user?: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null, email: string, planType?: PlanType | null } | null, business?: { __typename?: 'Business', id: string, name: string, businessType?: string | null, slug?: string | null, trustRating?: { __typename?: 'BusinessTrustRating', averageRating: number, reviewCount: number } | null, storeBranding?: { __typename?: 'StoreBranding', storeName?: string | null, logoUrl?: string | null } | null } | null } | null };
+export type GetListingByIdQuery = { __typename?: 'Query', getListingById?: { __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, sold: boolean, customCity?: string | null, condition: Condition, createdAt: string, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, category?: { __typename?: 'Category', id: string, name: string, parentId?: string | null } | null, user?: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null, email: string, planType?: PlanType | null } | null, business?: { __typename?: 'Business', id: string, name: string, businessType?: string | null, slug?: string | null, trustRating?: { __typename?: 'BusinessTrustRating', averageRating: number, reviewCount: number } | null, storeBranding?: { __typename?: 'StoreBranding', storeName?: string | null, logoUrl?: string | null } | null } | null } | null };
 
 export type GetListingsQueryVariables = Exact<{
   limit: Scalars['Int']['input'];
   offset: Scalars['Int']['input'];
   categoryId?: InputMaybe<Scalars['ID']['input']>;
+  categorySlug?: InputMaybe<Scalars['String']['input']>;
   minPrice?: InputMaybe<Scalars['Float']['input']>;
   maxPrice?: InputMaybe<Scalars['Float']['input']>;
   condition?: InputMaybe<Condition>;
   cityId?: InputMaybe<Scalars['ID']['input']>;
+  citySlug?: InputMaybe<Scalars['String']['input']>;
   searchTerm?: InputMaybe<Scalars['String']['input']>;
   minDate?: InputMaybe<Scalars['String']['input']>;
   maxDate?: InputMaybe<Scalars['String']['input']>;
@@ -1242,17 +1255,17 @@ export type GetListingsQueryVariables = Exact<{
 }>;
 
 
-export type GetListingsQuery = { __typename?: 'Query', getListings: { __typename?: 'ListingPageResponse', totalCount: number, listings: Array<{ __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, sold: boolean, customCity?: string | null, condition: Condition, createdAt: string, expiresAt: string, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, category?: { __typename?: 'Category', id: string, name: string } | null, user?: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null, trustRating?: { __typename?: 'TrustRating', verifiedId: boolean, starRating: number, totalReviews: number } | null } | null, business?: { __typename?: 'Business', name: string, trustRating?: { __typename?: 'BusinessTrustRating', verifiedWithThirdParty: boolean, averageRating: number, reviewCount: number } | null } | null }> } };
+export type GetListingsQuery = { __typename?: 'Query', getListings: { __typename?: 'ListingPageResponse', totalCount: number, listings: Array<{ __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, sold: boolean, customCity?: string | null, condition: Condition, createdAt: string, expiresAt: string, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, category?: { __typename?: 'Category', id: string, name: string } | null, user?: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null, trustRating?: { __typename?: 'TrustRating', verifiedId: boolean, starRating: number, totalReviews: number } | null } | null, business?: { __typename?: 'Business', name: string, trustRating?: { __typename?: 'BusinessTrustRating', verifiedWithThirdParty: boolean, averageRating: number, reviewCount: number } | null } | null }> } };
 
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type MeQuery = { __typename?: 'Query', me?: { __typename?: 'User', id: string, username: string, email: string, firstName?: string | null, lastName?: string | null, bio?: string | null, profileImageUrl?: string | null, planType?: PlanType | null, role: string, customCity?: string | null, contactNumber?: string | null, idNumber?: string | null, idPhotoUrl?: string | null, driversLicenseUrl?: string | null, proofOfAddressUrl?: string | null, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, subscription?: { __typename?: 'Subscription', status: SubscriptionStatus, planType: PlanType } | null, trustRating?: { __typename?: 'TrustRating', verifiedId: boolean } | null } | null };
+export type MeQuery = { __typename?: 'Query', me?: { __typename?: 'User', id: string, username: string, email: string, firstName?: string | null, lastName?: string | null, bio?: string | null, profileImageUrl?: string | null, planType?: PlanType | null, role: string, customCity?: string | null, contactNumber?: string | null, idNumber?: string | null, idPhotoUrl?: string | null, driversLicenseUrl?: string | null, proofOfAddressUrl?: string | null, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, subscription?: { __typename?: 'Subscription', status: SubscriptionStatus, planType: PlanType } | null, trustRating?: { __typename?: 'TrustRating', verifiedId: boolean } | null } | null };
 
 export type GetMyBusinessQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetMyBusinessQuery = { __typename?: 'Query', myBusiness?: { __typename?: 'Business', id: string, slug?: string | null, name: string, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, planType?: PlanType | null, postalCode?: string | null, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, primaryColor?: string | null, secondaryColor?: string | null, lightOrDark?: string | null, about?: string | null, storeName?: string | null, textColor?: string | null, cardTextColor?: string | null, backgroundColor?: string | null } | null, businessUsers: Array<{ __typename?: 'BusinessUser', id: string, role: BusinessUserRole, user: { __typename?: 'User', id: string, planType?: PlanType | null, username: string, email: string, profileImageUrl?: string | null } }> } | null };
+export type GetMyBusinessQuery = { __typename?: 'Query', myBusiness?: { __typename?: 'Business', id: string, slug?: string | null, name: string, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, planType?: PlanType | null, postalCode?: string | null, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, primaryColor?: string | null, secondaryColor?: string | null, lightOrDark?: string | null, about?: string | null, storeName?: string | null, textColor?: string | null, cardTextColor?: string | null, backgroundColor?: string | null } | null, businessUsers: Array<{ __typename?: 'BusinessUser', id: string, role: BusinessUserRole, user: { __typename?: 'User', id: string, planType?: PlanType | null, username: string, email: string, profileImageUrl?: string | null } }> } | null };
 
 export type GetNotificationsQueryVariables = Exact<{
   userId: Scalars['ID']['input'];
@@ -1266,7 +1279,7 @@ export type GetSellerProfileQueryVariables = Exact<{
 }>;
 
 
-export type GetSellerProfileQuery = { __typename?: 'Query', user?: { __typename?: 'User', id: string, username: string, email: string, createdAt: string, profileImageUrl?: string | null, firstName?: string | null, lastName?: string | null, bio?: string | null, customCity?: string | null, contactNumber?: string | null, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, trustRating?: { __typename?: 'TrustRating', overallScore: number, verificationScore: number, profileScore: number, reviewScore: number, transactionScore: number, totalReviews: number, positiveReviews: number, starRating: number, trustLevel: string } | null, profileCompletion?: { __typename?: 'ProfileCompletion', id: string, hasProfilePhoto: boolean, hasBio: boolean, hasContactNumber: boolean, hasLocation: boolean, hasIdDocument: boolean, hasDriversLicense: boolean, hasProofOfAddress: boolean, completionPercentage: number, createdAt: string, updatedAt: string } | null, subscription?: { __typename?: 'Subscription', planType: PlanType } | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, about?: string | null } | null, listings: Array<{ __typename?: 'Listing', id: string, title: string, price: number, images: Array<string>, sold: boolean, createdAt: string }> } | null };
+export type GetSellerProfileQuery = { __typename?: 'Query', user?: { __typename?: 'User', id: string, username: string, email: string, createdAt: string, profileImageUrl?: string | null, firstName?: string | null, lastName?: string | null, bio?: string | null, customCity?: string | null, contactNumber?: string | null, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, trustRating?: { __typename?: 'TrustRating', overallScore: number, verificationScore: number, profileScore: number, reviewScore: number, transactionScore: number, totalReviews: number, positiveReviews: number, starRating: number, trustLevel: string } | null, profileCompletion?: { __typename?: 'ProfileCompletion', id: string, hasProfilePhoto: boolean, hasBio: boolean, hasContactNumber: boolean, hasLocation: boolean, hasIdDocument: boolean, hasDriversLicense: boolean, hasProofOfAddress: boolean, completionPercentage: number, createdAt: string, updatedAt: string } | null, subscription?: { __typename?: 'Subscription', planType: PlanType } | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, about?: string | null } | null, listings: Array<{ __typename?: 'Listing', id: string, title: string, price: number, images: Array<string>, sold: boolean, createdAt: string }> } | null };
 
 export type GetMyStoreBrandingQueryVariables = Exact<{
   userId: Scalars['ID']['input'];
@@ -1280,7 +1293,7 @@ export type GetStoreBySlugFullQueryVariables = Exact<{
 }>;
 
 
-export type GetStoreBySlugFullQuery = { __typename?: 'Query', storeBySlug?: { __typename?: 'User', id: string, username: string, planType?: PlanType | null, business?: { __typename?: 'Business', id: string } | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, lightOrDark?: string | null, primaryColor?: string | null, secondaryColor?: string | null, backgroundColor?: string | null, textColor?: string | null, cardTextColor?: string | null, about?: string | null, storeName?: string | null } | null, trustRating?: { __typename?: 'TrustRating', starRating: number, trustLevel: string, overallScore: number, totalReviews: number, positiveReviews: number } | null, listings: Array<{ __typename?: 'Listing', id: string, title: string, description: string, price: number, images: Array<string>, condition: Condition, customCity?: string | null, createdAt: string, expiresAt: string, sold: boolean, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null }> } | null };
+export type GetStoreBySlugFullQuery = { __typename?: 'Query', storeBySlug?: { __typename?: 'User', id: string, username: string, planType?: PlanType | null, business?: { __typename?: 'Business', id: string } | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, lightOrDark?: string | null, primaryColor?: string | null, secondaryColor?: string | null, backgroundColor?: string | null, textColor?: string | null, cardTextColor?: string | null, about?: string | null, storeName?: string | null } | null, trustRating?: { __typename?: 'TrustRating', starRating: number, trustLevel: string, overallScore: number, totalReviews: number, positiveReviews: number } | null, listings: Array<{ __typename?: 'Listing', id: string, title: string, description: string, price: number, images: Array<string>, condition: Condition, customCity?: string | null, createdAt: string, expiresAt: string, sold: boolean, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null }> } | null };
 
 export type GetStoreBySlugMinimalQueryVariables = Exact<{
   slug: Scalars['String']['input'];
@@ -1292,29 +1305,29 @@ export type GetStoreBySlugMinimalQuery = { __typename?: 'Query', storeBySlug?: {
 export type GetMyPurchasesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetMyPurchasesQuery = { __typename?: 'Query', myPurchases: Array<{ __typename?: 'Transaction', id: string, salePrice: number, saleDate: string, status: TransactionStatus, paymentMethod?: string | null, notes?: string | null, createdAt: string, updatedAt: string, listing: { __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, customCity?: string | null, condition: Condition, city?: { __typename?: 'City', name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, user?: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } | null }, seller: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null }, buyer: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } }> };
+export type GetMyPurchasesQuery = { __typename?: 'Query', myPurchases: Array<{ __typename?: 'Transaction', id: string, salePrice: number, saleDate: string, status: TransactionStatus, paymentMethod?: string | null, notes?: string | null, createdAt: string, updatedAt: string, listing: { __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, customCity?: string | null, condition: Condition, city?: { __typename?: 'City', name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, user?: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } | null }, seller: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null }, buyer: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } }> };
 
 export type GetMySalesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetMySalesQuery = { __typename?: 'Query', mySales: Array<{ __typename?: 'Transaction', id: string, salePrice: number, saleDate: string, status: TransactionStatus, paymentMethod?: string | null, notes?: string | null, createdAt: string, updatedAt: string, listing: { __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, customCity?: string | null, condition: Condition, city?: { __typename?: 'City', name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, user?: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } | null }, seller: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null }, buyer: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } }> };
+export type GetMySalesQuery = { __typename?: 'Query', mySales: Array<{ __typename?: 'Transaction', id: string, salePrice: number, saleDate: string, status: TransactionStatus, paymentMethod?: string | null, notes?: string | null, createdAt: string, updatedAt: string, listing: { __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, customCity?: string | null, condition: Condition, city?: { __typename?: 'City', name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, user?: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } | null }, seller: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null }, buyer: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } }> };
 
 export type GetMyCompletedPurchasesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetMyCompletedPurchasesQuery = { __typename?: 'Query', myCompletedPurchases: Array<{ __typename?: 'Transaction', id: string, salePrice: number, saleDate: string, status: TransactionStatus, paymentMethod?: string | null, notes?: string | null, createdAt: string, updatedAt: string, listing: { __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, customCity?: string | null, condition: Condition, city?: { __typename?: 'City', name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, user?: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } | null }, seller: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null }, buyer: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } }> };
+export type GetMyCompletedPurchasesQuery = { __typename?: 'Query', myCompletedPurchases: Array<{ __typename?: 'Transaction', id: string, salePrice: number, saleDate: string, status: TransactionStatus, paymentMethod?: string | null, notes?: string | null, createdAt: string, updatedAt: string, listing: { __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, customCity?: string | null, condition: Condition, city?: { __typename?: 'City', name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, user?: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } | null }, seller: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null }, buyer: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } }> };
 
 export type GetMyCompletedSalesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetMyCompletedSalesQuery = { __typename?: 'Query', myCompletedSales: Array<{ __typename?: 'Transaction', id: string, salePrice: number, saleDate: string, status: TransactionStatus, paymentMethod?: string | null, notes?: string | null, createdAt: string, updatedAt: string, listing: { __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, customCity?: string | null, condition: Condition, city?: { __typename?: 'City', name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, user?: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } | null }, seller: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null }, buyer: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } }> };
+export type GetMyCompletedSalesQuery = { __typename?: 'Query', myCompletedSales: Array<{ __typename?: 'Transaction', id: string, salePrice: number, saleDate: string, status: TransactionStatus, paymentMethod?: string | null, notes?: string | null, createdAt: string, updatedAt: string, listing: { __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, customCity?: string | null, condition: Condition, city?: { __typename?: 'City', name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, user?: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } | null }, seller: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null }, buyer: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } }> };
 
 export type GetTransactionQueryVariables = Exact<{
   transactionId: Scalars['ID']['input'];
 }>;
 
 
-export type GetTransactionQuery = { __typename?: 'Query', getTransaction: { __typename?: 'Transaction', id: string, salePrice: number, saleDate: string, status: TransactionStatus, paymentMethod?: string | null, notes?: string | null, createdAt: string, updatedAt: string, listing: { __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, customCity?: string | null, condition: Condition, city?: { __typename?: 'City', name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, user?: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } | null }, seller: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null }, buyer: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } } };
+export type GetTransactionQuery = { __typename?: 'Query', getTransaction: { __typename?: 'Transaction', id: string, salePrice: number, saleDate: string, status: TransactionStatus, paymentMethod?: string | null, notes?: string | null, createdAt: string, updatedAt: string, listing: { __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, customCity?: string | null, condition: Condition, city?: { __typename?: 'City', name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, user?: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } | null }, seller: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null }, buyer: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } } };
 
 export type GetMyReviewForTransactionQueryVariables = Exact<{
   transactionId: Scalars['ID']['input'];
@@ -1382,14 +1395,14 @@ export type GetUserPositiveReviewCountQuery = { __typename?: 'Query', getUserPos
 export type GetUsersQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetUsersQuery = { __typename?: 'Query', getAllUsers: Array<{ __typename?: 'User', id: string, username: string, email: string, customCity?: string | null, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null }> };
+export type GetUsersQuery = { __typename?: 'Query', getAllUsers: Array<{ __typename?: 'User', id: string, username: string, email: string, customCity?: string | null, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null }> };
 
 export type SearchUsersQueryVariables = Exact<{
   searchTerm: Scalars['String']['input'];
 }>;
 
 
-export type SearchUsersQuery = { __typename?: 'Query', searchUsers: Array<{ __typename?: 'User', id: string, username: string, email: string, profileImageUrl?: string | null, firstName?: string | null, lastName?: string | null, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, trustRating?: { __typename?: 'TrustRating', overallScore: number, starRating: number, trustLevel: string, totalReviews: number, totalTransactions: number, successfulTransactions: number } | null }> };
+export type SearchUsersQuery = { __typename?: 'Query', searchUsers: Array<{ __typename?: 'User', id: string, username: string, email: string, profileImageUrl?: string | null, firstName?: string | null, lastName?: string | null, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, trustRating?: { __typename?: 'TrustRating', overallScore: number, starRating: number, trustLevel: string, totalReviews: number, totalTransactions: number, successfulTransactions: number } | null }> };
 
 export type GetUserVerificationDocumentsQueryVariables = Exact<{
   userId: Scalars['ID']['input'];
@@ -1404,14 +1417,14 @@ export type MyListingsQueryVariables = Exact<{
 }>;
 
 
-export type MyListingsQuery = { __typename?: 'Query', myListings: { __typename?: 'ListingPageResponse', totalCount: number, listings: Array<{ __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, sold: boolean, customCity?: string | null, condition: Condition, createdAt: string, expiresAt: string, city?: { __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } } | null, user?: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } | null }> } };
+export type MyListingsQuery = { __typename?: 'Query', myListings: { __typename?: 'ListingPageResponse', totalCount: number, listings: Array<{ __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, sold: boolean, customCity?: string | null, condition: Condition, createdAt: string, expiresAt: string, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, user?: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } | null }> } };
 
 export type SearchCitiesQueryVariables = Exact<{
   query: Scalars['String']['input'];
 }>;
 
 
-export type SearchCitiesQuery = { __typename?: 'Query', searchCities: Array<{ __typename?: 'City', id: string, name: string, region: { __typename?: 'Region', id: string, name: string, country: { __typename?: 'Country', id: string, name: string, code: string } } }> };
+export type SearchCitiesQuery = { __typename?: 'Query', searchCities: Array<{ __typename?: 'City', id: string, name: string, slug: string, region?: { __typename?: 'Region', id: string, name: string, country: { __typename?: 'Country', id: string, name: string, code: string } } | null }> };
 
 
 export const CompleteProfileDocument = gql`
@@ -2686,6 +2699,7 @@ export const GetCategoriesDocument = gql`
   getCategories {
     id
     name
+    slug
     parentId
   }
 }
@@ -2807,15 +2821,17 @@ export type GetListingByIdLazyQueryHookResult = ReturnType<typeof useGetListingB
 export type GetListingByIdSuspenseQueryHookResult = ReturnType<typeof useGetListingByIdSuspenseQuery>;
 export type GetListingByIdQueryResult = Apollo.QueryResult<GetListingByIdQuery, GetListingByIdQueryVariables>;
 export const GetListingsDocument = gql`
-    query GetListings($limit: Int!, $offset: Int!, $categoryId: ID, $minPrice: Float, $maxPrice: Float, $condition: Condition, $cityId: ID, $searchTerm: String, $minDate: String, $maxDate: String, $sortBy: String, $sortOrder: String, $userId: ID, $businessId: ID) {
+    query GetListings($limit: Int!, $offset: Int!, $categoryId: ID, $categorySlug: String, $minPrice: Float, $maxPrice: Float, $condition: Condition, $cityId: ID, $citySlug: String, $searchTerm: String, $minDate: String, $maxDate: String, $sortBy: String, $sortOrder: String, $userId: ID, $businessId: ID) {
   getListings(
     limit: $limit
     offset: $offset
     categoryId: $categoryId
+    categorySlug: $categorySlug
     minPrice: $minPrice
     maxPrice: $maxPrice
     condition: $condition
     cityId: $cityId
+    citySlug: $citySlug
     searchTerm: $searchTerm
     minDate: $minDate
     maxDate: $maxDate
@@ -2888,10 +2904,12 @@ export const GetListingsDocument = gql`
  *      limit: // value for 'limit'
  *      offset: // value for 'offset'
  *      categoryId: // value for 'categoryId'
+ *      categorySlug: // value for 'categorySlug'
  *      minPrice: // value for 'minPrice'
  *      maxPrice: // value for 'maxPrice'
  *      condition: // value for 'condition'
  *      cityId: // value for 'cityId'
+ *      citySlug: // value for 'citySlug'
  *      searchTerm: // value for 'searchTerm'
  *      minDate: // value for 'minDate'
  *      maxDate: // value for 'maxDate'
@@ -4522,6 +4540,7 @@ export const SearchCitiesDocument = gql`
   searchCities(query: $query) {
     id
     name
+    slug
     region {
       id
       name

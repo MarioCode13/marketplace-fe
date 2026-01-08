@@ -60,6 +60,7 @@ export function getTextColor(backgroundColor: string): string {
 export interface FlatCategory {
   id: string
   name: string
+  slug?: string
   parentId?: string | null
   // ...other fields
 }
@@ -68,6 +69,13 @@ export interface CategoryNode {
   id: string
   name: string
   children?: CategoryNode[]
+}
+
+export function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/gi, '-')
+    .replace(/^-+|-+$/g, '')
 }
 
 export function buildCategoryTree(flat: FlatCategory[]): CategoryNode[] {
@@ -96,6 +104,33 @@ export function buildCategoryTree(flat: FlatCategory[]): CategoryNode[] {
   roots.forEach(clean)
 
   return roots
+}
+
+/**
+ * Builds the full category path (parent/child) for a given category ID
+ * Returns an array of slugs from root to the category
+ */
+export function buildCategoryPath(
+  categoryId: string,
+  categories: FlatCategory[]
+): string[] {
+  const categoryMap = new Map(categories.map(cat => [cat.id, cat]))
+  const path: string[] = []
+  
+  let currentId: string | null | undefined = categoryId
+  
+  // Walk up the parent chain
+  while (currentId) {
+    const cat = categoryMap.get(currentId)
+    if (!cat) break
+    
+    const slug = cat.slug || slugify(cat.name)
+    path.unshift(slug) // Add to beginning to maintain root-to-leaf order
+    
+    currentId = cat.parentId
+  }
+  
+  return path
 }
 
 export function formatEnum(value: string) {

@@ -117,39 +117,76 @@ export default function Profile() {
     return undefined
   }
 
+  // const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
+  //   if (!e.target.files?.length) return
+  //   const file = e.target.files[0]
+  //   const formData = new FormData()
+  //   formData.append('file', file)
+  //   const xsrfToken = getCookie('XSRF-TOKEN')
+  //   try {
+  //     const response = await fetch(
+  //       `${process.env.NEXT_PUBLIC_API_BASE}/api/users/upload-profile-image`,
+  //       {
+  //         method: 'POST',
+  //         body: formData,
+  //         credentials: 'include', // Send cookies for authentication
+  //         headers: {
+  //           ...(xsrfToken ? { 'X-XSRF-TOKEN': xsrfToken } : {}),
+  //         },
+  //       }
+  //     )
+  //     if (response.ok) {
+  //       toast.dismiss()
+  //       // Get image URL from response
+  //       const url = await response.text()
+  //       toast.success('Profile image updated!')
+  //       if (userId) {
+  //         dispatch(updateUserProfileImage({ userId: userId, url }))
+  //       }
+  //     } else {
+  //       toast.dismiss()
+  //       toast.error('Upload failed. Please try again.')
+  //     }
+  //   } catch (err) {
+  //     toast.dismiss()
+  //     toast.error(`Something went wrong. ${err}`)
+  //   }
+  // }
   const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.length) return
+
     const file = e.target.files[0]
     const formData = new FormData()
     formData.append('file', file)
+
     const xsrfToken = getCookie('XSRF-TOKEN')
+
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_GRAPHQL_URL}/api/users/upload-profile-image`,
+        `${process.env.NEXT_PUBLIC_API_BASE}/api/users/upload-profile-image`,
         {
           method: 'POST',
           body: formData,
-          credentials: 'include', // Send cookies for authentication
+          credentials: 'include',
           headers: {
             ...(xsrfToken ? { 'X-XSRF-TOKEN': xsrfToken } : {}),
           },
         }
       )
-      if (response.ok) {
-        toast.dismiss()
-        // Get image URL from response
-        const url = await response.text()
-        toast.success('Profile image updated!')
-        if (userId) {
-          dispatch(updateUserProfileImage({ userId: userId, url }))
-        }
-      } else {
-        toast.dismiss()
-        toast.error('Upload failed. Please try again.')
-      }
+
+      if (!response.ok) throw new Error('Upload failed')
+
+      // const imageUrl = await response.text()
+
+      toast.success('Profile image updated!')
+
+      await dispatch(refetchUserProfile())
+      // if (userId) {
+      //   dispatch(updateUserProfileImage({ userId, url: imageUrl }))
+      // }
     } catch (err) {
-      toast.dismiss()
-      toast.error(`Something went wrong. ${err}`)
+      toast.error('Upload failed. Please try again.')
+      console.error(err)
     }
   }
 

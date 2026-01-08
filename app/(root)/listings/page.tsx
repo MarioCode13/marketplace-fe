@@ -53,6 +53,8 @@ export default async function Page({
   const maxPrice = getParamValue('maxPrice')
   const condition = getParamValue('condition')
   const searchTerm = getParamValue('searchTerm')
+  const minDate = getParamValue('minDate')
+  const maxDate = getParamValue('maxDate')
   const cityId = getParamValue('cityId') || undefined
   const sortBy = getParamValue('sortBy')
   const sortOrder = getParamValue('sortOrder')
@@ -65,10 +67,27 @@ export default async function Page({
     maxPrice: maxPrice ? parseFloat(maxPrice) : undefined,
     condition,
     searchTerm,
+    minDate,
+    maxDate,
     cityId,
     sortBy,
     sortOrder,
   }
+
+  // Debug: log date conversion
+  process.stderr.write(
+    `\n[DEBUG SSR /listings] minDate param: ${minDate} → converted: ${variables.minDate}\n`
+  )
+  process.stderr.write(
+    `[DEBUG SSR /listings] maxDate param: ${maxDate} → converted: ${variables.maxDate}\n`
+  )
+  process.stderr.write(
+    `[DEBUG SSR /listings] GraphQL variables: ${JSON.stringify(
+      variables,
+      null,
+      2
+    )}\n`
+  )
 
   // Fetch from GraphQL with network-only to ensure fresh data
   const { data } = await client.query({

@@ -173,7 +173,7 @@ export default function EditListingPage() {
 
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_GRAPHQL_URL}/api/listings/upload-images`,
+        `${process.env.NEXT_PUBLIC_API_BASE}/api/listings/upload-images`,
         {
           method: 'POST',
           body: formData,

@@ -5,6 +5,7 @@ export const SEARCH_CITIES = gql`
     searchCities(query: $query) {
       id
       name
+      slug
       region {
         id
         name

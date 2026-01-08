@@ -45,6 +45,7 @@ Create a `.env.local` file at the root with your API endpoint and image upload U
 ```env
 NEXT_PUBLIC_GRAPHQL_ENDPOINT=http://localhost:8080/graphql
 NEXT_PUBLIC_IMAGE_UPLOAD_URL=http://localhost:8080/api/upload
+NEXT_PUBLIC_API_BASE=http://localhost:8080
 ```
 
 Make sure CORS is configured on your backend to allow frontend requests.

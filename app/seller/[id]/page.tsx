@@ -316,7 +316,7 @@ export default function SellerProfilePage() {
                   {activeListings.map((listing: Listing) => (
                     <Link
                       key={listing.id}
-                      href={`/listings/${listing.id}`}
+                      href={`/listing/${listing.id}`}
                     >
                       <Card className='hover:shadow-md transition-shadow cursor-pointer'>
                         <CardContent className='p-4'>
