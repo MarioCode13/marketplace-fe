@@ -19,9 +19,9 @@ export const metadata: Metadata = {
 // type NextSearchParams = Promise<SearchParams> | undefined
 
 type PageProps = {
-  params: {
+  params: Promise<{
     slugParts?: string[]
-  }
+  }>
   searchParams?: {
     [key: string]: string | string[] | undefined
   }
@@ -31,9 +31,8 @@ export default async function SlugPage({
   params,
   searchParams = {},
 }: PageProps) {
-  const resolvedParams = (await searchParams) || {}
-  // Handle params as either Promise or direct object (Next.js 15 compatibility)
-  const resolvedParams_obj = params instanceof Promise ? await params : params
+  const { slugParts = [] } = await params
+  const resolvedParams = searchParams
   const client = getServerApolloClient()
 
   // Fetch categories early so we can use them to resolve category slugs
@@ -109,7 +108,7 @@ export default async function SlugPage({
   // - /listings/[parentSlug]/[childSlug] (2 segments: parent/child category)
   // - /listings/[citySlug]/[categorySlug] (2 segments: city + category)
   // - /listings/[citySlug]/[parentSlug]/[childSlug] (3 segments: city + parent/child)
-  const slugParts = resolvedParams_obj?.slugParts || []
+  // const slugParts = resolvedParams_obj?.slugParts || []
 
   // First, try to fetch categories to resolve category paths
 
