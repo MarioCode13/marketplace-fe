@@ -11,7 +11,7 @@ import {
 } from '@/lib/graphql/generated'
 import ListingCard from '@/components/cards/ListingCard'
 import SkeletonListingCard from '@/components/cards/SkeletonListingCard'
-import FilterDrawer from '@/components/drawers/FilterDrawer'
+import FilterDrawer, { FilterState } from '@/components/drawers/FilterDrawer'
 import {
   ListFilter,
   Search,
@@ -101,21 +101,29 @@ export default function ProStoreRoute() {
     ? buildCategoryTree(categoriesData.getCategories as FlatCategory[])
     : []
 
-  // Prepare filters for query (dates as plain YYYY-MM-DD strings)
-  const queryFilters: Record<string, any> = { ...filters }
+  type QueryFilters = Filters & { categorySlug?: string }
+  const queryFilters: QueryFilters = { ...filters }
 
   // If a parent category ID is selected, derive the full slug path and send as categorySlug
   if (queryFilters.categoryId && categories && categories.length > 0) {
-    const flatCats = (categoriesData?.getCategories || []) as any[]
+    const flatCats = (categoriesData?.getCategories || []) as FlatCategory[]
     const idMap = new Map(flatCats.map((c) => [c.id, c]))
     const parts: string[] = []
-    let cur = idMap.get(queryFilters.categoryId)
-    while (cur) {
-      // Always use slugify(name), never use stored slug
-      parts.unshift(slugify(cur.name))
-      if (!cur.parentId) break
-      cur = idMap.get(cur.parentId)
+    if (queryFilters.categoryId) {
+      let cur = idMap.get(queryFilters.categoryId)
+      const parts: string[] = []
+
+      while (cur) {
+        parts.unshift(slugify(cur.name))
+        if (!cur.parentId) break
+        cur = idMap.get(cur.parentId)
+      }
+
+      if (parts.length > 0) {
+        queryFilters.categorySlug = parts.join('/')
+      }
     }
+
     if (parts.length > 0) {
       queryFilters.categorySlug = parts.join('/')
       // Keep `categoryId` for queries so parent categories include child results on the backend.
@@ -131,11 +139,7 @@ export default function ProStoreRoute() {
   }
 
   // Debug: log final variables being sent to listings query
-  // eslint-disable-next-line no-console
-  console.log(
-    'ListingsQueryVars (store):',
-    JSON.stringify(listingsQueryVars, null, 2)
-  )
+
   const shouldSkipListings = isProStore && !business?.id
   const {
     data: listingsData,
@@ -176,7 +180,7 @@ export default function ProStoreRoute() {
   )
 
   // Filter logic
-  const handleApplyFilters = (newFilters: Record<string, unknown>) => {
+  const handleApplyFilters = (newFilters: FilterState) => {
     const convertedFilters: Filters = {
       ...newFilters,
       condition: newFilters.condition as Condition | undefined,

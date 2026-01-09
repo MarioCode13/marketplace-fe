@@ -15,38 +15,29 @@ import { X, Search, MapPin, Calendar, SortAsc, SortDesc } from 'lucide-react'
 import CityAutocomplete from './CityAutocomplete'
 import CategoryCascader, { CategoryNode } from './CategoryCascader'
 
+type SortOrder = 'asc' | 'desc'
+
+export interface FilterState {
+  categoryId?: string
+  minPrice?: number
+  maxPrice?: number
+  condition?: string
+  cityId?: string
+  cityLabel?: string
+  customCity?: string
+  searchTerm?: string
+  minDate?: string
+  maxDate?: string
+  sortBy?: string
+  sortOrder?: SortOrder
+}
+
 interface FilterDrawerProps {
   isOpen: boolean
   onClose: () => void
-  onApply: (filters: {
-    categoryId?: string
-    minPrice?: number
-    maxPrice?: number
-    condition?: string
-    cityId?: string
-    cityLabel?: string
-    customCity?: string
-    searchTerm?: string
-    minDate?: string
-    maxDate?: string
-    sortBy?: string
-    sortOrder?: 'asc' | 'desc'
-  }) => void
-  categories: { id: string; name: string }[]
-  currentFilters?: {
-    categoryId?: string
-    minPrice?: number
-    maxPrice?: number
-    condition?: string
-    cityId?: string
-    cityLabel?: string
-    customCity?: string
-    searchTerm?: string
-    minDate?: string
-    maxDate?: string
-    sortBy?: string
-    sortOrder?: 'asc' | 'desc'
-  }
+  onApply: (filters: FilterState) => void
+  categories: CategoryNode[]
+  currentFilters?: FilterState
 }
 
 const CONDITIONS = [
@@ -66,6 +57,40 @@ const SORT_OPTIONS = [
   { value: 'title', label: 'Title' },
 ]
 
+// interface FilterDrawerProps {
+//   isOpen: boolean
+//   onClose: () => void
+//   onApply: (filters: {
+//     categoryId?: string
+//     minPrice?: number
+//     maxPrice?: number
+//     condition?: string
+//     cityId?: string
+//     cityLabel?: string
+//     customCity?: string
+//     searchTerm?: string
+//     minDate?: string
+//     maxDate?: string
+//     sortBy?: string
+//     sortOrder?: 'asc' | 'desc'
+//   }) => void
+//   categories: { id: string; name: string }[]
+//   currentFilters?: {
+//     categoryId?: string
+//     minPrice?: number
+//     maxPrice?: number
+//     condition?: string
+//     cityId?: string
+//     cityLabel?: string
+//     customCity?: string
+//     searchTerm?: string
+//     minDate?: string
+//     maxDate?: string
+//     sortBy?: string
+//     sortOrder?: 'asc' | 'desc'
+//   }
+// }
+
 export default function FilterDrawer({
   isOpen,
   onClose,
@@ -73,25 +98,25 @@ export default function FilterDrawer({
   categories,
   currentFilters = {},
 }: FilterDrawerProps) {
-  const toNumber = (v: any) => {
-    if (v === undefined || v === '' || v === null) return undefined
-    const n = typeof v === 'number' ? v : parseFloat(String(v))
+  const toNumber = (v: string | number | undefined): number | undefined => {
+    if (v === undefined || v === '') return undefined
+    const n = typeof v === 'number' ? v : parseFloat(v)
     return Number.isNaN(n) ? undefined : n
   }
 
-  const [filters, setFilters] = useState({
-    categoryId: currentFilters.categoryId || undefined,
-    minPrice: toNumber((currentFilters as any).minPrice),
-    maxPrice: toNumber((currentFilters as any).maxPrice),
-    condition: currentFilters.condition || undefined,
-    cityId: currentFilters.cityId || undefined,
+  const [filters, setFilters] = useState<FilterState>({
+    categoryId: currentFilters.categoryId,
+    minPrice: toNumber(currentFilters.minPrice),
+    maxPrice: toNumber(currentFilters.maxPrice),
+    condition: currentFilters.condition,
+    cityId: currentFilters.cityId,
     customCity: currentFilters.customCity || '',
-    cityLabel: (currentFilters as any).cityLabel || '',
+    cityLabel: currentFilters.cityLabel || '',
     searchTerm: currentFilters.searchTerm || '',
     minDate: currentFilters.minDate || '',
     maxDate: currentFilters.maxDate || '',
     sortBy: currentFilters.sortBy || 'createdAt',
-    sortOrder: currentFilters.sortOrder || ('desc' as 'asc' | 'desc'),
+    sortOrder: currentFilters.sortOrder || 'desc',
   })
 
   const [showCustomCity, setShowCustomCity] = useState(false)
@@ -100,13 +125,13 @@ export default function FilterDrawer({
   useEffect(() => {
     if (isOpen) {
       setFilters({
-        categoryId: currentFilters.categoryId || undefined,
-        minPrice: toNumber((currentFilters as any).minPrice),
-        maxPrice: toNumber((currentFilters as any).maxPrice),
-        condition: currentFilters.condition || undefined,
-        cityId: currentFilters.cityId || undefined,
+        categoryId: currentFilters.categoryId,
+        minPrice: toNumber(currentFilters.minPrice),
+        maxPrice: toNumber(currentFilters.maxPrice),
+        condition: currentFilters.condition,
+        cityId: currentFilters.cityId,
         customCity: currentFilters.customCity || '',
-        cityLabel: (currentFilters as any).cityLabel || '',
+        cityLabel: currentFilters.cityLabel || '',
         searchTerm: currentFilters.searchTerm || '',
         minDate: currentFilters.minDate || '',
         maxDate: currentFilters.maxDate || '',
@@ -116,11 +141,14 @@ export default function FilterDrawer({
     }
   }, [isOpen, currentFilters])
 
-  const updateFilter = (key: string, value: string | number | undefined) => {
+  const updateFilter = <K extends keyof FilterState>(
+    key: K,
+    value: FilterState[K]
+  ) => {
     setFilters((prev) => ({ ...prev, [key]: value }))
   }
 
-  const clearFilter = (key: string) => {
+  const clearFilter = <K extends keyof FilterState>(key: K) => {
     setFilters((prev) => ({ ...prev, [key]: undefined }))
   }
 
@@ -142,40 +170,12 @@ export default function FilterDrawer({
   }
 
   const applyFilters = () => {
-    const filterParams: Record<string, string | number | undefined> = {}
-
-    if (filters.categoryId) filterParams.categoryId = filters.categoryId
-    if (filters.minPrice !== undefined) filterParams.minPrice = filters.minPrice
-    if (filters.maxPrice !== undefined) filterParams.maxPrice = filters.maxPrice
-    if (filters.condition) filterParams.condition = filters.condition
-    if (filters.cityId) filterParams.cityId = filters.cityId
-    if (filters.cityLabel && (filters.cityLabel as string).trim())
-      filterParams.cityLabel = (filters.cityLabel as string).trim()
-    if (filters.customCity.trim())
-      filterParams.customCity = filters.customCity.trim()
-    if (filters.searchTerm.trim())
-      filterParams.searchTerm = filters.searchTerm.trim()
-    if (filters.minDate) filterParams.minDate = filters.minDate
-    if (filters.maxDate) filterParams.maxDate = filters.maxDate
-    if (filters.sortBy) filterParams.sortBy = filters.sortBy
-    if (filters.sortOrder) filterParams.sortOrder = filters.sortOrder
-
-    onApply(filterParams)
+    onApply(filters)
     onClose()
   }
 
   const hasActiveFilters = () => {
-    return (
-      filters.categoryId ||
-      filters.minPrice ||
-      filters.maxPrice ||
-      filters.condition ||
-      filters.cityId ||
-      filters.customCity.trim() ||
-      filters.searchTerm.trim() ||
-      filters.minDate ||
-      filters.maxDate
-    )
+    return Object.values(filters).some((v) => v !== undefined && v !== '')
   }
 
   return (
@@ -234,30 +234,26 @@ export default function FilterDrawer({
                   />
                 </Badge>
               )}
-              {filters.cityId ||
-              filters.customCity.trim() ||
-              ((filters as any).cityLabel &&
-                (filters as any).cityLabel.trim()) ? (
+              {(filters.cityId || filters.customCity || filters.cityLabel) && (
                 <Badge
                   variant='secondary'
                   className='flex items-center gap-1'
                 >
-                  Location:{' '}
-                  {filters.customCity || (filters as any).cityLabel || 'City'}
+                  Location: {filters.customCity || filters.cityLabel || 'City'}
                   <X
                     className='w-3 h-3 cursor-pointer'
-                    onClick={() => {
+                    onClick={() =>
                       setFilters((prev) => ({
                         ...prev,
                         cityId: undefined,
-                        customCity: '',
                         cityLabel: '',
+                        customCity: '',
                       }))
-                    }}
+                    }
                   />
                 </Badge>
-              ) : null}
-              {filters.searchTerm.trim() && (
+              )}
+              {filters.searchTerm && (
                 <Badge
                   variant='secondary'
                   className='flex items-center gap-1'

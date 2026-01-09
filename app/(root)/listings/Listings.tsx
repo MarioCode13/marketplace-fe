@@ -55,6 +55,8 @@ interface Filters {
   cityId?: string
   cityLabel?: string
   customCity?: string
+  minDate?: string
+  maxDate?: string
 }
 
 interface ListingsProps {
@@ -246,9 +248,9 @@ const Listings: React.FC<ListingsProps> = ({
         // Build currentFilters for the drawer: start from query params
         const raw = Object.fromEntries(searchParams.entries()) as Record<
           string,
-          any
+          unknown
         >
-        const currentFiltersForDrawer: Record<string, any> = { ...raw }
+        const currentFiltersForDrawer: Record<string, unknown> = { ...raw }
 
         // Try to derive categoryId / cityLabel from the pathname when the path encodes them
         if (pathname && categoriesData?.getCategories) {
@@ -357,7 +359,6 @@ const Listings: React.FC<ListingsProps> = ({
               {(() => {
                 const params = Object.fromEntries(searchParams.entries())
                 const filterLabels: string[] = []
-                const firstListing = serverListings.listings[0]
                 // try to extract category/city from path if available
                 let pathCategoryLabel: string | undefined
                 let pathCityLabel: string | undefined

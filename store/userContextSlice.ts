@@ -49,15 +49,15 @@ export const logoutUser = createAsyncThunk(
 				credentials: 'include',
 				headers: { 'Content-Type': 'application/json' },
 			})
-			
+
 			// Clear Apollo cache and dispatch logout action regardless of response status
 			dispatch(logout())
 			await client.clearStore()
-			
+
 			if (!logoutRes.ok) {
 				console.warn('Logout API returned non-ok status, but still clearing local state')
 			}
-			
+
 			return 'success'
 		} catch (err) {
 			// Even if logout fails, clear local state to allow user to log in again

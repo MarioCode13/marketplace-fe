@@ -6,11 +6,7 @@ import { useRouter } from 'next/navigation'
 import { useDispatch } from 'react-redux'
 import { useSelector } from 'react-redux'
 import { AppDispatch, RootState } from '@/store/store'
-import {
-  logoutUser,
-  updateUserProfileImage,
-  refetchUserProfile,
-} from '@/store/userContextSlice'
+import { logoutUser, refetchUserProfile } from '@/store/userContextSlice'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'

@@ -65,15 +65,6 @@ export default async function SlugPage({
       return parts
     }
 
-    // Debug: log all categories and their full paths
-    // eslint-disable-next-line no-console
-    console.debug('All categories for slug mapping:')
-    for (const cat of allCategories) {
-      const fullPath = getFullPath(cat.id)
-      // eslint-disable-next-line no-console
-      console.debug(`  ${cat.name} (${cat.id}): ${fullPath.join('/')}`)
-    }
-
     // First pass: collect all suffix -> ids lists
     const suffixMap = new Map<string, string[]>()
     for (const cat of allCategories) {
@@ -94,15 +85,9 @@ export default async function SlugPage({
     for (const [suf, ids] of suffixMap.entries()) {
       if (ids.length === 1) {
         slugMap[suf] = ids[0]
-      } else {
-        // Debug: ambiguous suffixes are not mapped to avoid incorrect resolution
-        // eslint-disable-next-line no-console
-        console.debug('Ambiguous category suffix:', suf, 'candidates:', ids)
       }
     }
 
-    // eslint-disable-next-line no-console
-    console.debug('Final slug map:', JSON.stringify(slugMap, null, 2))
     return slugMap
   }
 
@@ -180,11 +165,7 @@ export default async function SlugPage({
   if (categoryPath.length > 0) {
     const pathKey = categoryPath.join('/')
     const idFromMap = slugToIdMap[pathKey]
-    // eslint-disable-next-line no-console
-    console.debug(
-      `Attempting to resolve path "${pathKey}":`,
-      idFromMap ? `Found ${idFromMap}` : 'NOT FOUND'
-    )
+
     if (idFromMap) {
       resolvedCategoryId = idFromMap
       categorySlug = undefined // Use resolved ID instead
