@@ -22,17 +22,14 @@ type PageProps = {
   params: Promise<{
     slugParts?: string[]
   }>
-  searchParams?: {
+  searchParams?: Promise<{
     [key: string]: string | string[] | undefined
-  }
+  }>
 }
 
-export default async function SlugPage({
-  params,
-  searchParams = {},
-}: PageProps) {
+export default async function SlugPage({ params, searchParams }: PageProps) {
   const { slugParts = [] } = await params
-  const resolvedParams = searchParams
+  const resolvedParams = (await searchParams) ?? {}
   const client = getServerApolloClient()
 
   // Fetch categories early so we can use them to resolve category slugs
