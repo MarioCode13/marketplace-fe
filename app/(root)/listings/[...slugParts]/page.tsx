@@ -15,16 +15,22 @@ export const metadata: Metadata = {
     'Browse thousands of secondhand items on Dealio. Find great deals on electronics, furniture, clothing, and more in South Africa.',
 }
 
-type SearchParams = { [key: string]: string | string[] | undefined }
-type NextSearchParams = Promise<SearchParams> | undefined
+// type SearchParams = { [key: string]: string | string[] | undefined }
+// type NextSearchParams = Promise<SearchParams> | undefined
+
+type PageProps = {
+  params: {
+    slugParts?: string[]
+  }
+  searchParams?: {
+    [key: string]: string | string[] | undefined
+  }
+}
 
 export default async function SlugPage({
   params,
-  searchParams,
-}: {
-  params: Promise<{ slugParts?: string[] }> | { slugParts?: string[] }
-  searchParams?: NextSearchParams
-}) {
+  searchParams = {},
+}: PageProps) {
   const resolvedParams = (await searchParams) || {}
   // Handle params as either Promise or direct object (Next.js 15 compatibility)
   const resolvedParams_obj = params instanceof Promise ? await params : params
