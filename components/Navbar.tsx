@@ -19,8 +19,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useGetMyBusinessQuery } from '@/lib/graphql/generated'
-import { useQuery } from '@apollo/client'
-import { GET_ME } from '@/lib/graphql/queries/getMe'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 
@@ -30,10 +28,7 @@ export default function Navbar() {
   const isLoggedIn = useSelector(selectIsLoggedIn)
   const user = useSelector((state: RootState) => state.userContext)
   const { theme, setTheme } = useTheme()
-  const { data, loading } = useQuery(GET_ME, {
-    skip: !isLoggedIn,
-    fetchPolicy: 'no-cache',
-  })
+
   const { data: businessData } = useGetMyBusinessQuery({
     skip: !isLoggedIn,
   })
@@ -169,8 +164,6 @@ export default function Navbar() {
               >
                 {!isLoggedIn ? (
                   <User className='w-6 h-6' />
-                ) : loading ? (
-                  <div className='w-6 h-6 bg-gray-300 rounded-full animate-pulse' />
                 ) : profileImageUrl ? (
                   <Image
                     src={generateImageUrl(profileImageUrl)}
