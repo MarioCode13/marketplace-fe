@@ -959,7 +959,7 @@ export type User = {
   createdAt: Scalars['String']['output'];
   customCity?: Maybe<Scalars['String']['output']>;
   driversLicenseUrl?: Maybe<Scalars['String']['output']>;
-  email: Scalars['String']['output'];
+  email?: Maybe<Scalars['String']['output']>;
   firstName?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
   idNumber?: Maybe<Scalars['String']['output']>;
@@ -1022,7 +1022,7 @@ export type UpdateProfileMutationVariables = Exact<{
 }>;
 
 
-export type UpdateProfileMutation = { __typename?: 'Mutation', updateUser?: { __typename?: 'User', id: string, username: string, email: string } | null };
+export type UpdateProfileMutation = { __typename?: 'Mutation', updateUser?: { __typename?: 'User', id: string, username: string, email?: string | null } | null };
 
 export type RegisterMutationVariables = Exact<{
   username: Scalars['String']['input'];
@@ -1065,7 +1065,7 @@ export type IsStoreSlugAvailableQuery = { __typename?: 'Query', isStoreSlugAvail
 export type GetAllUsersQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetAllUsersQuery = { __typename?: 'Query', getAllUsers: Array<{ __typename?: 'User', id: string, username: string, email: string }> };
+export type GetAllUsersQuery = { __typename?: 'Query', getAllUsers: Array<{ __typename?: 'User', id: string, username: string, email?: string | null }> };
 
 export type UpdateStoreBrandingMutationVariables = Exact<{
   businessId: Scalars['ID']['input'];
@@ -1089,7 +1089,7 @@ export type LinkUserToBusinessMutationVariables = Exact<{
 }>;
 
 
-export type LinkUserToBusinessMutation = { __typename?: 'Mutation', linkUserToBusiness: { __typename?: 'BusinessUser', id: string, role: BusinessUserRole, user: { __typename?: 'User', id: string, username: string, email: string } } };
+export type LinkUserToBusinessMutation = { __typename?: 'Mutation', linkUserToBusiness: { __typename?: 'BusinessUser', id: string, role: BusinessUserRole, user: { __typename?: 'User', id: string, username: string, email?: string | null } } };
 
 export type UnlinkUserFromBusinessMutationVariables = Exact<{
   businessId: Scalars['ID']['input'];
@@ -1207,14 +1207,14 @@ export type GetBusinessByIdQueryVariables = Exact<{
 }>;
 
 
-export type GetBusinessByIdQuery = { __typename?: 'Query', business?: { __typename?: 'Business', id: string, name: string, slug?: string | null, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, postalCode?: string | null, planType?: PlanType | null, owner: { __typename?: 'User', id: string, planType?: PlanType | null }, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, lightOrDark?: string | null, primaryColor?: string | null, secondaryColor?: string | null, textColor?: string | null, cardTextColor?: string | null, backgroundColor?: string | null, about?: string | null, storeName?: string | null } | null, businessUsers: Array<{ __typename?: 'BusinessUser', id: string, role: BusinessUserRole, user: { __typename?: 'User', id: string, username: string, email: string, profileImageUrl?: string | null, planType?: PlanType | null, trustRating?: { __typename?: 'TrustRating', starRating: number, trustLevel: string, overallScore: number, totalReviews: number, totalTransactions: number, successfulTransactions: number } | null } }> } | null };
+export type GetBusinessByIdQuery = { __typename?: 'Query', business?: { __typename?: 'Business', id: string, name: string, slug?: string | null, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, postalCode?: string | null, planType?: PlanType | null, trustRating?: { __typename?: 'BusinessTrustRating', verifiedWithThirdParty: boolean, averageRating: number, reviewCount: number } | null, owner: { __typename?: 'User', id: string, planType?: PlanType | null }, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, lightOrDark?: string | null, primaryColor?: string | null, secondaryColor?: string | null, textColor?: string | null, cardTextColor?: string | null, backgroundColor?: string | null, about?: string | null, storeName?: string | null } | null, businessUsers: Array<{ __typename?: 'BusinessUser', id: string, role: BusinessUserRole, user: { __typename?: 'User', id: string, username: string, email?: string | null, profileImageUrl?: string | null, planType?: PlanType | null, trustRating?: { __typename?: 'TrustRating', starRating: number, trustLevel: string, overallScore: number, totalReviews: number, totalTransactions: number, successfulTransactions: number } | null } }> } | null };
 
 export type GetBusinessBySlugQueryVariables = Exact<{
   slug: Scalars['String']['input'];
 }>;
 
 
-export type GetBusinessBySlugQuery = { __typename?: 'Query', getBusinessBySlug?: { __typename?: 'Business', id: string, name: string, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, postalCode?: string | null, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, trustRating?: { __typename?: 'BusinessTrustRating', averageRating: number, reviewCount: number } | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, lightOrDark?: string | null, primaryColor?: string | null, secondaryColor?: string | null, about?: string | null, storeName?: string | null, backgroundColor?: string | null, textColor?: string | null, cardTextColor?: string | null } | null, businessUsers: Array<{ __typename?: 'BusinessUser', id: string, role: BusinessUserRole, user: { __typename?: 'User', id: string, username: string, email: string, profileImageUrl?: string | null, planType?: PlanType | null, trustRating?: { __typename?: 'TrustRating', starRating: number, trustLevel: string, overallScore: number, totalReviews: number, totalTransactions: number, successfulTransactions: number } | null } }> } | null };
+export type GetBusinessBySlugQuery = { __typename?: 'Query', getBusinessBySlug?: { __typename?: 'Business', id: string, name: string, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, postalCode?: string | null, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, trustRating?: { __typename?: 'BusinessTrustRating', verifiedWithThirdParty: boolean, averageRating: number, reviewCount: number } | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, lightOrDark?: string | null, primaryColor?: string | null, secondaryColor?: string | null, about?: string | null, storeName?: string | null, backgroundColor?: string | null, textColor?: string | null, cardTextColor?: string | null } | null, businessUsers: Array<{ __typename?: 'BusinessUser', id: string, role: BusinessUserRole, user: { __typename?: 'User', id: string, username: string, email?: string | null, profileImageUrl?: string | null, planType?: PlanType | null, trustRating?: { __typename?: 'TrustRating', starRating: number, trustLevel: string, overallScore: number, totalReviews: number, totalTransactions: number, successfulTransactions: number } | null } }> } | null };
 
 export type BusinessTrustRatingQueryVariables = Exact<{
   businessId: Scalars['ID']['input'];
@@ -1233,7 +1233,7 @@ export type GetListingByIdQueryVariables = Exact<{
 }>;
 
 
-export type GetListingByIdQuery = { __typename?: 'Query', getListingById?: { __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, sold: boolean, customCity?: string | null, condition: Condition, createdAt: string, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, category?: { __typename?: 'Category', id: string, name: string, parentId?: string | null } | null, user?: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null, email: string, planType?: PlanType | null } | null, business?: { __typename?: 'Business', id: string, name: string, businessType?: string | null, slug?: string | null, trustRating?: { __typename?: 'BusinessTrustRating', averageRating: number, reviewCount: number } | null, storeBranding?: { __typename?: 'StoreBranding', storeName?: string | null, logoUrl?: string | null } | null } | null } | null };
+export type GetListingByIdQuery = { __typename?: 'Query', getListingById?: { __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, sold: boolean, customCity?: string | null, condition: Condition, createdAt: string, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, category?: { __typename?: 'Category', id: string, name: string, parentId?: string | null } | null, user?: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null, email?: string | null, planType?: PlanType | null } | null, business?: { __typename?: 'Business', id: string, name: string, businessType?: string | null, slug?: string | null, trustRating?: { __typename?: 'BusinessTrustRating', averageRating: number, reviewCount: number } | null, storeBranding?: { __typename?: 'StoreBranding', storeName?: string | null, logoUrl?: string | null } | null } | null } | null };
 
 export type GetListingsQueryVariables = Exact<{
   limit: Scalars['Int']['input'];
@@ -1260,12 +1260,12 @@ export type GetListingsQuery = { __typename?: 'Query', getListings: { __typename
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type MeQuery = { __typename?: 'Query', me?: { __typename?: 'User', id: string, username: string, email: string, firstName?: string | null, lastName?: string | null, bio?: string | null, profileImageUrl?: string | null, planType?: PlanType | null, role: string, customCity?: string | null, contactNumber?: string | null, idNumber?: string | null, idPhotoUrl?: string | null, driversLicenseUrl?: string | null, proofOfAddressUrl?: string | null, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, subscription?: { __typename?: 'Subscription', status: SubscriptionStatus, planType: PlanType } | null, trustRating?: { __typename?: 'TrustRating', verifiedId: boolean } | null } | null };
+export type MeQuery = { __typename?: 'Query', me?: { __typename?: 'User', id: string, username: string, email?: string | null, firstName?: string | null, lastName?: string | null, bio?: string | null, profileImageUrl?: string | null, planType?: PlanType | null, role: string, customCity?: string | null, contactNumber?: string | null, idNumber?: string | null, idPhotoUrl?: string | null, driversLicenseUrl?: string | null, proofOfAddressUrl?: string | null, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, subscription?: { __typename?: 'Subscription', status: SubscriptionStatus, planType: PlanType } | null, trustRating?: { __typename?: 'TrustRating', verifiedId: boolean } | null } | null };
 
 export type GetMyBusinessQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetMyBusinessQuery = { __typename?: 'Query', myBusiness?: { __typename?: 'Business', id: string, slug?: string | null, name: string, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, planType?: PlanType | null, postalCode?: string | null, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, primaryColor?: string | null, secondaryColor?: string | null, lightOrDark?: string | null, about?: string | null, storeName?: string | null, textColor?: string | null, cardTextColor?: string | null, backgroundColor?: string | null } | null, businessUsers: Array<{ __typename?: 'BusinessUser', id: string, role: BusinessUserRole, user: { __typename?: 'User', id: string, planType?: PlanType | null, username: string, email: string, profileImageUrl?: string | null } }> } | null };
+export type GetMyBusinessQuery = { __typename?: 'Query', myBusiness?: { __typename?: 'Business', id: string, slug?: string | null, name: string, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, planType?: PlanType | null, postalCode?: string | null, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, primaryColor?: string | null, secondaryColor?: string | null, lightOrDark?: string | null, about?: string | null, storeName?: string | null, textColor?: string | null, cardTextColor?: string | null, backgroundColor?: string | null } | null, businessUsers: Array<{ __typename?: 'BusinessUser', id: string, role: BusinessUserRole, user: { __typename?: 'User', id: string, planType?: PlanType | null, username: string, email?: string | null, profileImageUrl?: string | null } }> } | null };
 
 export type GetNotificationsQueryVariables = Exact<{
   userId: Scalars['ID']['input'];
@@ -1279,7 +1279,7 @@ export type GetSellerProfileQueryVariables = Exact<{
 }>;
 
 
-export type GetSellerProfileQuery = { __typename?: 'Query', user?: { __typename?: 'User', id: string, username: string, email: string, createdAt: string, profileImageUrl?: string | null, firstName?: string | null, lastName?: string | null, bio?: string | null, customCity?: string | null, contactNumber?: string | null, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, trustRating?: { __typename?: 'TrustRating', overallScore: number, verificationScore: number, profileScore: number, reviewScore: number, transactionScore: number, totalReviews: number, positiveReviews: number, starRating: number, trustLevel: string } | null, profileCompletion?: { __typename?: 'ProfileCompletion', id: string, hasProfilePhoto: boolean, hasBio: boolean, hasContactNumber: boolean, hasLocation: boolean, hasIdDocument: boolean, hasDriversLicense: boolean, hasProofOfAddress: boolean, completionPercentage: number, createdAt: string, updatedAt: string } | null, subscription?: { __typename?: 'Subscription', planType: PlanType } | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, about?: string | null } | null, listings: Array<{ __typename?: 'Listing', id: string, title: string, price: number, images: Array<string>, sold: boolean, createdAt: string }> } | null };
+export type GetSellerProfileQuery = { __typename?: 'Query', user?: { __typename?: 'User', id: string, username: string, email?: string | null, createdAt: string, profileImageUrl?: string | null, firstName?: string | null, lastName?: string | null, bio?: string | null, customCity?: string | null, contactNumber?: string | null, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, trustRating?: { __typename?: 'TrustRating', overallScore: number, verificationScore: number, profileScore: number, reviewScore: number, transactionScore: number, totalReviews: number, positiveReviews: number, starRating: number, trustLevel: string } | null, profileCompletion?: { __typename?: 'ProfileCompletion', id: string, hasProfilePhoto: boolean, hasBio: boolean, hasContactNumber: boolean, hasLocation: boolean, hasIdDocument: boolean, hasDriversLicense: boolean, hasProofOfAddress: boolean, completionPercentage: number, createdAt: string, updatedAt: string } | null, subscription?: { __typename?: 'Subscription', planType: PlanType } | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, about?: string | null } | null, listings: Array<{ __typename?: 'Listing', id: string, title: string, price: number, images: Array<string>, sold: boolean, createdAt: string }> } | null };
 
 export type GetMyStoreBrandingQueryVariables = Exact<{
   userId: Scalars['ID']['input'];
@@ -1395,14 +1395,14 @@ export type GetUserPositiveReviewCountQuery = { __typename?: 'Query', getUserPos
 export type GetUsersQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetUsersQuery = { __typename?: 'Query', getAllUsers: Array<{ __typename?: 'User', id: string, username: string, email: string, customCity?: string | null, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null }> };
+export type GetUsersQuery = { __typename?: 'Query', getAllUsers: Array<{ __typename?: 'User', id: string, username: string, email?: string | null, customCity?: string | null, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null }> };
 
 export type SearchUsersQueryVariables = Exact<{
   searchTerm: Scalars['String']['input'];
 }>;
 
 
-export type SearchUsersQuery = { __typename?: 'Query', searchUsers: Array<{ __typename?: 'User', id: string, username: string, email: string, profileImageUrl?: string | null, firstName?: string | null, lastName?: string | null, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, trustRating?: { __typename?: 'TrustRating', overallScore: number, starRating: number, trustLevel: string, totalReviews: number, totalTransactions: number, successfulTransactions: number } | null }> };
+export type SearchUsersQuery = { __typename?: 'Query', searchUsers: Array<{ __typename?: 'User', id: string, username: string, email?: string | null, profileImageUrl?: string | null, firstName?: string | null, lastName?: string | null, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, trustRating?: { __typename?: 'TrustRating', overallScore: number, starRating: number, trustLevel: string, totalReviews: number, totalTransactions: number, successfulTransactions: number } | null }> };
 
 export type GetUserVerificationDocumentsQueryVariables = Exact<{
   userId: Scalars['ID']['input'];
@@ -2478,6 +2478,11 @@ export const GetBusinessByIdDocument = gql`
     addressLine2
     postalCode
     planType
+    trustRating {
+      verifiedWithThirdParty
+      averageRating
+      reviewCount
+    }
     owner {
       id
       planType
@@ -2581,6 +2586,7 @@ export const GetBusinessBySlugDocument = gql`
       }
     }
     trustRating {
+      verifiedWithThirdParty
       averageRating
       reviewCount
     }

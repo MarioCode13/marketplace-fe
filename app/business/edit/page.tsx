@@ -139,6 +139,7 @@ export default function BusinessEditPage() {
   const [uploadBannerError, setUploadBannerError] = useState<string | null>(
     null
   )
+  const [verifyingBusiness, setVerifyingBusiness] = useState(false)
 
   useEffect(() => {
     if (business?.storeBranding) {
@@ -282,9 +283,10 @@ export default function BusinessEditPage() {
       return
     }
 
+    setVerifyingBusiness(true)
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_GRAPHQL_URL}/api/verify-business`,
+        `${process.env.NEXT_PUBLIC_API_BASE}/api/verify-business`,
         {
           method: 'POST',
           credentials: 'include',
@@ -314,6 +316,8 @@ export default function BusinessEditPage() {
         'Business verification failed: ' +
           (err instanceof Error ? err.message : 'Unknown error')
       )
+    } finally {
+      setVerifyingBusiness(false)
     }
   }
 
@@ -588,9 +592,13 @@ export default function BusinessEditPage() {
                       type='button'
                       variant={'contained'}
                       onClick={handleVerifyBusiness}
-                      disabled={!business?.id}
+                      disabled={!business?.id || verifyingBusiness}
                     >
-                      Verify Business
+                      {verifyingBusiness ? (
+                        <Loader2 className='animate-spin w-4 h-4' />
+                      ) : (
+                        'Verify Business'
+                      )}
                     </Button>
                     <p className='text-xs text-muted-foreground mt-2'>
                       By verifying your ID, you agree to our use of

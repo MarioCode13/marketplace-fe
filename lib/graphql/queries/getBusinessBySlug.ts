@@ -21,6 +21,7 @@ export const GET_BUSINESS_BY_SLUG = gql`
         }
       }
       trustRating{
+        verifiedWithThirdParty
         averageRating
         reviewCount
       }

@@ -109,7 +109,7 @@ export default function CompleteProfilePage() {
 
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_GRAPHQL_URL}/api/id-verify`,
+        `${process.env.NEXT_PUBLIC_API_BASE}/api/id-verify`,
         {
           method: 'POST',
           credentials: 'include',

@@ -131,13 +131,14 @@ export default function ListingCard({
               <>
                 <div className='flex items-center gap-2'>
                   <p className='text-sm text-gray-500'>
-                    {listing.user
-                      ? listing.user.username
-                      : listing.business?.name || 'Unknown'}
+                    {listing.business?.name ||
+                      listing.user?.username ||
+                      'Unknown'}
                   </p>
-                  {/* Verified badge for individual users (verifiedId) or businesses (verifiedWithThirdParty) */}
-                  {(listing.user?.trustRating?.verifiedId ||
-                    listing.business?.trustRating?.verifiedWithThirdParty) && (
+                  {/* Verified badge: show if business is verified, or if no business but user is verified */}
+                  {(listing.business?.trustRating?.verifiedWithThirdParty ||
+                    (!listing.business &&
+                      listing.user?.trustRating?.verifiedId)) && (
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -150,7 +151,6 @@ export default function ListingCard({
                     </TooltipProvider>
                   )}
                 </div>
-                {/* Only show trust rating if user exists and has trustRating */}
                 {(listing.user?.trustRating?.starRating ||
                   listing.business?.trustRating?.averageRating) && (
                   <div className='flex items-center gap-2'>

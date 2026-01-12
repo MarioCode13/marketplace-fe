@@ -12,6 +12,11 @@ export const GET_BUSINESS_BY_ID = gql`
       addressLine2
       postalCode
       planType
+      trustRating{
+        verifiedWithThirdParty
+        averageRating
+        reviewCount
+      }
       owner {
         id
         planType

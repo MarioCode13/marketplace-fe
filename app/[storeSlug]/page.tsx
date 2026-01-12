@@ -19,6 +19,7 @@ import {
   ChevronRight,
   Settings,
   Plus,
+  ShieldCheck,
 } from 'lucide-react'
 import { useState } from 'react'
 import StoreReviewsModal from '@/components/modals/StoreReviewsModal'
@@ -104,7 +105,6 @@ export default function ProStoreRoute() {
   type QueryFilters = Filters & { categorySlug?: string }
   const queryFilters: QueryFilters = { ...filters }
 
-  // If a parent category ID is selected, derive the full slug path and send as categorySlug
   if (queryFilters.categoryId && categories && categories.length > 0) {
     const flatCats = (categoriesData?.getCategories || []) as FlatCategory[]
     const idMap = new Map(flatCats.map((c) => [c.id, c]))
@@ -126,8 +126,6 @@ export default function ProStoreRoute() {
 
     if (parts.length > 0) {
       queryFilters.categorySlug = parts.join('/')
-      // Keep `categoryId` for queries so parent categories include child results on the backend.
-      // Some backend resolvers expect `categoryId` to filter recursively; do not remove it.
     }
   }
 
@@ -137,8 +135,6 @@ export default function ProStoreRoute() {
     ...queryFilters,
     ...(isProStore && business?.id ? { businessId: business.id } : {}),
   }
-
-  // Debug: log final variables being sent to listings query
 
   const shouldSkipListings = isProStore && !business?.id
   const {
@@ -250,12 +246,27 @@ export default function ProStoreRoute() {
           )}
           <div className='flex-1'>
             <div className='flex items-center justify-between'>
-              <h1
-                className='text-2xl font-bold'
-                style={{ color: secondaryColor }}
-              >
-                {storeName}
-              </h1>
+              <div className='flex items-center gap-2'>
+                <h1
+                  className='text-2xl font-bold'
+                  style={{ color: secondaryColor }}
+                >
+                  {storeName}
+                </h1>
+                {business?.trustRating?.verifiedWithThirdParty && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <ShieldCheck className='w-4 h-4 text-success' />
+                      </TooltipTrigger>
+                      <TooltipContent side='top'>
+                        <p>Verified</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+              </div>
+
               {isStoreUser && (
                 <div className='flex items-center gap-2'>
                   <Button
