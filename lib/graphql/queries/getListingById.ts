@@ -33,6 +33,9 @@ export const GET_LISTING_BY_ID = gql`
         profileImageUrl
         email
         planType
+        trustRating{
+          verifiedId
+        }
       }
       business {
         id
@@ -42,12 +45,11 @@ export const GET_LISTING_BY_ID = gql`
          trustRating {
           averageRating
            reviewCount
+           verifiedWithThirdParty
          }
         storeBranding {
           storeName
           logoUrl
-        
-          
         }
       }
     }

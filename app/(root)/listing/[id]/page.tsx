@@ -20,6 +20,7 @@ import {
   Edit,
   ChevronLeft,
   ChevronRight,
+  ShieldCheck,
 } from 'lucide-react'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/store/store'
@@ -239,7 +240,6 @@ const Page = () => {
             <Card>
               <CardContent className='p-4'>
                 <div className='flex items-center gap-4 mb-3'>
-                  {/* Show store logo if business exists, otherwise show user profile image */}
                   {listing.business &&
                   listing.business.storeBranding?.logoUrl ? (
                     <Image
@@ -267,38 +267,55 @@ const Page = () => {
                     <p className='text-gray-500 text-sm'>
                       {listing.business ? 'Store' : 'Seller'}
                     </p>
-                    {listing.business ? (
-                      <Link
-                        href={
-                          listing.business.businessType === 'PRO_STORE' &&
-                          listing.business.slug
-                            ? `/${listing.business.slug}`
-                            : listing.business.businessType === 'RESELLER'
-                            ? `/store/${listing.business.id}`
-                            : '/'
-                        }
-                        className='hover:underline'
-                      >
-                        <h2 className='text-lg font-semibold'>
-                          {listing.business.storeBranding?.storeName ||
-                            listing.business.name}
-                        </h2>
-                      </Link>
-                    ) : listing.user ? (
-                      <Link
-                        href={`/seller/${listing.user.id}`}
-                        className='hover:underline'
-                      >
-                        <h2 className='text-lg font-semibold'>
-                          {listing.user.username}
-                        </h2>
-                      </Link>
-                    ) : (
-                      <span className='text-lg font-semibold text-gray-400'>
-                        Unknown Seller
-                      </span>
-                    )}
+                    <div className='flex gap-1'>
+                      {listing.business ? (
+                        <Link
+                          href={
+                            listing.business.businessType === 'PRO_STORE' &&
+                            listing.business.slug
+                              ? `/${listing.business.slug}`
+                              : listing.business.businessType === 'RESELLER'
+                              ? `/store/${listing.business.id}`
+                              : '/'
+                          }
+                          className='hover:underline'
+                        >
+                          <h2 className='text-lg font-semibold'>
+                            {listing.business.storeBranding?.storeName ||
+                              listing.business.name}
+                          </h2>
+                        </Link>
+                      ) : listing.user ? (
+                        <Link
+                          href={`/seller/${listing.user.id}`}
+                          className='hover:underline'
+                        >
+                          <h2 className='text-lg font-semibold'>
+                            {listing.user.username}
+                          </h2>
+                        </Link>
+                      ) : (
+                        <span className='text-lg font-semibold text-gray-400'>
+                          Unknown Seller
+                        </span>
+                      )}
+                      {(listing.business?.trustRating?.verifiedWithThirdParty ||
+                        (!listing.business &&
+                          listing.user?.trustRating?.verifiedId)) && (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <ShieldCheck className='w-6 h-6 text-success' />
+                            </TooltipTrigger>
+                            <TooltipContent side='top'>
+                              <p>Verified</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      )}
+                    </div>
                   </div>
+
                   {isOwner ? (
                     <div className='flex gap-2'>
                       <Button

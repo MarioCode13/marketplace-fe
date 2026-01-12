@@ -135,7 +135,6 @@ export default function ListingCard({
                       listing.user?.username ||
                       'Unknown'}
                   </p>
-                  {/* Verified badge: show if business is verified, or if no business but user is verified */}
                   {(listing.business?.trustRating?.verifiedWithThirdParty ||
                     (!listing.business &&
                       listing.user?.trustRating?.verifiedId)) && (

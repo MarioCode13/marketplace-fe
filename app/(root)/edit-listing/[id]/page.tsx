@@ -298,7 +298,7 @@ export default function EditListingPage() {
           <Button
             variant='text'
             size='sm'
-            onClick={() => router.push(`/listings/${listingId}`)}
+            onClick={() => router.push(`/listing/${listingId}`)}
           >
             <ArrowLeft className='w-4 h-4 mr-2' />
             Back to Listing
