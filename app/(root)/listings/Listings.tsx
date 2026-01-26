@@ -118,10 +118,9 @@ const Listings: React.FC<ListingsProps> = ({
 
     let categoryPath: string[] | undefined
     if (newFilters.categoryId && categoriesData?.getCategories) {
-      // Build full category path (parent/child)
       categoryPath = buildCategoryPath(
         newFilters.categoryId,
-        categoriesData.getCategories as FlatCategory[]
+        categoriesData.getCategories as FlatCategory[],
       )
 
       // Reduce to minimal unique path: prefer leaf-only slug unless ambiguous
@@ -276,7 +275,7 @@ const Listings: React.FC<ListingsProps> = ({
             for (const cat of allCats) {
               const fullPath = getFullPath(cat.id)
               slugMap[fullPath.join('/')] = cat.id
-              // Also add suffixes for partial matching
+              // add suffixes for partial matching
               for (let k = fullPath.length - 1; k >= 1; k--) {
                 const suffix = fullPath.slice(-k).join('/')
                 if (!slugMap[suffix]) {
@@ -387,7 +386,7 @@ const Listings: React.FC<ListingsProps> = ({
                   // Build full category name chain from categoryId using categories data
                   const id = params.categoryId as string
                   const catMap = new Map(
-                    categoriesData.getCategories.map((c) => [c?.id, c])
+                    categoriesData.getCategories.map((c) => [c?.id, c]),
                   )
                   const names: string[] = []
                   let cur = catMap.get(id)
@@ -402,7 +401,7 @@ const Listings: React.FC<ListingsProps> = ({
                   // Prefer category coming from the path (explicit URL)
                   filterLabels.push(`Category: ${pathCategoryLabel}`)
                 }
-                // NEVER infer category from the first listing - only show if explicitly filtered
+                // only show category if explicitly filtered
                 if (params.minPrice || params.maxPrice) {
                   let priceLabel = 'Price:'
                   if (params.minPrice) priceLabel += ` from $${params.minPrice}`
@@ -411,7 +410,7 @@ const Listings: React.FC<ListingsProps> = ({
                 }
                 if (params.condition)
                   filterLabels.push(`Condition: ${params.condition}`)
-                // Only show city if explicitly present in query/path. Do NOT infer from listing data.
+                // Only show city if explicitly present in query/path. Not infer from listing data
                 if (params.customCity) {
                   filterLabels.push(`City: ${params.customCity}`)
                 } else if (pathCityLabel) {
@@ -450,7 +449,7 @@ const Listings: React.FC<ListingsProps> = ({
 
         {(() => {
           const activeListings = serverListings.listings.filter(
-            (listing) => !listing.sold
+            (listing) => !listing.sold,
           )
           return activeListings.length > 0 ? (
             <>

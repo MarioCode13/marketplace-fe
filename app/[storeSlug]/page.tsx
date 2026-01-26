@@ -77,7 +77,6 @@ export default function ProStoreRoute() {
   // (to show business details like address, contact info)
   const { data: businessData } = useGetMyBusinessQuery()
 
-  // Filters and listings
   interface Filters {
     categoryId?: string
     minPrice?: number
@@ -172,7 +171,7 @@ export default function ProStoreRoute() {
     business?.businessUsers?.[0]?.user?.username ||
     business?.name
   const badgeLabel = formatEnum(
-    business?.businessUsers?.[0]?.user?.planType ?? ''
+    business?.businessUsers?.[0]?.user?.planType ?? '',
   )
 
   // Filter logic
@@ -191,7 +190,7 @@ export default function ProStoreRoute() {
         (value) =>
           value !== undefined &&
           value !== '' &&
-          !(Array.isArray(value) && value.length === 0)
+          !(Array.isArray(value) && value.length === 0),
       )
     )
   }

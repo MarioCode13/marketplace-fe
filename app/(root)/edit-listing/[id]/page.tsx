@@ -116,7 +116,7 @@ export default function EditListingPage() {
     }
   }, [listingData?.getListingById, formKey])
 
-  // Check if user owns the listing
+  // Check if user owns listing
   useEffect(() => {
     if (
       listingData?.getListingById &&
@@ -144,7 +144,7 @@ export default function EditListingPage() {
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
+    >,
   ) => {
     setForm({ ...form, [e.target.name]: e.target.value })
   }
@@ -181,7 +181,7 @@ export default function EditListingPage() {
           headers: {
             ...(xsrfToken ? { 'X-XSRF-TOKEN': xsrfToken } : {}),
           },
-        }
+        },
       )
 
       const data = await res.json()

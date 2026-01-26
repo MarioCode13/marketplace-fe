@@ -137,7 +137,6 @@ export default function RootLayout({
           name='ICBM'
           content='-30.5595, 22.9375'
         />
-        {/* Organization Schema - Required for Google Search Logo */}
         <script
           type='application/ld+json'
           dangerouslySetInnerHTML={{
@@ -149,7 +148,7 @@ export default function RootLayout({
               logo: 'https://dealio.org.za/logo.png',
               description: "South Africa's trusted secondhand marketplace",
               sameAs: [
-                // Add your social media profiles here when available
+                // Add social media profiles here when available
                 // 'https://twitter.com/dealio_za',
                 // 'https://facebook.com/dealio',
               ],

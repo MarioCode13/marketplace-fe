@@ -9,19 +9,13 @@ import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
-// import { useLazyQuery } from '@apollo/client' // Not used
-// import { GET_MY_BUSINESS } from '@/lib/graphql/queries/getMyBusiness' // Not used
-// import { setUserContext } from '@/store/userContextSlice' // No longer needed
 
 export default function Login() {
   const router = useRouter()
   const dispatch = useDispatch<AppDispatch>()
-  // const userContext = useSelector((state: RootState) => state.userContext) // Not used
-  // Optionally, add local loading/error state
   const [loading, setLoading] = useState(false)
 
   const [form, setForm] = useState({ emailOrUsername: '', password: '' })
-  // const [getMyBusiness] = useLazyQuery(GET_MY_BUSINESS) // Not used
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value })
@@ -31,7 +25,6 @@ export default function Login() {
     e.preventDefault()
     setLoading(true)
     try {
-      // Use centralized login thunk
       const resultAction = await dispatch(loginUser(form))
       if (loginUser.fulfilled.match(resultAction)) {
         toast.success('Login successful!')

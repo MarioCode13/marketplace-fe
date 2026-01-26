@@ -4,9 +4,7 @@ import Listings from './Listings'
 import ClientLoadingWrapper from './loading-client'
 import { Metadata } from 'next'
 
-// Force dynamic rendering
 export const dynamic = 'force-dynamic'
-// Disable static data caching
 export const fetchCache = 'force-no-store'
 export const revalidate = 0
 
@@ -41,13 +39,13 @@ export default async function Page({
     return value ? (Array.isArray(value) ? value[0] : value) : undefined
   }
 
-  // Extract page safely
+  // Extract page
   const pageParam = getParamValue('page')
   const page = Number(pageParam) || 1
   const limit = 12
   const offset = (page - 1) * limit
 
-  // Extract filters from URL params
+  // Extract filters from params
   const categoryId = getParamValue('categoryId') || undefined
   const minPrice = getParamValue('minPrice')
   const maxPrice = getParamValue('maxPrice')
@@ -76,20 +74,20 @@ export default async function Page({
 
   // Debug: log date conversion
   process.stderr.write(
-    `\n[DEBUG SSR /listings] minDate param: ${minDate} → converted: ${variables.minDate}\n`
+    `\n[DEBUG SSR /listings] minDate param: ${minDate} → converted: ${variables.minDate}\n`,
   )
   process.stderr.write(
-    `[DEBUG SSR /listings] maxDate param: ${maxDate} → converted: ${variables.maxDate}\n`
+    `[DEBUG SSR /listings] maxDate param: ${maxDate} → converted: ${variables.maxDate}\n`,
   )
   process.stderr.write(
     `[DEBUG SSR /listings] GraphQL variables: ${JSON.stringify(
       variables,
       null,
-      2
-    )}\n`
+      2,
+    )}\n`,
   )
 
-  // Fetch from GraphQL with network-only to ensure fresh data
+  // Ensure fresh data
   const { data } = await client.query({
     query: GET_LISTINGS,
     variables,

@@ -59,11 +59,11 @@ const Page = () => {
       ) {
         if (event.key === 'ArrowLeft') {
           setSelectedImageIndex((prev) =>
-            prev === 0 ? data.getListingById.images.length - 1 : prev - 1
+            prev === 0 ? data.getListingById.images.length - 1 : prev - 1,
           )
         } else if (event.key === 'ArrowRight') {
           setSelectedImageIndex((prev) =>
-            prev === data.getListingById.images.length - 1 ? 0 : prev + 1
+            prev === data.getListingById.images.length - 1 ? 0 : prev + 1,
           )
         }
       }
@@ -111,7 +111,6 @@ const Page = () => {
         isOwner = true
       }
 
-      // Also check explicit business owner or businessUsers array
       if (
         listing.business.owner &&
         listing.business.owner.id === currentUserId
@@ -122,7 +121,7 @@ const Page = () => {
       if (
         Array.isArray(listing.business.businessUsers) &&
         listing.business.businessUsers.some(
-          (bu: { user: { id: string } }) => bu.user?.id === currentUserId
+          (bu: { user: { id: string } }) => bu.user?.id === currentUserId,
         )
       ) {
         isOwner = true
@@ -153,7 +152,7 @@ const Page = () => {
                   <button
                     onClick={() =>
                       setSelectedImageIndex((prev) =>
-                        prev === 0 ? listing.images.length - 1 : prev - 1
+                        prev === 0 ? listing.images.length - 1 : prev - 1,
                       )
                     }
                     className='absolute left-3 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all z-10'
@@ -163,7 +162,7 @@ const Page = () => {
                   <button
                     onClick={() =>
                       setSelectedImageIndex((prev) =>
-                        prev === listing.images.length - 1 ? 0 : prev + 1
+                        prev === listing.images.length - 1 ? 0 : prev + 1,
                       )
                     }
                     className='absolute right-3 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all z-10'
@@ -244,7 +243,7 @@ const Page = () => {
                   listing.business.storeBranding?.logoUrl ? (
                     <Image
                       src={generateImageUrl(
-                        listing.business.storeBranding.logoUrl
+                        listing.business.storeBranding.logoUrl,
                       )}
                       height={50}
                       width={50}
@@ -275,8 +274,8 @@ const Page = () => {
                             listing.business.slug
                               ? `/${listing.business.slug}`
                               : listing.business.businessType === 'RESELLER'
-                              ? `/store/${listing.business.id}`
-                              : '/'
+                                ? `/store/${listing.business.id}`
+                                : '/'
                           }
                           className='hover:underline'
                         >
@@ -427,7 +426,6 @@ const Page = () => {
                                 0
                               return [1, 2, 3, 4, 5].map((star) => {
                                 if (rating >= star) {
-                                  // Full star
                                   return (
                                     <Star
                                       key={star}

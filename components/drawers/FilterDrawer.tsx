@@ -57,40 +57,6 @@ const SORT_OPTIONS = [
   { value: 'title', label: 'Title' },
 ]
 
-// interface FilterDrawerProps {
-//   isOpen: boolean
-//   onClose: () => void
-//   onApply: (filters: {
-//     categoryId?: string
-//     minPrice?: number
-//     maxPrice?: number
-//     condition?: string
-//     cityId?: string
-//     cityLabel?: string
-//     customCity?: string
-//     searchTerm?: string
-//     minDate?: string
-//     maxDate?: string
-//     sortBy?: string
-//     sortOrder?: 'asc' | 'desc'
-//   }) => void
-//   categories: { id: string; name: string }[]
-//   currentFilters?: {
-//     categoryId?: string
-//     minPrice?: number
-//     maxPrice?: number
-//     condition?: string
-//     cityId?: string
-//     cityLabel?: string
-//     customCity?: string
-//     searchTerm?: string
-//     minDate?: string
-//     maxDate?: string
-//     sortBy?: string
-//     sortOrder?: 'asc' | 'desc'
-//   }
-// }
-
 export default function FilterDrawer({
   isOpen,
   onClose,
@@ -143,7 +109,7 @@ export default function FilterDrawer({
 
   const updateFilter = <K extends keyof FilterState>(
     key: K,
-    value: FilterState[K]
+    value: FilterState[K],
   ) => {
     setFilters((prev) => ({ ...prev, [key]: value }))
   }
@@ -385,7 +351,7 @@ export default function FilterDrawer({
                   onChange={(e) =>
                     updateFilter(
                       'minPrice',
-                      e.target.value ? parseFloat(e.target.value) : undefined
+                      e.target.value ? parseFloat(e.target.value) : undefined,
                     )
                   }
                   placeholder='Min'
@@ -397,7 +363,7 @@ export default function FilterDrawer({
                   onChange={(e) =>
                     updateFilter(
                       'maxPrice',
-                      e.target.value ? parseFloat(e.target.value) : undefined
+                      e.target.value ? parseFloat(e.target.value) : undefined,
                     )
                   }
                   placeholder='Max'
@@ -461,7 +427,7 @@ export default function FilterDrawer({
                   onClick={() =>
                     updateFilter(
                       'sortOrder',
-                      filters.sortOrder === 'asc' ? 'desc' : 'asc'
+                      filters.sortOrder === 'asc' ? 'desc' : 'asc',
                     )
                   }
                 >

@@ -15,9 +15,6 @@ export const metadata: Metadata = {
     'Browse thousands of secondhand items on Dealio. Find great deals on electronics, furniture, clothing, and more in South Africa.',
 }
 
-// type SearchParams = { [key: string]: string | string[] | undefined }
-// type NextSearchParams = Promise<SearchParams> | undefined
-
 type PageProps = {
   params: Promise<{
     slugParts?: string[]
@@ -32,7 +29,7 @@ export default async function SlugPage({ params, searchParams }: PageProps) {
   const resolvedParams = (await searchParams) ?? {}
   const client = getServerApolloClient()
 
-  // Fetch categories early so we can use them to resolve category slugs
+  // Fetch categories early to resolve category slugs
   let allCategories: Array<{
     id: string
     name: string
@@ -48,8 +45,8 @@ export default async function SlugPage({ params, searchParams }: PageProps) {
     console.error('Error fetching categories for slug resolution:', err)
   }
 
-  // Build a map for efficient category lookup by full slug path.
-  // Uses shared `slugify` so slugs are computed consistently with the rest of the app.
+  // Build map for efficient category lookup by full slug path
+  // Use `slugify` so slugs are computed consistently with the rest of the app.
   // Only expose suffix mappings that are unique to avoid ambiguous matches (avoid picking an arbitrary category).
   const buildSlugMap = () => {
     const idMap = new Map(allCategories.map((c) => [c.id, c]))
@@ -59,7 +56,7 @@ export default async function SlugPage({ params, searchParams }: PageProps) {
       const parts: string[] = []
       let cur = idMap.get(id)
       while (cur) {
-        // Always use slugify(name), never use stored slug (which may be a full path)
+        // Always use slugify(name), never stored slug
         parts.unshift(slugify(cur.name))
         if (!cur.parentId) break
         cur = idMap.get(cur.parentId as string)
