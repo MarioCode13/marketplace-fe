@@ -38,7 +38,7 @@ const ContactSellerModal = ({
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_GRAPHQL_URL}/api/send-email`,
+        `${process.env.NEXT_PUBLIC_API_BASE}/api/send-email`,
         {
           method: 'POST',
           headers: {
@@ -50,7 +50,7 @@ const ContactSellerModal = ({
             subject: `Inquiry about your listing`,
             message: `Name: ${name}\nEmail: ${email}\n\n${message}`,
           }),
-        }
+        },
       )
 
       if (!response.ok) throw new Error('Failed to send email')
