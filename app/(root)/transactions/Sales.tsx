@@ -19,10 +19,12 @@ export default function Sales({
   onReviewClick,
 }: SalesProps) {
   const [contactOpen, setContactOpen] = useState(false)
-  const [contactSellerId, setContactSellerId] = useState('')
+  const [contactSellerId, setContactSellerId] = useState<string | undefined>(undefined)
+  const [contactListingTitle, setContactListingTitle] = useState<string | undefined>(undefined)
 
   const handleContact = (transaction: Transaction) => {
-    setContactSellerId(transaction?.buyer?.id || '')
+    setContactSellerId(transaction?.buyer?.id)
+    setContactListingTitle(transaction?.listing?.title)
     setContactOpen(true)
   }
 
@@ -62,6 +64,7 @@ export default function Sales({
         isOpen={contactOpen}
         onClose={() => setContactOpen(false)}
         sellerId={contactSellerId}
+        listingTitle={contactListingTitle}
       />
     </>
   )

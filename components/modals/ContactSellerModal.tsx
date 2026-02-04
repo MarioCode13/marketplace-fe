@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -9,20 +9,37 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
+import { useQuery } from '@apollo/client'
+import { GET_ME } from '@/lib/graphql/queries/getMe'
 
 interface ContactSellerModalProps {
   isOpen: boolean
   onClose: () => void
-  sellerId: string // User ID - email looked up server-side for security
+  sellerId?: string
+  sellerEmail?: string
+  listingTitle?: string
 }
 
 const ContactSellerModal = ({
   isOpen,
   onClose,
   sellerId,
+  sellerEmail,
+  listingTitle,
 }: ContactSellerModalProps) => {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
+  const { data: meData } = useQuery(GET_ME, { skip: false })
+
+  useEffect(() => {
+    if (meData?.me) {
+      const fullName = [meData.me.firstName, meData.me.lastName].filter(Boolean).join(' ')
+      if (!name && fullName) setName(fullName)
+      if (!name && meData.me.username && !fullName) setName(meData.me.username)
+      if (!email && meData.me.email) setEmail(meData.me.email)
+    }
+  // update name/email if user data becomes available
+  }, [meData, name, email])
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -32,11 +49,28 @@ const ContactSellerModal = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    if (!sellerId && !sellerEmail) {
+      setError('Seller information not available. Unable to send message.')
+      return
+    }
+
     setLoading(true)
     setError('')
     setSuccess('')
 
     try {
+      const body: Record<string, string> = {
+        subject: `Inquiry about your listing`,
+        message: `Name: ${name}\nEmail: ${email}\n\n${message}`,
+        fromName: name,
+      }
+
+      if (listingTitle) body.listingTitle = listingTitle
+
+      if (sellerId) body.sellerId = sellerId
+      else if (sellerEmail) body.to = sellerEmail
+
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE}/api/send-email`,
         {
@@ -45,11 +79,7 @@ const ContactSellerModal = ({
             'Content-Type': 'application/json',
           },
           credentials: 'include',
-          body: JSON.stringify({
-            sellerId: sellerId,
-            subject: `Inquiry about your listing`,
-            message: `Name: ${name}\nEmail: ${email}\n\n${message}`,
-          }),
+          body: JSON.stringify(body),
         },
       )
 
@@ -79,6 +109,9 @@ const ContactSellerModal = ({
           onSubmit={handleSubmit}
           className='space-y-4'
         >
+          {listingTitle && (
+            <p className='text-sm text-gray-600'>Regarding: <strong>{listingTitle}</strong></p>
+          )}
           <div>
             <Label htmlFor='name'>Your Name</Label>
             <Input
@@ -110,11 +143,17 @@ const ContactSellerModal = ({
           </div>
           {error && <p className='text-red-500'>{error}</p>}
           {success && <p className='text-green-500'>{success}</p>}
+          {!sellerId && sellerEmail && (
+            <p className='text-yellow-700'>This listing is owned by a business; message will be sent to the store contact email.</p>
+          )}
+          {!sellerId && !sellerEmail && (
+            <p className='text-yellow-600'>Seller information is not available right now.</p>
+          )}
           <Button
             type='submit'
             variant={'contained'}
             color={'primary'}
-            disabled={loading}
+            disabled={loading || (!sellerId && !sellerEmail)}
             className='w-full'
           >
             {loading ? 'Sending...' : 'Send Message'}

@@ -497,7 +497,9 @@ const Page = () => {
         <ContactSellerModal
           isOpen={modalOpen}
           onClose={() => setModalOpen(false)}
-          sellerId={listing.user?.id || ''}
+          sellerId={listing.user?.id ?? listing.business?.owner?.id}
+          sellerEmail={listing.business?.email}
+          listingTitle={listing.title}
         />
 
         <MarkAsSoldModal
