@@ -33,12 +33,14 @@ const ContactSellerModal = ({
 
   useEffect(() => {
     if (meData?.me) {
-      const fullName = [meData.me.firstName, meData.me.lastName].filter(Boolean).join(' ')
+      const fullName = [meData.me.firstName, meData.me.lastName]
+        .filter(Boolean)
+        .join(' ')
       if (!name && fullName) setName(fullName)
       if (!name && meData.me.username && !fullName) setName(meData.me.username)
       if (!email && meData.me.email) setEmail(meData.me.email)
     }
-  // update name/email if user data becomes available
+    // update name/email if user data becomes available
   }, [meData, name, email])
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
@@ -110,7 +112,9 @@ const ContactSellerModal = ({
           className='space-y-4'
         >
           {listingTitle && (
-            <p className='text-sm text-gray-600'>Regarding: <strong>{listingTitle}</strong></p>
+            <p className='text-sm text-gray-600'>
+              Regarding: <strong>{listingTitle}</strong>
+            </p>
           )}
           <div>
             <Label htmlFor='name'>Your Name</Label>
@@ -144,10 +148,15 @@ const ContactSellerModal = ({
           {error && <p className='text-red-500'>{error}</p>}
           {success && <p className='text-green-500'>{success}</p>}
           {!sellerId && sellerEmail && (
-            <p className='text-yellow-700'>This listing is owned by a business; message will be sent to the store contact email.</p>
+            <p className='text-yellow-700'>
+              This listing is owned by a business; message will be sent to the
+              store contact email.
+            </p>
           )}
           {!sellerId && !sellerEmail && (
-            <p className='text-yellow-600'>Seller information is not available right now.</p>
+            <p className='text-yellow-600'>
+              Seller information is not available right now.
+            </p>
           )}
           <Button
             type='submit'

@@ -19,8 +19,12 @@ export default function Sales({
   onReviewClick,
 }: SalesProps) {
   const [contactOpen, setContactOpen] = useState(false)
-  const [contactSellerId, setContactSellerId] = useState<string | undefined>(undefined)
-  const [contactListingTitle, setContactListingTitle] = useState<string | undefined>(undefined)
+  const [contactSellerId, setContactSellerId] = useState<string | undefined>(
+    undefined,
+  )
+  const [contactListingTitle, setContactListingTitle] = useState<
+    string | undefined
+  >(undefined)
 
   const handleContact = (transaction: Transaction) => {
     setContactSellerId(transaction?.buyer?.id)
