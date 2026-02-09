@@ -2,6 +2,8 @@
 
 import { useMutation, useQuery } from '@apollo/client'
 import { useState, useEffect, useMemo } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -35,6 +37,7 @@ import CategoryCascader, {
 } from '@/components/drawers/CategoryCascader'
 import { buildCategoryTree, FlatCategory, formatEnum } from '@/lib/utils'
 import CityAutocomplete from '@/components/drawers/CityAutocomplete'
+import { listingSchema, type ListingFormData } from '@/lib/validation'
 
 export default function EditListingPage() {
   const router = useRouter()
@@ -50,19 +53,32 @@ export default function EditListingPage() {
   const [uploading, setUploading] = useState(false)
   const [saving, setSaving] = useState(false)
 
-  const [form, setForm] = useState({
-    title: '',
-    description: '',
-    price: '',
+  const [cityState, setCityState] = useState({
     city: '',
     cityLabel: '',
-    categoryId: '',
-    condition: 'NEW',
-    quantity: '',
     customCity: '',
   })
 
   const [images, setImages] = useState<string[]>([])
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    watch,
+    setValue,
+  } = useForm<ListingFormData>({
+    resolver: zodResolver(listingSchema),
+    defaultValues: {
+      title: '',
+      description: '',
+      price: '',
+      categoryId: '',
+      condition: 'NEW',
+      quantity: '',
+      customCity: '',
+    },
+  })
 
   const {
     data: listingData,
@@ -98,23 +114,26 @@ export default function EditListingPage() {
     if (!formKey) {
       const listing = listingData.getListingById
 
-      setForm({
-        title: listing.title,
-        description: listing.description,
-        price: listing.price.toString(),
-        quantity: listing.quantity?.toString() || '',
+      setValue('title', listing.title)
+      setValue('description', listing.description)
+      setValue('price', listing.price.toString())
+      setValue('quantity', listing.quantity?.toString() || '')
+      setValue('categoryId', listing.category?.id || '')
+      setValue('condition', listing.condition)
+      setValue('customCity', listing?.customCity || '')
+
+      setCityState({
         city: listing.city?.id || '',
         cityLabel: listing.city?.name || '',
-        categoryId: listing.category?.id || '',
-        condition: listing.condition,
         customCity: listing?.customCity || '',
       })
+
       setFormKey(listing.id)
       setImages(listing.images || [])
 
       setShowCustomCity(!!listing.customCity)
     }
-  }, [listingData?.getListingById, formKey])
+  }, [listingData?.getListingById, formKey, setValue])
 
   // Check if user owns listing
   useEffect(() => {
@@ -140,14 +159,6 @@ export default function EditListingPage() {
       }
     }
   }, [listingData, userId, meData, router, businessId, isBusinessUser])
-
-  const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >,
-  ) => {
-    setForm({ ...form, [e.target.name]: e.target.value })
-  }
 
   const handleRemoveImage = (index: number) => {
     setImages(images.filter((_, i) => i !== index))
@@ -197,32 +208,23 @@ export default function EditListingPage() {
     setUploading(false)
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const onSubmit = async (formData: ListingFormData) => {
     setSaving(true)
 
     try {
-      // Validate quantity if present
-      if (form.quantity) {
-        const intVal = parseInt(form.quantity, 10)
-        if (isNaN(intVal) || intVal < 0 || !/^\d+$/.test(form.quantity)) {
-          toast.error('Quantity must be a non-negative integer')
-          setSaving(false)
-          return
-        }
-      }
-
       const input: UpdateListingInput = {
         id: listingId,
-        title: form.title,
-        description: form.description,
-        price: parseFloat(form.price),
+        title: formData.title,
+        description: formData.description,
+        price: parseFloat(formData.price),
         images,
-        condition: form.condition as Condition,
-        categoryId: form.categoryId.toString(),
-        cityId: form.city || null,
-        customCity: form.customCity || null,
-        quantity: form.quantity ? parseInt(form.quantity, 10) : undefined,
+        condition: formData.condition as Condition,
+        categoryId: formData.categoryId.toString(),
+        cityId: cityState.city || null,
+        customCity: cityState.customCity || null,
+        quantity: formData.quantity
+          ? parseInt(formData.quantity, 10)
+          : undefined,
       }
 
       await updateListing({
@@ -310,32 +312,37 @@ export default function EditListingPage() {
         <div className='bg-componentBackground rounded-lg p-6 shadow-lg'>
           <form
             key={formKey}
-            onSubmit={handleSubmit}
+            onSubmit={handleSubmit(onSubmit)}
             className='space-y-6'
           >
             <div>
               <Label htmlFor='title'>Title</Label>
               <Input
                 id='title'
-                name='title'
-                value={form.title}
-                onChange={handleChange}
-                required
-                className='mt-1'
+                placeholder='Enter listing title'
+                {...register('title')}
+                className={`mt-1 ${errors.title ? 'border-red-500' : ''}`}
               />
+              {errors.title && (
+                <p className='text-sm text-red-500 mt-1'>
+                  {errors.title.message}
+                </p>
+              )}
             </div>
 
             <div>
               <Label htmlFor='description'>Description</Label>
               <Textarea
                 id='description'
-                name='description'
-                value={form.description}
-                onChange={handleChange}
-                required
-                rows={4}
-                className='mt-1'
+                placeholder='Describe your item'
+                {...register('description')}
+                className={errors.description ? 'border-red-500' : ''}
               />
+              {errors.description && (
+                <p className='text-sm text-red-500 mt-1'>
+                  {errors.description.message}
+                </p>
+              )}
             </div>
 
             <div className='grid grid-cols-2 gap-4'>
@@ -343,22 +350,26 @@ export default function EditListingPage() {
                 <Label htmlFor='price'>Price (R)</Label>
                 <Input
                   id='price'
-                  name='price'
-                  min='0'
-                  value={form.price}
-                  onChange={handleChange}
-                  required
-                  className='mt-1'
+                  type='number'
+                  step='0.01'
+                  placeholder='Enter price'
+                  {...register('price')}
+                  className={`mt-1 ${errors.price ? 'border-red-500' : ''}`}
                 />
+                {errors.price && (
+                  <p className='text-sm text-red-500 mt-1'>
+                    {errors.price.message}
+                  </p>
+                )}
               </div>
 
               <div>
                 {!showCustomCity ? (
                   <CityAutocomplete
-                    value={form.city}
-                    displayValue={form.cityLabel}
+                    value={cityState.city}
+                    displayValue={cityState.cityLabel}
                     onChange={(cityId, cityLabel) => {
-                      setForm((prev) => ({
+                      setCityState((prev) => ({
                         ...prev,
                         city: cityId || '',
                         cityLabel: cityLabel || '',
@@ -367,7 +378,11 @@ export default function EditListingPage() {
                       setShowCustomCity(false)
                     }}
                     onCantFindCity={() => {
-                      setForm((prev) => ({ ...prev, city: '', cityLabel: '' }))
+                      setCityState((prev) => ({
+                        ...prev,
+                        city: '',
+                        cityLabel: '',
+                      }))
                       setShowCustomCity(true)
                     }}
                     label={undefined}
@@ -377,17 +392,21 @@ export default function EditListingPage() {
                     <Label htmlFor='customCity'>Custom City</Label>
                     <Input
                       id='customCity'
-                      name='customCity'
-                      className='mt-1'
-                      value={form.customCity}
+                      className={`mt-1 ${errors.customCity ? 'border-red-500' : ''}`}
+                      placeholder='Enter your city'
+                      {...register('customCity')}
                       onChange={(e) =>
-                        setForm((prev) => ({
+                        setCityState((prev) => ({
                           ...prev,
                           customCity: e.target.value,
                         }))
                       }
-                      placeholder='Enter your city'
                     />
+                    {errors.customCity && (
+                      <p className='text-sm text-red-500 mt-1'>
+                        {errors.customCity.message}
+                      </p>
+                    )}
                     <Button
                       type='button'
                       variant='text'
@@ -407,20 +426,26 @@ export default function EditListingPage() {
                 <Label>Category</Label>
                 <CategoryCascader
                   categories={categoriesTree as CategoryNode[]}
-                  value={form.categoryId}
-                  onChange={(id) => setForm({ ...form, categoryId: id })}
+                  value={watch('categoryId')}
+                  onChange={(id) => {
+                    setValue('categoryId', id)
+                  }}
                   placeholder='Select a Category'
                 />
+                {errors.categoryId && (
+                  <p className='text-sm text-red-500 mt-1'>
+                    {errors.categoryId.message}
+                  </p>
+                )}
               </div>
 
               <div className='space-y-2'>
                 <Label htmlFor='condition'>Condition</Label>
                 <Select
-                  name='condition'
-                  value={form.condition}
-                  onValueChange={(value) =>
-                    setForm({ ...form, condition: value })
-                  }
+                  value={watch('condition')}
+                  onValueChange={(value) => {
+                    setValue('condition', value)
+                  }}
                 >
                   <SelectTrigger
                     id='condition'
@@ -439,6 +464,11 @@ export default function EditListingPage() {
                     ))}
                   </SelectContent>
                 </Select>
+                {errors.condition && (
+                  <p className='text-sm text-red-500 mt-1'>
+                    {errors.condition.message}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -475,10 +505,12 @@ export default function EditListingPage() {
               <Button
                 type='submit'
                 variant={'contained'}
-                disabled={saving}
+                disabled={
+                  saving || isSubmitting || Object.keys(errors).length > 0
+                }
                 className='flex-1'
               >
-                {saving ? (
+                {saving || isSubmitting ? (
                   <>
                     <Loader2 className='w-4 h-4 mr-2 animate-spin' />
                     Saving...

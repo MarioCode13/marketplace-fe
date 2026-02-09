@@ -2,6 +2,8 @@
 
 import { gql, useMutation, useQuery } from '@apollo/client'
 import { useMemo, useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -26,6 +28,7 @@ import CategoryCascader, {
   CategoryNode,
 } from '@/components/drawers/CategoryCascader'
 import { buildCategoryTree, FlatCategory } from '@/lib/utils'
+import { listingSchema, type ListingFormData } from '@/lib/validation'
 
 const CREATE_LISTING = gql`
   mutation CreateListing(
@@ -84,17 +87,11 @@ export default function SellPage() {
   // Permission: only users on PRO_STORE plan, business owners, or businesses of type RESELLER
   const canSetQuantity = Boolean(
     userContext?.planType === 'PRO_STORE' ||
-      userContext?.isBusinessOwner ||
-      userContext?.business?.businessType === 'RESELLER'
+    userContext?.isBusinessOwner ||
+    userContext?.business?.businessType === 'RESELLER',
   )
 
-  const [form, setForm] = useState({
-    title: '',
-    description: '',
-    price: '',
-    categoryId: '',
-    condition: 'NEW',
-    quantity: '',
+  const [cityState, setCityState] = useState({
     city: user?.city?.id || '',
     cityLabel: user?.city
       ? `${user.city.name}, ${user.city.region.name}, ${user.city.region.country.name}`
@@ -105,19 +102,31 @@ export default function SellPage() {
 
   const [images, setImages] = useState<string[]>([])
 
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    watch,
+    reset,
+    setValue,
+  } = useForm<ListingFormData>({
+    resolver: zodResolver(listingSchema),
+    defaultValues: {
+      title: '',
+      description: '',
+      price: '',
+      categoryId: '',
+      condition: 'NEW',
+      quantity: '',
+      customCity: '',
+    },
+  })
+
   const handleRemoveImage = (index: number) => {
     setImages(images.filter((_, i) => i !== index))
   }
 
-  const [createListing, { loading, error }] = useMutation(CREATE_LISTING)
-
-  const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
-  ) => {
-    setForm({ ...form, [e.target.name]: e.target.value })
-  }
+  const [createListing, { loading }] = useMutation(CREATE_LISTING)
 
   const handleImageUpload = async (file: File) => {
     if (images.length >= 5) return
@@ -133,7 +142,7 @@ export default function SellPage() {
           method: 'POST',
           body: formData,
           credentials: 'include',
-        }
+        },
       )
 
       const data = await res.json()
@@ -149,16 +158,15 @@ export default function SellPage() {
     setUploading(false)
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const onSubmit = async (formData: ListingFormData) => {
+    // Validate images
+    if (images.length === 0) {
+      toast.error('Please upload at least one image')
+      return
+    }
+
     // Validate quantity if provided
-    if (form.quantity) {
-      // Must be a non-negative integer
-      const intVal = parseInt(form.quantity, 10)
-      if (isNaN(intVal) || intVal < 0 || !/^\d+$/.test(form.quantity)) {
-        toast.error('Quantity must be a non-negative integer')
-        return
-      }
+    if (formData.quantity) {
       // Prevent unauthorized users from submitting a quantity value
       if (!canSetQuantity) {
         toast.error('You are not allowed to set a quantity for listings')
@@ -169,32 +177,29 @@ export default function SellPage() {
     try {
       await createListing({
         variables: {
-          title: form.title,
-          description: form.description,
+          title: formData.title,
+          description: formData.description,
           images,
-          categoryId: form.categoryId,
-          price: parseFloat(form.price),
-          customCity: form.customCity || undefined,
-          cityId: form.city || undefined,
-          condition: form.condition,
+          categoryId: formData.categoryId,
+          price: parseFloat(formData.price),
+          customCity: cityState.customCity || undefined,
+          cityId: cityState.city || undefined,
+          condition: formData.condition,
           userId: userId,
-          quantity: form.quantity ? parseInt(form.quantity, 10) : undefined,
+          quantity: formData.quantity
+            ? parseInt(formData.quantity, 10)
+            : undefined,
           businessId: userContext.businessId || undefined,
         },
       })
       toast.success('Listing created successfully!')
-      setForm({
-        title: '',
-        description: '',
-        price: '',
-        categoryId: '',
-        condition: 'NEW',
-        quantity: '',
+      reset()
+      setImages([])
+      setCityState({
         city: '',
         cityLabel: '',
         customCity: '',
       })
-      setImages([])
       router.push('/')
     } catch (err) {
       toast.error('Failed to create listing: ' + (err as Error).message)
@@ -248,7 +253,7 @@ export default function SellPage() {
           Create a New Listing
         </h2>
         <form
-          onSubmit={handleSubmit}
+          onSubmit={handleSubmit(onSubmit)}
           className='flex flex-col gap-4'
         >
           <div className='flex flex-col'>
@@ -260,11 +265,15 @@ export default function SellPage() {
             </Label>
             <Input
               id='title'
-              name='title'
-              value={form.title}
-              onChange={handleChange}
-              required
+              placeholder='Enter listing title'
+              {...register('title')}
+              className={errors.title ? 'border-red-500' : ''}
             />
+            {errors.title && (
+              <p className='text-sm text-red-500 mt-1'>
+                {errors.title.message}
+              </p>
+            )}
           </div>
 
           <div className='flex flex-col'>
@@ -276,11 +285,15 @@ export default function SellPage() {
             </Label>
             <Textarea
               id='description'
-              name='description'
-              value={form.description}
-              onChange={handleChange}
-              required
+              placeholder='Describe your item'
+              {...register('description')}
+              className={errors.description ? 'border-red-500' : ''}
             />
+            {errors.description && (
+              <p className='text-sm text-red-500 mt-1'>
+                {errors.description.message}
+              </p>
+            )}
           </div>
 
           <div className='flex flex-col'>
@@ -292,11 +305,17 @@ export default function SellPage() {
             </Label>
             <Input
               id='price'
-              name='price'
-              value={form.price}
-              onChange={handleChange}
-              required
+              type='number'
+              step='0.01'
+              placeholder='Enter price'
+              {...register('price')}
+              className={errors.price ? 'border-red-500' : ''}
             />
+            {errors.price && (
+              <p className='text-sm text-red-500 mt-1'>
+                {errors.price.message}
+              </p>
+            )}
           </div>
 
           {canSetQuantity && (
@@ -309,13 +328,17 @@ export default function SellPage() {
               </Label>
               <Input
                 id='quantity'
-                name='quantity'
-                value={form.quantity}
-                onChange={handleChange}
-                placeholder='Enter quantity (whole number)'
                 type='number'
-                min={0}
+                min='0'
+                placeholder='Enter quantity (whole number)'
+                {...register('quantity')}
+                className={errors.quantity ? 'border-red-500' : ''}
               />
+              {errors.quantity && (
+                <p className='text-sm text-red-500 mt-1'>
+                  {errors.quantity.message}
+                </p>
+              )}
             </div>
           )}
 
@@ -354,10 +377,17 @@ export default function SellPage() {
               <Label>Category</Label>
               <CategoryCascader
                 categories={categoriesTree as CategoryNode[]}
-                value={form.categoryId}
-                onChange={(id) => setForm({ ...form, categoryId: id })}
+                value={watch('categoryId')}
+                onChange={(id) => {
+                  setValue('categoryId', id)
+                }}
                 placeholder='Select a Category'
               />
+              {errors.categoryId && (
+                <p className='text-sm text-red-500 mt-1'>
+                  {errors.categoryId.message}
+                </p>
+              )}
             </div>
           )}
 
@@ -374,10 +404,10 @@ export default function SellPage() {
               <p>Error loading conditions</p>
             ) : (
               <Select
-                value={form.condition}
-                onValueChange={(value) =>
-                  setForm({ ...form, condition: value })
-                }
+                value={watch('condition')}
+                onValueChange={(value) => {
+                  setValue('condition', value)
+                }}
                 required
               >
                 <SelectTrigger className='w-full'>
@@ -395,13 +425,18 @@ export default function SellPage() {
                 </SelectContent>
               </Select>
             )}
+            {errors.condition && (
+              <p className='text-sm text-red-500 mt-1'>
+                {errors.condition.message}
+              </p>
+            )}
           </div>
           <div>
             <CityAutocomplete
-              value={form.city}
-              displayValue={form.cityLabel}
+              value={cityState.city}
+              displayValue={cityState.cityLabel}
               onChange={(cityId, cityLabel) => {
-                setForm((prev) => ({
+                setCityState((prev) => ({
                   ...prev,
                   city: cityId || '',
                   cityLabel: cityLabel || '',
@@ -410,7 +445,7 @@ export default function SellPage() {
                 setShowCustomCity(false)
               }}
               onCantFindCity={() => {
-                setForm((prev) => ({ ...prev, city: '', cityLabel: '' }))
+                setCityState((prev) => ({ ...prev, city: '', cityLabel: '' }))
                 setShowCustomCity(true)
               }}
               label={undefined}
@@ -420,13 +455,21 @@ export default function SellPage() {
                 <Label htmlFor='customCity'>Custom City</Label>
                 <Input
                   id='customCity'
-                  name='customCity'
-                  value={form.customCity}
-                  onChange={(e) =>
-                    setForm((prev) => ({ ...prev, customCity: e.target.value }))
-                  }
                   placeholder='Enter your city'
+                  {...register('customCity')}
+                  className={errors.customCity ? 'border-red-500' : ''}
+                  onChange={(e) =>
+                    setCityState((prev) => ({
+                      ...prev,
+                      customCity: e.target.value,
+                    }))
+                  }
                 />
+                {errors.customCity && (
+                  <p className='text-sm text-red-500 mt-1'>
+                    {errors.customCity.message}
+                  </p>
+                )}
                 <Button
                   type='button'
                   variant='text'
@@ -460,17 +503,14 @@ export default function SellPage() {
             maxImages={5}
             loading={uploading}
           />
-          {error && (
-            <p className='text-sm text-red-500 text-center'>{error.message}</p>
-          )}
 
           <Button
             type='submit'
             variant='contained'
             className='w-full'
-            disabled={loading || uploading}
+            disabled={loading || uploading || isSubmitting}
           >
-            {loading ? 'Creating...' : 'Create Listing'}
+            {loading || isSubmitting ? 'Creating...' : 'Create Listing'}
           </Button>
         </form>
       </div>

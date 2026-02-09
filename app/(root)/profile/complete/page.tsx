@@ -2,6 +2,8 @@
 
 import { gql, useQuery, useMutation } from '@apollo/client'
 import { useState, useEffect } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
@@ -9,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { toast } from 'sonner'
 import CityAutocomplete from '@/components/drawers/CityAutocomplete'
 import { GET_ME } from '@/lib/graphql/queries/getMe'
+import { profileSchema, type ProfileFormData } from '@/lib/validation'
 import { useRouter } from 'next/navigation'
 import { CheckCircle } from 'lucide-react'
 import OmnicheckTermsModal from '@/components/modals/OmnicheckTermsModal'
@@ -44,65 +47,84 @@ export default function CompleteProfilePage() {
   const { loading, error, data, refetch } = useQuery(GET_ME)
   const [completeProfile] = useMutation(COMPLETE_PROFILE)
   const user = data?.me
-  const [form, setForm] = useState({
-    firstName: user?.firstName || '',
-    lastName: user?.lastName || '',
-    bio: user?.bio || '',
-    city: user?.city?.id || '', // store cityId
+  const [showCustomCity, setShowCustomCity] = useState(false)
+  const [showTermsModal, setShowTermsModal] = useState(false)
+  const [formState, setFormState] = useState({
+    city: user?.city?.id || '',
     cityLabel: user?.city
       ? `${user.city.name}, ${user.city.region.name}, ${user.city.region.country.name}`
       : '',
     customCity: user?.customCity || '',
-    contactNumber: user?.contactNumber || '',
-    idNumber: user?.idNumber || '',
   })
 
-  const [showCustomCity, setShowCustomCity] = useState(false)
-  const [showTermsModal, setShowTermsModal] = useState(false)
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    watch,
+    setValue,
+  } = useForm<ProfileFormData>({
+    resolver: zodResolver(profileSchema),
+    defaultValues: {
+      firstName: user?.firstName || '',
+      lastName: user?.lastName || '',
+      bio: user?.bio || '',
+      contactNumber: user?.contactNumber || '',
+      idNumber: user?.idNumber || '',
+    },
+  })
 
   useEffect(() => {
     if (user) {
-      setForm({
-        firstName: user.firstName || '',
-        lastName: user.lastName || '',
-        bio: user.bio || '',
+      setValue('firstName', user.firstName || '')
+      setValue('lastName', user.lastName || '')
+      setValue('bio', user.bio || '')
+      setValue('contactNumber', user.contactNumber || '')
+      setValue('idNumber', user.idNumber || '')
+      setFormState({
         city: user.city?.id || '',
         cityLabel: user.city
           ? `${user.city.name}, ${user.city.region.name}, ${user.city.region.country.name}`
           : '',
         customCity: user.customCity || '',
-        contactNumber: user.contactNumber || '',
-        idNumber: user.idNumber || '',
       })
       setShowCustomCity(!!user.customCity)
     }
-  }, [user])
+  }, [user, setValue])
 
   if (loading) return <p>Loading...</p>
   if (error) return <p>Error loading profile</p>
 
   const hasLocation =
-    (typeof form.city === 'string' && form.city.trim() !== '') ||
-    (typeof form.city === 'number' && form.city !== 0) ||
-    (typeof form.customCity === 'string' && form.customCity.trim() !== '')
+    (typeof formState.city === 'string' && formState.city.trim() !== '') ||
+    (typeof formState.city === 'number' && formState.city !== 0) ||
+    (typeof formState.customCity === 'string' &&
+      formState.customCity.trim() !== '')
+
+  const firstName = watch('firstName')
+  const lastName = watch('lastName')
+  const bio = watch('bio')
+  const contactNumber = watch('contactNumber')
+  const idNumber = watch('idNumber')
+
   const completionItems = [
-    form.firstName,
-    form.lastName,
-    form.bio,
-    form.contactNumber,
+    firstName,
+    lastName,
+    bio,
+    contactNumber,
     hasLocation,
     user?.profileImageUrl,
     user?.idVerified,
   ]
   const completedCount = completionItems.filter(Boolean).length
   const completionPercent = Math.round(
-    (completedCount / completionItems.length) * 100
+    (completedCount / completionItems.length) * 100,
   )
 
   const handleVerifyID = async () => {
-    if (!form.idNumber || !form.firstName || !form.lastName || !user?.id) {
+    if (!idNumber || !firstName || !lastName || !user?.id) {
       toast.error(
-        'Please fill in your ID number, first name, and last name before verifying'
+        'Please fill in your ID number, first name, and last name before verifying',
       )
       return
     }
@@ -117,12 +139,12 @@ export default function CompleteProfilePage() {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            idNumber: form.idNumber,
-            firstName: form.firstName,
-            lastName: form.lastName,
+            idNumber: idNumber,
+            firstName: firstName,
+            lastName: lastName,
             userId: user.id,
           }),
-        }
+        },
       )
 
       const data = await res.json()
@@ -137,41 +159,35 @@ export default function CompleteProfilePage() {
       } else {
         toast.error(
           data.error ||
-            'Verification failed. Please check your details and try again.'
+            'Verification failed. Please check your details and try again.',
         )
       }
     } catch (err) {
       toast.error(
         err instanceof Error
           ? err.message
-          : 'ID verification failed. Please try again.'
+          : 'ID verification failed. Please try again.',
       )
     }
   }
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    setForm({ ...form, [e.target.name]: e.target.value })
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const onSubmit = async (data: ProfileFormData) => {
     try {
       await completeProfile({
         variables: {
           id: user.id,
-          firstName: form.firstName,
-          lastName: form.lastName,
-          bio: form.bio,
-          cityId: form.city || undefined,
-          customCity: form.customCity || undefined,
-          contactNumber: form.contactNumber || undefined,
-          idNumber: form.idNumber || undefined,
+          firstName: data.firstName || undefined,
+          lastName: data.lastName || undefined,
+          bio: data.bio || undefined,
+          cityId: formState.city || undefined,
+          customCity: formState.customCity || undefined,
+          contactNumber: data.contactNumber || undefined,
+          idNumber: data.idNumber || undefined,
         },
       })
       toast.success('Profile updated successfully')
       await refetch()
+      router.push('/profile')
     } catch {
       toast.error('Something went wrong. Try again.')
     }
@@ -201,36 +217,44 @@ export default function CompleteProfilePage() {
           </div>
         </div>
         <form
-          onSubmit={handleSubmit}
+          onSubmit={handleSubmit(onSubmit)}
           className='space-y-4'
         >
           <div>
             <Label htmlFor='firstName'>First Name</Label>
             <Input
               id='firstName'
-              name='firstName'
-              value={form.firstName}
-              onChange={handleChange}
-              required
+              placeholder='Enter your first name'
+              {...register('firstName')}
+              className={errors.firstName ? 'border-red-500' : ''}
             />
+            {errors.firstName && (
+              <p className='text-sm text-red-500 mt-1'>
+                {errors.firstName.message}
+              </p>
+            )}
           </div>
           <div>
             <Label htmlFor='lastName'>Last Name</Label>
             <Input
               id='lastName'
-              name='lastName'
-              value={form.lastName}
-              onChange={handleChange}
-              required
+              placeholder='Enter your last name'
+              {...register('lastName')}
+              className={errors.lastName ? 'border-red-500' : ''}
             />
+            {errors.lastName && (
+              <p className='text-sm text-red-500 mt-1'>
+                {errors.lastName.message}
+              </p>
+            )}
           </div>
           {/* City Autocomplete and Custom City fallback */}
           <div>
             <CityAutocomplete
-              value={form.city}
-              displayValue={form.cityLabel}
+              value={formState.city}
+              displayValue={formState.cityLabel}
               onChange={(cityId, cityLabel) => {
-                setForm((prev) => ({
+                setFormState((prev) => ({
                   ...prev,
                   city: cityId || '',
                   cityLabel: cityLabel || '',
@@ -239,7 +263,7 @@ export default function CompleteProfilePage() {
                 setShowCustomCity(false)
               }}
               onCantFindCity={() => {
-                setForm((prev) => ({ ...prev, city: '', cityLabel: '' }))
+                setFormState((prev) => ({ ...prev, city: '', cityLabel: '' }))
                 setShowCustomCity(true)
               }}
               label={undefined}
@@ -249,10 +273,12 @@ export default function CompleteProfilePage() {
                 <Label htmlFor='customCity'>Custom City</Label>
                 <Input
                   id='customCity'
-                  name='customCity'
-                  value={form.customCity}
+                  value={formState.customCity}
                   onChange={(e) =>
-                    setForm((prev) => ({ ...prev, customCity: e.target.value }))
+                    setFormState((prev) => ({
+                      ...prev,
+                      customCity: e.target.value,
+                    }))
                   }
                   placeholder='Enter your city'
                 />
@@ -271,34 +297,45 @@ export default function CompleteProfilePage() {
             <Label htmlFor='bio'>Bio</Label>
             <Textarea
               id='bio'
-              name='bio'
-              value={form.bio}
-              onChange={handleChange}
               placeholder='Tell us a bit about yourself'
+              {...register('bio')}
+              className={errors.bio ? 'border-red-500' : ''}
             />
+            {errors.bio && (
+              <p className='text-sm text-red-500 mt-1'>{errors.bio.message}</p>
+            )}
+            <p className='text-xs text-muted-foreground mt-1'>
+              {bio?.length || 0}/500 characters
+            </p>
           </div>
           <div>
             <Label htmlFor='contactNumber'>Contact Number</Label>
             <Input
               id='contactNumber'
-              name='contactNumber'
-              value={form.contactNumber}
-              onChange={handleChange}
               placeholder='Enter your contact number'
-              required
+              {...register('contactNumber')}
+              className={errors.contactNumber ? 'border-red-500' : ''}
             />
+            {errors.contactNumber && (
+              <p className='text-sm text-red-500 mt-1'>
+                {errors.contactNumber.message}
+              </p>
+            )}
           </div>
           <div>
             <Label htmlFor='idNumber'>South African ID Number</Label>
             <Input
               id='idNumber'
-              name='idNumber'
-              value={form.idNumber}
-              onChange={handleChange}
               placeholder='Enter your 13-digit ID number'
               maxLength={13}
-              required
+              {...register('idNumber')}
+              className={errors.idNumber ? 'border-red-500' : ''}
             />
+            {errors.idNumber && (
+              <p className='text-sm text-red-500 mt-1'>
+                {errors.idNumber.message}
+              </p>
+            )}
             <span className='text-xs text-muted-foreground mt-1 block'>
               Required for ID verification with OmniCheck
             </span>
@@ -321,9 +358,7 @@ export default function CompleteProfilePage() {
                     variant='outlined'
                     color='primary'
                     onClick={handleVerifyID}
-                    disabled={
-                      !form.idNumber || !form.firstName || !form.lastName
-                    }
+                    disabled={!idNumber || !firstName || !lastName}
                   >
                     Verify with OmniCheck
                   </Button>
@@ -350,9 +385,9 @@ export default function CompleteProfilePage() {
             className='w-full'
             variant={'contained'}
             color={'primary'}
-            onClick={() => router.push('/profile')}
+            disabled={isSubmitting || Object.keys(errors).length > 0}
           >
-            Save & Continue
+            {isSubmitting ? 'Saving...' : 'Save & Continue'}
           </Button>
         </form>
       </div>

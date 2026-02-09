@@ -81,7 +81,7 @@ export default function ListingCard({
         passHref
       >
         <div
-          className={`border border-secondary p-4 rounded-lg shadow-lg min-h-[300px] cursor-pointer transition-all duration-200 ease-in-out hover:shadow-xl hover:opacity-80 hover:scale-[1.02] ${
+          className={`border border-secondary p-4 rounded-lg shadow-lg h-[420px] flex flex-col cursor-pointer transition-all duration-200 ease-in-out hover:shadow-xl hover:opacity-80 hover:scale-[1.02] ${
             listing.sold ? 'opacity-60' : ''
           } ${!primaryColor ? 'bg-componentBackground' : ''}`}
           style={cardStyle}
@@ -106,91 +106,103 @@ export default function ListingCard({
               target.src = '/logo.png'
             }}
           />
-          <h2
-            className='text-xl font-semibold mt-2 mb-2 line-clamp-2 leading-snug min-h-[3.438rem]'
-            style={cardTextColor ? { color: cardTextColor } : undefined}
-          >
-            {listing.title}
-          </h2>
-          <p
-            className='text-foreground line-clamp-2 min-h-[48px]'
-            style={cardTextColor ? { color: cardTextColor } : undefined}
-          >
-            {listing.description}
-          </p>
-          <p
-            className={`font-bold ${
-              listing.sold ? 'text-gray-500 line-through' : 'text-success'
-            }`}
-            data-testid='listing-price'
-          >
-            R{listing.price}
-          </p>
-          <div className='mt-2 space-y-1'>
-            {!store && (
-              <>
-                <div className='flex items-center gap-2'>
-                  <p className='text-sm text-gray-500'>
-                    {listing.business?.name ||
-                      listing.user?.username ||
-                      'Unknown'}
-                  </p>
-                  {(listing.business?.trustRating?.verifiedWithThirdParty ||
-                    (!listing.business &&
-                      listing.user?.trustRating?.verifiedId)) && (
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <ShieldCheck className='w-4 h-4 text-success' />
-                        </TooltipTrigger>
-                        <TooltipContent side='top'>
-                          <p>Verified</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  )}
-                </div>
-                {(listing.user?.trustRating?.starRating ||
-                  listing.business?.trustRating?.averageRating) && (
-                  <div className='flex items-center gap-2'>
-                    <div className='flex items-center gap-1'>
-                      <Star className='w-3 h-3 fill-yellow-400 text-yellow-400' />
-                      <span className='text-xs font-medium'>
-                        {listing.user?.trustRating?.starRating !== undefined
-                          ? listing.user.trustRating.starRating.toFixed(1)
-                          : listing.business?.trustRating?.averageRating !==
-                            undefined
-                          ? listing.business!.trustRating!.averageRating!.toFixed(
-                              1
-                            )
-                          : ''}
-                      </span>
+          <div className='flex-1 flex flex-col justify-between mt-2'>
+            <div>
+              <h2
+                className='text-xl font-semibold mb-2 line-clamp-2 leading-snug'
+                style={cardTextColor ? { color: cardTextColor } : undefined}
+              >
+                {listing.title}
+              </h2>
+              <p
+                className='text-foreground line-clamp-2'
+                style={cardTextColor ? { color: cardTextColor } : undefined}
+              >
+                {listing.description}
+              </p>
+            </div>
+
+            <div>
+              <p
+                className={`font-bold ${
+                  listing.sold ? 'text-gray-500 line-through' : 'text-success'
+                }`}
+                data-testid='listing-price'
+              >
+                R{listing.price}
+              </p>
+
+              <div className='mt-2 space-y-1'>
+                {!store && (
+                  <>
+                    <div className='flex items-center gap-2'>
+                      <p className='text-sm text-gray-500'>
+                        {listing.business?.name ||
+                          listing.user?.username ||
+                          'Unknown'}
+                      </p>
+                      {(listing.business?.trustRating?.verifiedWithThirdParty ||
+                        (!listing.business &&
+                          listing.user?.trustRating?.verifiedId)) && (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <ShieldCheck className='w-4 h-4 text-success' />
+                            </TooltipTrigger>
+                            <TooltipContent side='top'>
+                              <p>Verified</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      )}
                     </div>
-                    {(listing.user?.trustRating?.totalReviews ||
-                      listing.business?.trustRating?.reviewCount) && (
-                      <span
-                        className='text-xs text-gray-500'
-                        style={
-                          cardTextColor ? { color: cardTextColor } : undefined
-                        }
-                      >
-                        (
-                        {listing.user?.trustRating?.totalReviews ??
-                          listing.business?.trustRating?.reviewCount}{' '}
-                        reviews)
-                      </span>
+
+                    {(listing.user?.trustRating?.starRating ||
+                      listing.business?.trustRating?.averageRating) && (
+                      <div className='flex items-center gap-2'>
+                        <div className='flex items-center gap-1'>
+                          <Star className='w-3 h-3 fill-yellow-400 text-yellow-400' />
+                          <span className='text-xs font-medium'>
+                            {listing.user?.trustRating?.starRating !== undefined
+                              ? listing.user.trustRating.starRating.toFixed(1)
+                              : listing.business?.trustRating?.averageRating !==
+                                  undefined
+                                ? listing.business!.trustRating!.averageRating!.toFixed(
+                                    1,
+                                  )
+                                : ''}
+                          </span>
+                        </div>
+                        {(listing.user?.trustRating?.totalReviews ||
+                          listing.business?.trustRating?.reviewCount) && (
+                          <span
+                            className='text-xs text-gray-500'
+                            style={
+                              cardTextColor
+                                ? { color: cardTextColor }
+                                : undefined
+                            }
+                          >
+                            (
+                            {listing.user?.trustRating?.totalReviews ??
+                              listing.business?.trustRating?.reviewCount}{' '}
+                            reviews)
+                          </span>
+                        )}
+                      </div>
                     )}
-                  </div>
+                  </>
                 )}
-              </>
-            )}
+              </div>
+
+              <p
+                className='text-sm text-gray-500 mt-2'
+                style={cardTextColor ? { color: cardTextColor } : undefined}
+              >
+                {dayjs(listing.createdAt).format('DD MMM YYYY')}
+              </p>
+            </div>
           </div>
-          <p
-            className='text-sm text-gray-500 mt-2'
-            style={cardTextColor ? { color: cardTextColor } : undefined}
-          >
-            {dayjs(listing.createdAt).format('DD MMM YYYY')}
-          </p>
         </div>
       </Link>
       {/* Actions Menu */}

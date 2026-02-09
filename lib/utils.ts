@@ -116,20 +116,20 @@ export function buildCategoryPath(
 ): string[] {
   const categoryMap = new Map(categories.map(cat => [cat.id, cat]))
   const path: string[] = []
-  
+
   let currentId: string | null | undefined = categoryId
-  
+
   // Walk up the parent chain
   while (currentId) {
     const cat = categoryMap.get(currentId)
     if (!cat) break
-    
+
     const slug = cat.slug || slugify(cat.name)
     path.unshift(slug) // Add to beginning to maintain root-to-leaf order
-    
+
     currentId = cat.parentId
   }
-  
+
   return path
 }
 

@@ -5,34 +5,13 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { toast } from 'sonner'
 import Link from 'next/link'
-
-// Validation schema
-const registrationSchema = z.object({
-  username: z
-    .string()
-    .min(3, 'Username must be at least 3 characters')
-    .max(20, 'Username must not exceed 20 characters'),
-  email: z.email('Please enter a valid email address'),
-  password: z
-    .string()
-    .min(8, 'Password must be at least 8 characters')
-    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-    .regex(/[0-9]/, 'Password must contain at least one number')
-    .regex(
-      /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/,
-      'Password must contain at least one special character',
-    ),
-})
-
-type RegistrationFormData = z.infer<typeof registrationSchema>
+import { registrationSchema, type RegistrationFormData } from '@/lib/validation'
 
 const REGISTER_MUTATION = gql`
   mutation Register($username: String!, $email: String!, $password: String!) {
