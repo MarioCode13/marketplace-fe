@@ -3,12 +3,36 @@
 import { ApolloError, gql, useMutation } from '@apollo/client'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { toast } from 'sonner'
 import Link from 'next/link'
+
+// Validation schema
+const registrationSchema = z.object({
+  username: z
+    .string()
+    .min(3, 'Username must be at least 3 characters')
+    .max(20, 'Username must not exceed 20 characters'),
+  email: z.email('Please enter a valid email address'),
+  password: z
+    .string()
+    .min(8, 'Password must be at least 8 characters')
+    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+    .regex(/[0-9]/, 'Password must contain at least one number')
+    .regex(
+      /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/,
+      'Password must contain at least one special character',
+    ),
+})
+
+type RegistrationFormData = z.infer<typeof registrationSchema>
 
 const REGISTER_MUTATION = gql`
   mutation Register($username: String!, $email: String!, $password: String!) {
@@ -23,30 +47,62 @@ const REGISTER_MUTATION = gql`
 
 export default function Register() {
   const router = useRouter()
-  const [form, setForm] = useState({ username: '', email: '', password: '' })
-
   const [acceptedTerms, setAcceptedTerms] = useState(false)
-  const [register, { loading: registerLoading, error }] =
+  const [register, { loading: registerLoading }] =
     useMutation(REGISTER_MUTATION)
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value })
+  const {
+    register: registerField,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    watch,
+  } = useForm<RegistrationFormData>({
+    resolver: zodResolver(registrationSchema),
+  })
+
+  const loading = registerLoading || isSubmitting
+  const password = watch('password')
+
+  // Password strength indicator
+  const getPasswordStrength = () => {
+    if (!password) return { strength: 0, color: 'bg-gray-200', text: '' }
+
+    let strength = 0
+    if (password.length >= 8) strength++
+    if (password.length >= 12) strength++
+    if (/[A-Z]/.test(password)) strength++
+    if (/[a-z]/.test(password)) strength++
+    if (/[0-9]/.test(password)) strength++
+    if (/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) strength++
+
+    const strengthMap = {
+      0: { color: 'bg-gray-200', text: '' },
+      1: { color: 'bg-red-500', text: 'Weak' },
+      2: { color: 'bg-orange-500', text: 'Fair' },
+      3: { color: 'bg-yellow-500', text: 'Good' },
+      4: { color: 'bg-lime-500', text: 'Strong' },
+      5: { color: 'bg-green-500', text: 'Very Strong' },
+      6: { color: 'bg-green-600', text: 'Very Strong' },
+    }
+    return {
+      strength: strength / 6,
+      color: strengthMap[strength as keyof typeof strengthMap].color,
+      text: strengthMap[strength as keyof typeof strengthMap].text,
+    }
   }
 
-  const loading = registerLoading
+  const passwordStrength = getPasswordStrength()
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
+  const onSubmit = async (data: RegistrationFormData) => {
     if (!acceptedTerms) {
       toast.error(
-        'Please accept the Terms of Use and Privacy Policy to continue'
+        'Please accept the Terms of Use and Privacy Policy to continue',
       )
       return
     }
 
     try {
-      await register({ variables: form })
+      await register({ variables: data })
       toast.success('Registration successful! You can now login')
       router.push('/login')
     } catch (err) {
@@ -59,22 +115,22 @@ export default function Register() {
             case 'USER_ALREADY_EXISTS':
               toast.error(
                 graphQLError.message ||
-                  'An account with this email or username already exists'
+                  'An account with this email or username already exists',
               )
               break
             case 'VALIDATION_ERROR':
               toast.error(
-                graphQLError.message || 'Please check your input and try again'
+                graphQLError.message || 'Please check your input and try again',
               )
               break
             case 'AUTH_ERROR':
               toast.error(
-                graphQLError.message || 'Registration failed. Please try again'
+                graphQLError.message || 'Registration failed. Please try again',
               )
               break
             default:
               toast.error(
-                graphQLError.message || 'Registration failed. Please try again'
+                graphQLError.message || 'Registration failed. Please try again',
               )
           }
         } else {
@@ -91,9 +147,10 @@ export default function Register() {
       <div className='w-full max-w-md rounded-lg p-6 shadow-lg bg-componentBackground'>
         <h2 className='mb-6 text-2xl font-bold text-foreground'>Register</h2>
         <form
-          onSubmit={handleSubmit}
+          onSubmit={handleSubmit(onSubmit)}
           className='flex flex-col gap-4'
         >
+          {/* Username Field */}
           <div className='flex flex-col'>
             <Label
               htmlFor='username'
@@ -103,13 +160,18 @@ export default function Register() {
             </Label>
             <Input
               id='username'
-              name='username'
               placeholder='Enter your username'
-              onChange={handleChange}
-              required
+              {...registerField('username')}
+              className={errors.username ? 'border-red-500' : ''}
             />
+            {errors.username && (
+              <p className='text-sm text-red-500 mt-1'>
+                {errors.username.message}
+              </p>
+            )}
           </div>
 
+          {/* Email Field */}
           <div className='flex flex-col'>
             <Label
               htmlFor='email'
@@ -120,13 +182,18 @@ export default function Register() {
             <Input
               id='email'
               type='email'
-              name='email'
               placeholder='Enter your email'
-              onChange={handleChange}
-              required
+              {...registerField('email')}
+              className={errors.email ? 'border-red-500' : ''}
             />
+            {errors.email && (
+              <p className='text-sm text-red-500 mt-1'>
+                {errors.email.message}
+              </p>
+            )}
           </div>
 
+          {/* Password Field */}
           <div className='flex flex-col mb-4'>
             <Label
               htmlFor='password'
@@ -137,11 +204,66 @@ export default function Register() {
             <Input
               id='password'
               type='password'
-              name='password'
               placeholder='Enter your password'
-              onChange={handleChange}
-              required
+              {...registerField('password')}
+              className={errors.password ? 'border-red-500' : ''}
             />
+            {errors.password && (
+              <p className='text-sm text-red-500 mt-1'>
+                {errors.password.message}
+              </p>
+            )}
+
+            {/* Password Strength Indicator */}
+            {password && (
+              <div className='mt-3 space-y-2'>
+                <div className='flex items-center justify-between text-xs'>
+                  <span className='text-muted-foreground'>
+                    Password strength:
+                  </span>
+                  <span
+                    className={`font-semibold ${passwordStrength.color.replace('bg-', 'text-')}`}
+                  >
+                    {passwordStrength.text}
+                  </span>
+                </div>
+                <div className='w-full bg-gray-200 rounded-lg h-2'>
+                  <div
+                    className={`h-2 rounded-lg transition-all ${passwordStrength.color}`}
+                    style={{ width: `${passwordStrength.strength * 100}%` }}
+                  ></div>
+                </div>
+                <ul className='text-xs text-muted-foreground space-y-1 mt-2'>
+                  <li className={password.length >= 8 ? 'text-green-600' : ''}>
+                    ✓ At least 8 characters
+                  </li>
+                  <li
+                    className={/[A-Z]/.test(password) ? 'text-green-600' : ''}
+                  >
+                    ✓ One uppercase letter
+                  </li>
+                  <li
+                    className={/[a-z]/.test(password) ? 'text-green-600' : ''}
+                  >
+                    ✓ One lowercase letter
+                  </li>
+                  <li
+                    className={/[0-9]/.test(password) ? 'text-green-600' : ''}
+                  >
+                    ✓ One number
+                  </li>
+                  <li
+                    className={
+                      /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)
+                        ? 'text-green-600'
+                        : ''
+                    }
+                  >
+                    ✓ One special character
+                  </li>
+                </ul>
+              </div>
+            )}
           </div>
 
           {/* Terms Acceptance */}
@@ -176,10 +298,6 @@ export default function Register() {
               </Label>
             </div>
           </div>
-
-          {error && (
-            <p className='text-sm text-red-500 text-center'>{error.message}</p>
-          )}
 
           <div className='space-y-3'>
             <Button

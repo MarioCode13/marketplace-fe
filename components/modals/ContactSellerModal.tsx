@@ -147,12 +147,6 @@ const ContactSellerModal = ({
           </div>
           {error && <p className='text-red-500'>{error}</p>}
           {success && <p className='text-green-500'>{success}</p>}
-          {!sellerId && sellerEmail && (
-            <p className='text-yellow-700'>
-              This listing is owned by a business; message will be sent to the
-              store contact email.
-            </p>
-          )}
           {!sellerId && !sellerEmail && (
             <p className='text-yellow-600'>
               Seller information is not available right now.
