@@ -891,6 +891,7 @@ export enum TransactionStatus {
   Pending = 'PENDING'
 }
 
+/**  Trust rating: verification is Omnicheck ID only (verifiedId). verificationScore = 100 when verifiedId true, else 0. */
 export type TrustRating = {
   __typename?: 'TrustRating';
   createdAt: Scalars['String']['output'];
@@ -958,12 +959,10 @@ export type User = {
   contactNumber?: Maybe<Scalars['String']['output']>;
   createdAt: Scalars['String']['output'];
   customCity?: Maybe<Scalars['String']['output']>;
-  driversLicenseUrl?: Maybe<Scalars['String']['output']>;
   email?: Maybe<Scalars['String']['output']>;
   firstName?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
   idNumber?: Maybe<Scalars['String']['output']>;
-  idPhotoUrl?: Maybe<Scalars['String']['output']>;
   lastName?: Maybe<Scalars['String']['output']>;
   listings: Array<Listing>;
   /**
@@ -973,7 +972,6 @@ export type User = {
   planType?: Maybe<PlanType>;
   profileCompletion?: Maybe<ProfileCompletion>;
   profileImageUrl?: Maybe<Scalars['String']['output']>;
-  proofOfAddressUrl?: Maybe<Scalars['String']['output']>;
   role: Scalars['String']['output'];
   storeBranding?: Maybe<StoreBranding>;
   subscription?: Maybe<Subscription>;
@@ -1233,7 +1231,7 @@ export type GetListingByIdQueryVariables = Exact<{
 }>;
 
 
-export type GetListingByIdQuery = { __typename?: 'Query', getListingById?: { __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, sold: boolean, customCity?: string | null, condition: Condition, createdAt: string, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, category?: { __typename?: 'Category', id: string, name: string, parentId?: string | null } | null, user?: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null, email?: string | null, planType?: PlanType | null } | null, business?: { __typename?: 'Business', id: string, name: string, businessType?: string | null, slug?: string | null, trustRating?: { __typename?: 'BusinessTrustRating', averageRating: number, reviewCount: number } | null, storeBranding?: { __typename?: 'StoreBranding', storeName?: string | null, logoUrl?: string | null } | null } | null } | null };
+export type GetListingByIdQuery = { __typename?: 'Query', getListingById?: { __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, sold: boolean, customCity?: string | null, condition: Condition, createdAt: string, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, category?: { __typename?: 'Category', id: string, name: string, parentId?: string | null } | null, user?: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null, email?: string | null, planType?: PlanType | null, trustRating?: { __typename?: 'TrustRating', verifiedId: boolean } | null } | null, business?: { __typename?: 'Business', id: string, name: string, businessType?: string | null, email: string, slug?: string | null, trustRating?: { __typename?: 'BusinessTrustRating', averageRating: number, reviewCount: number, verifiedWithThirdParty: boolean } | null, storeBranding?: { __typename?: 'StoreBranding', storeName?: string | null, logoUrl?: string | null } | null } | null } | null };
 
 export type GetListingsQueryVariables = Exact<{
   limit: Scalars['Int']['input'];
@@ -1260,7 +1258,7 @@ export type GetListingsQuery = { __typename?: 'Query', getListings: { __typename
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type MeQuery = { __typename?: 'Query', me?: { __typename?: 'User', id: string, username: string, email?: string | null, firstName?: string | null, lastName?: string | null, bio?: string | null, profileImageUrl?: string | null, planType?: PlanType | null, role: string, customCity?: string | null, contactNumber?: string | null, idNumber?: string | null, idPhotoUrl?: string | null, driversLicenseUrl?: string | null, proofOfAddressUrl?: string | null, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, subscription?: { __typename?: 'Subscription', status: SubscriptionStatus, planType: PlanType } | null, trustRating?: { __typename?: 'TrustRating', verifiedId: boolean } | null } | null };
+export type MeQuery = { __typename?: 'Query', me?: { __typename?: 'User', id: string, username: string, email?: string | null, firstName?: string | null, lastName?: string | null, bio?: string | null, profileImageUrl?: string | null, planType?: PlanType | null, role: string, customCity?: string | null, contactNumber?: string | null, idNumber?: string | null, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, subscription?: { __typename?: 'Subscription', status: SubscriptionStatus, planType: PlanType } | null, trustRating?: { __typename?: 'TrustRating', verifiedId: boolean } | null } | null };
 
 export type GetMyBusinessQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -2775,15 +2773,20 @@ export const GetListingByIdDocument = gql`
       profileImageUrl
       email
       planType
+      trustRating {
+        verifiedId
+      }
     }
     business {
       id
       name
       businessType
+      email
       slug
       trustRating {
         averageRating
         reviewCount
+        verifiedWithThirdParty
       }
       storeBranding {
         storeName
@@ -2967,9 +2970,6 @@ export const MeDocument = gql`
     customCity
     contactNumber
     idNumber
-    idPhotoUrl
-    driversLicenseUrl
-    proofOfAddressUrl
     subscription {
       status
       planType

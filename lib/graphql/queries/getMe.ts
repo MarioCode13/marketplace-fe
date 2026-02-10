@@ -25,9 +25,6 @@ export const GET_ME = gql`
       customCity
       contactNumber
       idNumber
-      idPhotoUrl
-      driversLicenseUrl
-      proofOfAddressUrl 
       subscription {
         status
         planType

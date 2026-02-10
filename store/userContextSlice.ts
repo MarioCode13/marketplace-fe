@@ -41,7 +41,6 @@ export const logoutUser = createAsyncThunk(
 	async (_, { dispatch, rejectWithValue }) => {
 		try {
 			const client = getApolloClient()
-			console.log('LOGGING OUT')
 
 			// Call backend REST logout; backend clears httpOnly cookies
 			const logoutRes = await fetch(`${API_BASE}/api/auth/logout`, {
@@ -85,7 +84,8 @@ export const refetchUserProfile = createAsyncThunk(
 			})
 			console.log('[refetchUserProfile] GET_ME result:', data)
 			if (data?.me && data.me.id) {
-				// Populate all user fields from GET_ME result
+				// Populate all user fields from GET_ME result (including cityId from city)
+				const cityId = data.me.city?.id ?? null
 				const userContextPayload: Partial<UserContextState> = {
 					userId: data.me.id,
 					username: data.me.username ?? null,
@@ -93,7 +93,7 @@ export const refetchUserProfile = createAsyncThunk(
 					profileImageUrl: data.me.profileImageUrl ?? null,
 					email: data.me.email ?? null,
 					planType: data.me.planType ?? null,
-					// Add any other fields needed for UI/permissions
+					cityId: cityId ?? null,
 				}
 				userContextPayload.isBusinessOwner = data.me.role === 'OWNER' || data.me.role === 'ADMIN'
 				userContextPayload.canEditListing = true // or your logic
@@ -201,6 +201,7 @@ export interface UserContextState {
 	username: string | null
 	email?: string | null
 	planType?: string | null
+	cityId?: string | null
 	profileCompletion?: {
 		complete?: boolean
 		completionPercentage?: number
@@ -221,6 +222,7 @@ const initialState: UserContextState = {
 	username: null,
 	email: null,
 	planType: null,
+	cityId: null,
 	businessId: null,
 	businessName: null,
 	role: null,

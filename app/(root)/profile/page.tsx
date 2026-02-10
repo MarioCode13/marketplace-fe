@@ -366,9 +366,6 @@ export default function Profile() {
                   trustRating={trustData.getTrustRating}
                   showDetails={true}
                 />
-                <div className='text-xs text-blue-600 mt-2'>
-                  User trust rating
-                </div>
               </div>
             ) : (
               <div className='mt-6 p-4 border border-secondary rounded-lg'>
@@ -389,6 +386,8 @@ export default function Profile() {
             )}
             {canUpgrade && (
               <Button
+                color={'primary'}
+                variant={'contained'}
                 className='w-full mt-6'
                 onClick={() => router.push('/subscriptions')}
               >

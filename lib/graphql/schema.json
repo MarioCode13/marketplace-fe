@@ -6975,7 +6975,7 @@
       {
         "kind": "OBJECT",
         "name": "TrustRating",
-        "description": null,
+        "description": " Trust rating: verification is Omnicheck ID only (verifiedId). verificationScore = 100 when verifiedId true, else 0.",
         "isOneOf": null,
         "fields": [
           {
@@ -7739,18 +7739,6 @@
             "deprecationReason": null
           },
           {
-            "name": "driversLicenseUrl",
-            "description": null,
-            "args": [],
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
             "name": "email",
             "description": null,
             "args": [],
@@ -7792,18 +7780,6 @@
           },
           {
             "name": "idNumber",
-            "description": null,
-            "args": [],
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "idPhotoUrl",
             "description": null,
             "args": [],
             "type": {
@@ -7876,18 +7852,6 @@
           },
           {
             "name": "profileImageUrl",
-            "description": null,
-            "args": [],
-            "type": {
-              "kind": "SCALAR",
-              "name": "String",
-              "ofType": null
-            },
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "proofOfAddressUrl",
             "description": null,
             "args": [],
             "type": {

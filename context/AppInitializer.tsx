@@ -1,6 +1,7 @@
 // context/AppInitializer.tsx
 'use client'
 import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { useDispatch } from 'react-redux'
 import {
   refetchUserProfile,
@@ -11,6 +12,7 @@ import { AppDispatch } from '@/store/store'
 
 export default function AppInitializer() {
   const dispatch = useDispatch<AppDispatch>()
+  const router = useRouter()
 
   useEffect(() => {
     // In E2E tests, skip the redirect on failure but still fetch user profile
@@ -37,25 +39,33 @@ export default function AppInitializer() {
         dispatch(refetchBusinessContext()).then((bizResult) => {
           console.log(
             '[AppInitializer] refetchBusinessContext result:',
-            bizResult
+            bizResult,
           )
         })
       } else {
         // In E2E tests, don't redirect; just clear state and let the test handle it
         if (isE2E) {
-          console.log('[AppInitializer] User not authenticated in E2E mode, clearing state')
+          console.log(
+            '[AppInitializer] User not authenticated in E2E mode, clearing state',
+          )
           dispatch({ type: 'userContext/logout' })
         } else {
           // Always clear state if not authenticated in normal mode
           dispatch({ type: 'userContext/logout' })
           if (typeof window !== 'undefined') {
             localStorage.setItem('loggedOut', 'true')
-            window.location.href = '/'
+            // Use Next.js client router for navigation to avoid full reload
+            try {
+              router.replace('/')
+            } catch {
+              // Fallback to window location if router isn't available for some reason
+              window.location.href = '/'
+            }
           }
         }
       }
     })
-  }, [dispatch])
+  }, [dispatch, router])
 
   return null
 }

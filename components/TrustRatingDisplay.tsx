@@ -53,7 +53,7 @@ export const TrustRatingDisplay: React.FC<TrustRatingDisplayProps> = ({
   compact = false,
 }) => {
   const trustLevelColor = getTrustLevelColor(
-    trustRating.trustLevel as TrustLevel
+    trustRating.trustLevel as TrustLevel,
   )
   const trustLevelIcon = getTrustLevelIcon(trustRating.trustLevel as TrustLevel)
 
@@ -96,21 +96,12 @@ export const TrustRatingDisplay: React.FC<TrustRatingDisplayProps> = ({
                   {trustRating.starRating.toFixed(1)}
                 </span>
               </div>
-              <Badge
-                variant='outline'
-                className={trustLevelColor}
-              >
-                {trustLevelIcon}
-              </Badge>
             </div>
           </div>
           <Progress
             value={trustRating.overallScore}
             className='h-2'
           />
-          <span className='text-xs text-muted-foreground'>
-            {trustRating.overallScore.toFixed(1)}/100 points
-          </span>
         </div>
 
         {showDetails && (
@@ -118,7 +109,7 @@ export const TrustRatingDisplay: React.FC<TrustRatingDisplayProps> = ({
             {/* Document Score */}
             <div className='space-y-1'>
               <div className='flex items-center justify-between'>
-                <span className='text-sm'>Document Verification</span>
+                <span className='text-sm'>Verification</span>
                 <span className='text-sm font-medium'>
                   {trustRating.verificationScore.toFixed(1)}%
                 </span>
@@ -186,7 +177,7 @@ export const TrustRatingDisplay: React.FC<TrustRatingDisplayProps> = ({
               {trustRating.totalReviews > 0
                 ? Math.round(
                     (trustRating.positiveReviews / trustRating.totalReviews) *
-                      100
+                      100,
                   )
                 : 0}
               %

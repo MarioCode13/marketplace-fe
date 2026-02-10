@@ -47,14 +47,13 @@ export default function CompleteProfilePage() {
   const { loading, error, data, refetch } = useQuery(GET_ME)
   const [completeProfile] = useMutation(COMPLETE_PROFILE)
   const user = data?.me
+
   const [showCustomCity, setShowCustomCity] = useState(false)
   const [showTermsModal, setShowTermsModal] = useState(false)
   const [formState, setFormState] = useState({
-    city: user?.city?.id || '',
-    cityLabel: user?.city
-      ? `${user.city.name}, ${user.city.region.name}, ${user.city.region.country.name}`
-      : '',
-    customCity: user?.customCity || '',
+    city: '',
+    cityLabel: '',
+    customCity: '',
   })
 
   const {
@@ -81,11 +80,13 @@ export default function CompleteProfilePage() {
       setValue('bio', user.bio || '')
       setValue('contactNumber', user.contactNumber || '')
       setValue('idNumber', user.idNumber || '')
+      const cityId = user.city?.id || ''
+      const cityLabel = user.city
+        ? `${user.city.name}, ${user.city.region.name}, ${user.city.region.country.name}`
+        : ''
       setFormState({
-        city: user.city?.id || '',
-        cityLabel: user.city
-          ? `${user.city.name}, ${user.city.region.name}, ${user.city.region.country.name}`
-          : '',
+        city: cityId,
+        cityLabel: cityLabel,
         customCity: user.customCity || '',
       })
       setShowCustomCity(!!user.customCity)
@@ -113,8 +114,9 @@ export default function CompleteProfilePage() {
     bio,
     contactNumber,
     hasLocation,
+    idNumber,
     user?.profileImageUrl,
-    user?.idVerified,
+    user?.trustRating?.verifiedId,
   ]
   const completedCount = completionItems.filter(Boolean).length
   const completionPercent = Math.round(
@@ -155,7 +157,7 @@ export default function CompleteProfilePage() {
 
       if (data.success && data.verifiedID) {
         toast.success('ID verified successfully!')
-        await refetch()
+        // Don't refetch - preserve user's form edits
       } else {
         toast.error(
           data.error ||
@@ -173,22 +175,24 @@ export default function CompleteProfilePage() {
 
   const onSubmit = async (data: ProfileFormData) => {
     try {
+      const submitData = {
+        id: user.id,
+        firstName: data.firstName || undefined,
+        lastName: data.lastName || undefined,
+        bio: data.bio || undefined,
+        cityId: formState.city || undefined,
+        customCity: formState.customCity || undefined,
+        contactNumber: data.contactNumber || undefined,
+        idNumber: data.idNumber || undefined,
+      }
       await completeProfile({
-        variables: {
-          id: user.id,
-          firstName: data.firstName || undefined,
-          lastName: data.lastName || undefined,
-          bio: data.bio || undefined,
-          cityId: formState.city || undefined,
-          customCity: formState.customCity || undefined,
-          contactNumber: data.contactNumber || undefined,
-          idNumber: data.idNumber || undefined,
-        },
+        variables: submitData,
       })
       toast.success('Profile updated successfully')
-      await refetch()
+      await refetch({ fetchPolicy: 'network-only' })
       router.push('/profile')
-    } catch {
+    } catch (err) {
+      console.error('[CompleteProfile] Submit error:', err)
       toast.error('Something went wrong. Try again.')
     }
   }
@@ -328,6 +332,7 @@ export default function CompleteProfilePage() {
               id='idNumber'
               placeholder='Enter your 13-digit ID number'
               maxLength={13}
+              disabled={user?.trustRating?.verifiedId}
               {...register('idNumber')}
               className={errors.idNumber ? 'border-red-500' : ''}
             />
@@ -336,9 +341,6 @@ export default function CompleteProfilePage() {
                 {errors.idNumber.message}
               </p>
             )}
-            <span className='text-xs text-muted-foreground mt-1 block'>
-              Required for ID verification with OmniCheck
-            </span>
           </div>
           {/* ID Verification Section */}
           <div className='!mb-8'>
