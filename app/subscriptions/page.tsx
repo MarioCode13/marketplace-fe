@@ -145,11 +145,11 @@ export default function SubscriptionsPage() {
       })
       const res = await fetch(
         `${
-          process.env.NEXT_PUBLIC_GRAPHQL_URL
+          process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE
         }/api/payments/payfast/subscription-url?${params.toString()}`,
         {
           credentials: 'include',
-        }
+        },
       )
       const url = await res.text()
       // Dispatch Redux action to update user/business context after payment initiation
@@ -160,7 +160,7 @@ export default function SubscriptionsPage() {
       window.location.href = url
     } catch (e) {
       alert(
-        'Failed to initiate payment. Please try again. ' + (e as Error).message
+        'Failed to initiate payment. Please try again. ' + (e as Error).message,
       )
     } finally {
       setLoadingTier(null)
@@ -200,10 +200,10 @@ export default function SubscriptionsPage() {
             'PRO_STORE',
           ]
           const currentPlanIndex = planOrder.indexOf(
-            (currentPlanType || '').toUpperCase()
+            (currentPlanType || '').toUpperCase(),
           )
           const tierPlanIndex = planOrder.indexOf(
-            (tierPlanType || '').toUpperCase()
+            (tierPlanType || '').toUpperCase(),
           )
           console.log('Is Logged In: ', isLoggedIn)
 
