@@ -1,17 +1,19 @@
 'use client'
 
-import { ApolloError, gql, useMutation } from '@apollo/client'
+import { ApolloError, gql, useMutation, useLazyQuery } from '@apollo/client'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
+import { PasswordInput } from '@/components/ui/password-input'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { toast } from 'sonner'
 import Link from 'next/link'
 import { registrationSchema, type RegistrationFormData } from '@/lib/validation'
+import { CHECK_USERNAME_AVAILABLE } from '@/lib/graphql/mutations/authMutations'
 
 const REGISTER_MUTATION = gql`
   mutation Register($username: String!, $email: String!, $password: String!) {
@@ -27,8 +29,10 @@ const REGISTER_MUTATION = gql`
 export default function Register() {
   const router = useRouter()
   const [acceptedTerms, setAcceptedTerms] = useState(false)
+  const [usernameCheckLoading, setUsernameCheckLoading] = useState(false)
   const [register, { loading: registerLoading }] =
     useMutation(REGISTER_MUTATION)
+  const [checkUsernameAvailable] = useLazyQuery(CHECK_USERNAME_AVAILABLE)
 
   const {
     register: registerField,
@@ -71,6 +75,32 @@ export default function Register() {
   }
 
   const passwordStrength = getPasswordStrength()
+
+  const handleUsernameBlur = async (username: string) => {
+    if (!username || username.length < 3) return
+
+    setUsernameCheckLoading(true)
+    try {
+      const { data } = await checkUsernameAvailable({
+        variables: { username },
+      })
+      const isAvailable = data.checkUsernameAvailable
+
+      if (!isAvailable) {
+        toast.error('Username is not available')
+      } else {
+        toast.success('Username is available')
+      }
+    } catch (err) {
+      const errorMsg =
+        err instanceof ApolloError && err.graphQLErrors.length > 0
+          ? err.graphQLErrors[0].message
+          : 'Failed to check username availability'
+      toast.error(errorMsg)
+    } finally {
+      setUsernameCheckLoading(false)
+    }
+  }
 
   const onSubmit = async (data: RegistrationFormData) => {
     if (!acceptedTerms) {
@@ -141,6 +171,8 @@ export default function Register() {
               id='username'
               placeholder='Enter your username'
               {...registerField('username')}
+              onBlur={(e) => handleUsernameBlur(e.target.value)}
+              disabled={usernameCheckLoading}
               className={errors.username ? 'border-red-500' : ''}
             />
             {errors.username && (
@@ -180,9 +212,8 @@ export default function Register() {
             >
               Password
             </Label>
-            <Input
+            <PasswordInput
               id='password'
-              type='password'
               placeholder='Enter your password'
               {...registerField('password')}
               className={errors.password ? 'border-red-500' : ''}

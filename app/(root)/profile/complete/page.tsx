@@ -1,7 +1,7 @@
 'use client'
 
 import { gql, useQuery, useMutation } from '@apollo/client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, ChangeEvent } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Input } from '@/components/ui/input'
@@ -13,8 +13,10 @@ import CityAutocomplete from '@/components/drawers/CityAutocomplete'
 import { GET_ME } from '@/lib/graphql/queries/getMe'
 import { profileSchema, type ProfileFormData } from '@/lib/validation'
 import { useRouter } from 'next/navigation'
-import { CheckCircle } from 'lucide-react'
+import { CheckCircle, Pencil, User, Loader2 } from 'lucide-react'
+import Image from 'next/image'
 import OmnicheckTermsModal from '@/components/modals/OmnicheckTermsModal'
+import { generateImageUrl } from '@/lib/utils'
 
 const COMPLETE_PROFILE = gql`
   mutation CompleteProfile(
@@ -50,6 +52,8 @@ export default function CompleteProfilePage() {
 
   const [showCustomCity, setShowCustomCity] = useState(false)
   const [showTermsModal, setShowTermsModal] = useState(false)
+  const [imageUploadLoading, setImageUploadLoading] = useState(false)
+  const [hovered, setHovered] = useState(false)
   const [formState, setFormState] = useState({
     city: '',
     cityLabel: '',
@@ -173,6 +177,52 @@ export default function CompleteProfilePage() {
     }
   }
 
+  function getCookie(name: string): string | undefined {
+    const value = `; ${document.cookie}`
+    const parts = value.split(`; ${name}=`)
+    if (parts.length === 2) {
+      const part = parts.pop()
+      if (part) return part.split(';').shift()
+    }
+    return undefined
+  }
+
+  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files?.length) return
+
+    const file = e.target.files[0]
+    const formData = new FormData()
+    formData.append('file', file)
+
+    const xsrfToken = getCookie('XSRF-TOKEN')
+
+    setImageUploadLoading(true)
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE}/api/users/upload-profile-image`,
+        {
+          method: 'POST',
+          body: formData,
+          credentials: 'include',
+          headers: {
+            ...(xsrfToken ? { 'X-XSRF-TOKEN': xsrfToken } : {}),
+          },
+        },
+      )
+
+      if (!response.ok) throw new Error('Upload failed')
+
+      toast.success('Profile image updated!')
+
+      await refetch({ fetchPolicy: 'network-only' })
+    } catch (err) {
+      toast.error('Upload failed. Please try again.')
+      console.error(err)
+    } finally {
+      setImageUploadLoading(false)
+    }
+  }
+
   const onSubmit = async (data: ProfileFormData) => {
     try {
       const submitData = {
@@ -203,6 +253,51 @@ export default function CompleteProfilePage() {
         <h2 className='mb-4 text-2xl font-bold text-foreground'>
           Complete Your Profile
         </h2>
+        {/* Profile Image Section */}
+        <div className='flex justify-center mb-6'>
+          <label className='relative w-[120px] h-[120px] cursor-pointer'>
+            {user && user.profileImageUrl ? (
+              <Image
+                src={generateImageUrl(user.profileImageUrl)}
+                alt='profile'
+                className='rounded-full w-[120px] h-[120px] object-cover'
+                width={120}
+                height={120}
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement
+                  target.src = '/logo.png'
+                }}
+              />
+            ) : (
+              <div className='flex justify-center h-full items-center bg-gray-200 rounded-full'>
+                <User className='w-[60px] h-[60px] text-gray-400' />
+              </div>
+            )}
+            {imageUploadLoading && (
+              <div className='absolute inset-0 flex justify-center items-center bg-black bg-opacity-50 rounded-full'>
+                <Loader2 className='w-8 h-8 text-white animate-spin' />
+              </div>
+            )}
+            {!imageUploadLoading && (
+              <div
+                className={`absolute inset-0 flex justify-center items-center bg-black bg-opacity-50 rounded-full transition-opacity ${
+                  hovered ? 'opacity-100' : 'opacity-0'
+                }`}
+                onMouseEnter={() => setHovered(true)}
+                onMouseLeave={() => setHovered(false)}
+              >
+                <Pencil className='text-white w-5 h-5' />
+              </div>
+            )}
+            <input
+              type='file'
+              accept='image/*'
+              className='hidden'
+              onChange={handleFileChange}
+              disabled={imageUploadLoading}
+            />
+          </label>
+        </div>
         {/* Progress Bar */}
         <div className='mb-6'>
           <div className='flex justify-between mb-1'>

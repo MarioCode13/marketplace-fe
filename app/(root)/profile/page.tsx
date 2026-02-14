@@ -1,6 +1,6 @@
 'use client'
 
-import { gql, useMutation } from '@apollo/client'
+import { gql, useMutation, useLazyQuery } from '@apollo/client'
 import { ChangeEvent, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useDispatch } from 'react-redux'
@@ -34,6 +34,7 @@ import {
 } from '@/components/ui/tooltip'
 import { TrustRatingDisplay } from '@/components/TrustRatingDisplay'
 import { generateImageUrl } from '@/lib/utils'
+import { CHECK_USERNAME_AVAILABLE } from '@/lib/graphql/mutations/authMutations'
 
 const UPDATE_PROFILE = gql`
   mutation UpdateProfile($id: ID!, $username: String!, $email: String!) {
@@ -50,6 +51,7 @@ export default function Profile() {
 
   const [editing, setEditing] = useState(false)
   const [hovered, setHovered] = useState(false)
+  const [usernameCheckLoading, setUsernameCheckLoading] = useState(false)
   const dispatch = useDispatch<AppDispatch>()
   const user = useSelector((state: RootState) => state.userContext)
   const userContext = useSelector((state: RootState) => state.userContext)
@@ -58,18 +60,26 @@ export default function Profile() {
   const profileComplete = user?.profileCompletion?.complete || false
   const businessId = userContext.businessId || business?.id
   const [updateProfile] = useMutation(UPDATE_PROFILE)
+  const [checkUsernameAvailable] = useLazyQuery(CHECK_USERNAME_AVAILABLE)
   const [form, setForm] = useState({
     username: user?.username ?? '',
     email: user?.email ?? '',
   })
 
-  const { data: businessTrustData, loading: businessTrustLoading } =
-    useBusinessTrustRatingQuery({
-      variables: { businessId: businessId ?? '' },
-      skip: !businessId,
-    })
+  const {
+    data: businessTrustData,
+    loading: businessTrustLoading,
+    refetch: refetchBusinessTrust,
+  } = useBusinessTrustRatingQuery({
+    variables: { businessId: businessId ?? '' },
+    skip: !businessId,
+  })
   // Only fetch user trust rating if not a business user
-  const { data: trustData, loading: trustLoading } = useGetTrustRatingQuery({
+  const {
+    data: trustData,
+    loading: trustLoading,
+    refetch: refetchUserTrust,
+  } = useGetTrustRatingQuery({
     variables: { userId: userId ?? '' },
     skip: !userId || !!businessId,
   })
@@ -86,6 +96,30 @@ export default function Profile() {
     setForm({ ...form, [e.target.name]: e.target.value })
   }
 
+  const handleUsernameBlur = async (username: string) => {
+    if (!username || username.length < 3) return
+    // Don't check if username hasn't changed
+    if (username === user?.username) return
+
+    setUsernameCheckLoading(true)
+    try {
+      const { data } = await checkUsernameAvailable({
+        variables: { username },
+      })
+      const isAvailable = data.checkUsernameAvailable
+
+      if (!isAvailable) {
+        toast.error('Username is not available')
+      } else {
+        toast.success('Username is available')
+      }
+    } catch {
+      toast.error('Failed to check username availability')
+    } finally {
+      setUsernameCheckLoading(false)
+    }
+  }
+
   const handleEdit = () => {
     setForm({ username: user?.username ?? '', email: user?.email ?? '' })
     setEditing(true)
@@ -96,6 +130,12 @@ export default function Profile() {
     await updateProfile({ variables: { id: userId, ...form } })
     // After mutation, refetch user profile via Redux thunk
     dispatch(refetchUserProfile())
+    // Refetch trust rating queries to get updated data
+    if (businessId) {
+      await refetchBusinessTrust()
+    } else if (userId) {
+      await refetchUserTrust()
+    }
     setEditing(false)
   }
 
@@ -233,8 +273,9 @@ export default function Profile() {
                   name='username'
                   value={form.username}
                   onChange={handleChange}
+                  onBlur={(e) => handleUsernameBlur(e.target.value)}
+                  disabled={!user || usernameCheckLoading}
                   className='mb-3'
-                  disabled={!user}
                 />
                 <Label htmlFor='email'>Email</Label>
                 <Input

@@ -11,4 +11,8 @@ export const REGISTER = gql`
   }
 `
 
-
+export const CHECK_USERNAME_AVAILABLE = gql`
+  query CheckUsernameAvailable($username: String!) {
+    checkUsernameAvailable(username: $username)
+  }
+`

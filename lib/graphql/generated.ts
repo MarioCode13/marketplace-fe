@@ -505,6 +505,7 @@ export type Query = {
   businessSubscriptions: Array<Subscription>;
   businessTrustRating?: Maybe<BusinessTrustRating>;
   canContactSellers: Scalars['Boolean']['output'];
+  checkUsernameAvailable: Scalars['Boolean']['output'];
   getAllUsers: Array<User>;
   getAvailablePlans: Array<Scalars['String']['output']>;
   getBusinessBySlug?: Maybe<Business>;
@@ -577,6 +578,11 @@ export type QueryBusinessSubscriptionsArgs = {
 
 export type QueryBusinessTrustRatingArgs = {
   businessId: Scalars['ID']['input'];
+};
+
+
+export type QueryCheckUsernameAvailableArgs = {
+  username: Scalars['String']['input'];
 };
 
 
@@ -1064,6 +1070,13 @@ export type GetAllUsersQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type GetAllUsersQuery = { __typename?: 'Query', getAllUsers: Array<{ __typename?: 'User', id: string, username: string, email?: string | null }> };
+
+export type CheckUsernameAvailableQueryVariables = Exact<{
+  username: Scalars['String']['input'];
+}>;
+
+
+export type CheckUsernameAvailableQuery = { __typename?: 'Query', checkUsernameAvailable: boolean };
 
 export type UpdateStoreBrandingMutationVariables = Exact<{
   businessId: Scalars['ID']['input'];
@@ -1728,6 +1741,44 @@ export type GetAllUsersQueryHookResult = ReturnType<typeof useGetAllUsersQuery>;
 export type GetAllUsersLazyQueryHookResult = ReturnType<typeof useGetAllUsersLazyQuery>;
 export type GetAllUsersSuspenseQueryHookResult = ReturnType<typeof useGetAllUsersSuspenseQuery>;
 export type GetAllUsersQueryResult = Apollo.QueryResult<GetAllUsersQuery, GetAllUsersQueryVariables>;
+export const CheckUsernameAvailableDocument = gql`
+    query CheckUsernameAvailable($username: String!) {
+  checkUsernameAvailable(username: $username)
+}
+    `;
+
+/**
+ * __useCheckUsernameAvailableQuery__
+ *
+ * To run a query within a React component, call `useCheckUsernameAvailableQuery` and pass it any options that fit your needs.
+ * When your component renders, `useCheckUsernameAvailableQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useCheckUsernameAvailableQuery({
+ *   variables: {
+ *      username: // value for 'username'
+ *   },
+ * });
+ */
+export function useCheckUsernameAvailableQuery(baseOptions: Apollo.QueryHookOptions<CheckUsernameAvailableQuery, CheckUsernameAvailableQueryVariables> & ({ variables: CheckUsernameAvailableQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<CheckUsernameAvailableQuery, CheckUsernameAvailableQueryVariables>(CheckUsernameAvailableDocument, options);
+      }
+export function useCheckUsernameAvailableLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<CheckUsernameAvailableQuery, CheckUsernameAvailableQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<CheckUsernameAvailableQuery, CheckUsernameAvailableQueryVariables>(CheckUsernameAvailableDocument, options);
+        }
+export function useCheckUsernameAvailableSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<CheckUsernameAvailableQuery, CheckUsernameAvailableQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<CheckUsernameAvailableQuery, CheckUsernameAvailableQueryVariables>(CheckUsernameAvailableDocument, options);
+        }
+export type CheckUsernameAvailableQueryHookResult = ReturnType<typeof useCheckUsernameAvailableQuery>;
+export type CheckUsernameAvailableLazyQueryHookResult = ReturnType<typeof useCheckUsernameAvailableLazyQuery>;
+export type CheckUsernameAvailableSuspenseQueryHookResult = ReturnType<typeof useCheckUsernameAvailableSuspenseQuery>;
+export type CheckUsernameAvailableQueryResult = Apollo.QueryResult<CheckUsernameAvailableQuery, CheckUsernameAvailableQueryVariables>;
 export const UpdateStoreBrandingDocument = gql`
     mutation UpdateStoreBranding($businessId: ID!, $input: UpdateStoreBrandingInput!) {
   updateStoreBranding(businessId: $businessId, input: $input) {

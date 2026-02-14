@@ -7,6 +7,7 @@ import { loginUser } from '@/store/userContextSlice'
 import { AppDispatch } from '@/store/store'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
+import { PasswordInput } from '@/components/ui/password-input'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 
@@ -72,9 +73,8 @@ export default function Login() {
             >
               Password
             </Label>
-            <Input
+            <PasswordInput
               id='password'
-              type='password'
               name='password'
               placeholder='Enter your password'
               onChange={handleChange}
