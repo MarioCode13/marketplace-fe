@@ -53,7 +53,7 @@ export default function MyListingsPage() {
       variables: isBusinessUser
         ? { limit, offset, businessId }
         : { limit, offset },
-    }
+    },
   )
 
   const [deleteListing] = useMutation(DELETE_LISTING)
@@ -97,7 +97,7 @@ export default function MyListingsPage() {
     } catch (error) {
       toast.error(
         'Failed to delete listing. Please try again. ' +
-          (error as Error).message
+          (error as Error).message,
       )
     } finally {
       setIsDeleting(false)
@@ -115,7 +115,7 @@ export default function MyListingsPage() {
         {userId ? (
           <>
             <div className='flex items-center justify-between w-full mb-6'>
-              <div className='w-32'></div> {/* Spacer to balance the button */}
+              <div className='w-32'></div> {/* Spacer */}
               <div className='flex items-center gap-4'>
                 <h1 className='text-2xl font-bold'>
                   {isBusinessUser
@@ -262,7 +262,7 @@ export default function MyListingsPage() {
             sold: !!base.sold,
             createdAt: base.createdAt || new Date().toISOString(),
             expiresAt: new Date(
-              Date.now() + 7 * 24 * 60 * 60 * 1000
+              Date.now() + 7 * 24 * 60 * 60 * 1000,
             ).toISOString(),
             condition: Condition.GOOD,
             user: base.user

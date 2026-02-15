@@ -24,10 +24,17 @@ import { ImageUploadArea } from '@/components/ImageUploadArea'
 import { useGetCategoriesQuery } from '@/lib/graphql/generated'
 import CityAutocomplete from '@/components/drawers/CityAutocomplete'
 import { GET_ME } from '@/lib/graphql/queries/getMe'
+import { DocumentNode } from 'graphql'
+import {
+  GetListingsDocument,
+  GetListingsQueryVariables,
+  MyListingsDocument,
+  MyListingsQueryVariables,
+} from '@/lib/graphql/generated'
 import CategoryCascader, {
   CategoryNode,
 } from '@/components/drawers/CategoryCascader'
-import { buildCategoryTree, FlatCategory } from '@/lib/utils'
+import { buildCategoryTree, FlatCategory, formatEnum } from '@/lib/utils'
 import { listingSchema, type ListingFormData } from '@/lib/validation'
 
 const CREATE_LISTING = gql`
@@ -126,7 +133,26 @@ export default function SellPage() {
     setImages(images.filter((_, i) => i !== index))
   }
 
-  const [createListing, { loading }] = useMutation(CREATE_LISTING)
+  const [createListing, { loading }] = useMutation(CREATE_LISTING, {
+    awaitRefetchQueries: true,
+    refetchQueries: () => {
+      const queries: {
+        query: DocumentNode
+        variables?: MyListingsQueryVariables | GetListingsQueryVariables
+      }[] = [{ query: MyListingsDocument, variables: { limit: 9, offset: 0 } }]
+      if (userContext.businessId) {
+        queries.push({
+          query: GetListingsDocument,
+          variables: {
+            limit: 9,
+            offset: 0,
+            businessId: userContext.businessId,
+          },
+        })
+      }
+      return queries
+    },
+  })
 
   const handleImageUpload = async (file: File) => {
     if (images.length >= 5) return
@@ -175,7 +201,7 @@ export default function SellPage() {
     }
 
     try {
-      await createListing({
+      const result = await createListing({
         variables: {
           title: formData.title,
           description: formData.description,
@@ -192,15 +218,18 @@ export default function SellPage() {
           businessId: userContext.businessId || undefined,
         },
       })
-      toast.success('Listing created successfully!')
-      reset()
-      setImages([])
-      setCityState({
-        city: '',
-        cityLabel: '',
-        customCity: '',
-      })
-      router.push('/')
+
+      if (result.data?.createListing?.id) {
+        toast.success('Listing created successfully!')
+        reset()
+        setImages([])
+        setCityState({
+          city: '',
+          cityLabel: '',
+          customCity: '',
+        })
+        router.push('/my-listings')
+      }
     } catch (err) {
       toast.error('Failed to create listing: ' + (err as Error).message)
     }
@@ -419,7 +448,7 @@ export default function SellPage() {
                       key={condition}
                       value={condition}
                     >
-                      {condition.charAt(0) + condition.slice(1).toLowerCase()}
+                      {formatEnum(condition)}
                     </SelectItem>
                   ))}
                 </SelectContent>

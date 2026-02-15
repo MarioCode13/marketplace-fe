@@ -423,6 +423,7 @@ const Page = () => {
                             {(() => {
                               const rating =
                                 listing.business?.trustRating?.averageRating ||
+                                listing.user?.trustRating?.starRating ||
                                 0
                               return [1, 2, 3, 4, 5].map((star) => {
                                 if (rating >= star) {
@@ -476,17 +477,26 @@ const Page = () => {
                           </div>
                         </TooltipTrigger>
                         <TooltipContent side='top'>
-                          <p>{listing.business?.trustRating?.averageRating}</p>
+                          <p>
+                            {listing.business?.trustRating?.averageRating ||
+                              listing.user?.trustRating?.starRating}
+                          </p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
 
-                    {listing.business?.trustRating?.reviewCount !==
-                    undefined ? (
+                    {(listing.business?.trustRating?.reviewCount !==
+                      undefined ||
+                      listing.user?.trustRating?.totalReviews !==
+                        undefined) && (
                       <span className='text-sm text-gray-600'>
-                        ({listing.business.trustRating.reviewCount} reviews)
+                        (
+                        {listing.business?.trustRating?.reviewCount ||
+                          listing.user?.trustRating?.totalReviews ||
+                          0}{' '}
+                        {' reviews'})
                       </span>
-                    ) : null}
+                    )}
                   </div>
                 </div>
               </CardContent>

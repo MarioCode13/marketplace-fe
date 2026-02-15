@@ -35,6 +35,9 @@ export const GET_LISTING_BY_ID = gql`
         planType
         trustRating{
           verifiedId
+          overallScore
+          starRating
+          totalReviews
         }
       }
       business {
