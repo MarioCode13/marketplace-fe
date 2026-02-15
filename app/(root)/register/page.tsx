@@ -112,7 +112,9 @@ export default function Register() {
 
     try {
       await register({ variables: data })
-      toast.success('Registration successful! You can now login')
+      toast.success(
+        'Registration successful! Check your email for verification instructions.',
+      )
       router.push('/login')
     } catch (err) {
       if (err instanceof ApolloError) {

@@ -20,14 +20,32 @@ export const loginUser = createAsyncThunk(
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify(form),
 			})
-			if (!cookieRes.ok) throw new Error('Login failed')
+
+			console.log('[loginUser] Response status:', cookieRes.status)
+
+			if (!cookieRes.ok) {
+				// Try to parse error message from response
+				let errorMsg = 'Login failed'
+				try {
+					const errorData = await cookieRes.json()
+					console.log('[loginUser] Error response data:', errorData)
+					errorMsg = errorData.message || errorData.error || 'Login failed'
+					console.log('[loginUser] Extracted error message:', errorMsg)
+				} catch (parseErr) {
+					console.log('[loginUser] Failed to parse error response:', parseErr)
+					errorMsg = 'Login failed'
+				}
+				return rejectWithValue(errorMsg)
+			}
 
 			// Refetch user profile and business context
 			await dispatch(refetchUserProfile())
 			await dispatch(refetchBusinessContext())
 			return 'success'
 		} catch (err) {
+			console.log('[loginUser] Caught error:', err)
 			const errorMsg = err instanceof Error ? err.message : 'Login failed. Please try again.'
+			console.log('[loginUser] Final error message:', errorMsg)
 			return rejectWithValue(errorMsg)
 		}
 	}
