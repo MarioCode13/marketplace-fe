@@ -816,6 +816,11 @@ export type Review = {
   __typename?: 'Review';
   comment?: Maybe<Scalars['String']['output']>;
   createdAt: Scalars['String']['output'];
+  /**
+   * 
+   * A review in a transaction. Both buyer and seller can review each other.
+   * The reviewer is the party leaving the review, and reviewedUser is the other party being reviewed.
+   */
   id: Scalars['ID']['output'];
   isPositive: Scalars['Boolean']['output'];
   rating: Scalars['Float']['output'];
@@ -1244,7 +1249,7 @@ export type GetListingByIdQueryVariables = Exact<{
 }>;
 
 
-export type GetListingByIdQuery = { __typename?: 'Query', getListingById?: { __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, sold: boolean, customCity?: string | null, condition: Condition, createdAt: string, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, category?: { __typename?: 'Category', id: string, name: string, parentId?: string | null } | null, user?: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null, email?: string | null, planType?: PlanType | null, trustRating?: { __typename?: 'TrustRating', verifiedId: boolean } | null } | null, business?: { __typename?: 'Business', id: string, name: string, businessType?: string | null, email: string, slug?: string | null, trustRating?: { __typename?: 'BusinessTrustRating', averageRating: number, reviewCount: number, verifiedWithThirdParty: boolean } | null, storeBranding?: { __typename?: 'StoreBranding', storeName?: string | null, logoUrl?: string | null } | null } | null } | null };
+export type GetListingByIdQuery = { __typename?: 'Query', getListingById?: { __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, sold: boolean, customCity?: string | null, condition: Condition, createdAt: string, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, category?: { __typename?: 'Category', id: string, name: string, parentId?: string | null } | null, user?: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null, email?: string | null, planType?: PlanType | null, trustRating?: { __typename?: 'TrustRating', verifiedId: boolean, overallScore: number, starRating: number, totalReviews: number } | null } | null, business?: { __typename?: 'Business', id: string, name: string, businessType?: string | null, email: string, slug?: string | null, trustRating?: { __typename?: 'BusinessTrustRating', averageRating: number, reviewCount: number, verifiedWithThirdParty: boolean } | null, storeBranding?: { __typename?: 'StoreBranding', storeName?: string | null, logoUrl?: string | null } | null } | null } | null };
 
 export type GetListingsQueryVariables = Exact<{
   limit: Scalars['Int']['input'];
@@ -2826,6 +2831,9 @@ export const GetListingByIdDocument = gql`
       planType
       trustRating {
         verifiedId
+        overallScore
+        starRating
+        totalReviews
       }
     }
     business {

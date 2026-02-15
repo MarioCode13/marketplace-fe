@@ -1,14 +1,17 @@
 import VerifyEmailClient from './VerifyEmailClient'
 
-type SearchParams = Record<string, string | string[] | undefined>
+type SearchParams = { [key: string]: string | string[] | undefined }
+type NextSearchParams = Promise<SearchParams> | undefined
 
-export default function Page({
+export default async function Page({
   searchParams,
 }: {
-  searchParams?: SearchParams
+  searchParams?: NextSearchParams
 }) {
+  const params = (await searchParams) || ({} as SearchParams)
+
   const getParam = (key: string) => {
-    const val = searchParams?.[key]
+    const val = params?.[key]
     if (Array.isArray(val)) return val[0]
     return val ?? null
   }

@@ -6192,7 +6192,7 @@
           },
           {
             "name": "id",
-            "description": null,
+            "description": "\r\nA review in a transaction. Both buyer and seller can review each other.\r\nThe reviewer is the party leaving the review, and reviewedUser is the other party being reviewed.\r",
             "args": [],
             "type": {
               "kind": "NON_NULL",
