@@ -37,7 +37,7 @@ const tiers = [
     isSetupOnly: false,
   },
   {
-    name: 'Verified User',
+    name: 'User +',
     price: 'R49/mo',
     icon: ShieldCheck,
     accountType: 'Personal',
@@ -120,12 +120,12 @@ export default function SubscriptionsPage() {
     let recurringAmount = '0.00'
     let planType = ''
 
-    if (tier.name === 'Verified User') {
+    if (tier.name === 'Seller +') {
       recurringAmount = '49.00'
-      planType = 'verified_user'
+      planType = 'seller_plus'
     }
     if (tier.name === 'Reseller') {
-      recurringAmount = '99.00'
+      recurringAmount = '149.00'
       planType = 'reseller'
     }
     if (tier.name === 'Pro Store') {
@@ -134,6 +134,192 @@ export default function SubscriptionsPage() {
     }
 
     try {
+      const apiBase =
+        process.env.NEXT_PUBLIC_API_URL ||
+        process.env.NEXT_PUBLIC_API_BASE ||
+        ''
+      const isLocal =
+        typeof window !== 'undefined' &&
+        (window.location.hostname === 'localhost' ||
+          window.location.hostname === '127.0.0.1' ||
+          apiBase.includes('localhost') ||
+          process.env.NODE_ENV === 'development')
+
+      if (isLocal) {
+        // Local activation endpoint - backend activates subscription immediately
+        // Try to obtain CSRF token (from cookie or csrf endpoint) and POST to activate
+        const getCookie = (name: string) => {
+          if (typeof document === 'undefined') return null
+          const match = document.cookie.match(
+            new RegExp('(^| )' + name + '=([^;]+)'),
+          )
+          return match ? decodeURIComponent(match[2]) : null
+        }
+
+        let csrfToken =
+          getCookie('csrfToken') ||
+          getCookie('XSRF-TOKEN') ||
+          getCookie('csrf') ||
+          getCookie('csrf_token') ||
+          getCookie('CSRF-TOKEN')
+        if (!csrfToken) {
+          try {
+            const tokenRes = await fetch(`${apiBase}/api/auth/csrf`, {
+              credentials: 'include',
+            })
+            if (tokenRes.ok) {
+              const tokenJson = await tokenRes.json()
+              csrfToken =
+                tokenJson?.csrfToken ||
+                tokenJson?.csrf_token ||
+                tokenJson?.token ||
+                tokenJson?.xsrfToken ||
+                tokenJson?.xsrf_token ||
+                csrfToken
+            }
+          } catch (err) {
+            console.error('Failed to retrieve CSRF token:', err)
+            // ignore - we'll attempt without token and show server error if it fails
+          }
+        }
+
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+        }
+        if (csrfToken) {
+          headers['X-CSRF-Token'] = csrfToken
+          headers['X-XSRF-TOKEN'] = csrfToken
+        }
+        if (isLocal) console.debug('CSRF token used for activation:', csrfToken)
+
+        const res = await fetch(
+          `${apiBase}/api/payments/payfast/subscription-activate`,
+          {
+            method: 'POST',
+            credentials: 'include',
+            headers,
+            body: JSON.stringify({
+              planType,
+              itemName: tier.name + ' Subscription',
+              amount: recurringAmount,
+            }),
+          },
+        )
+
+        // If the POST returned 404 (route not found on this host), try a GET fallback
+        if (res.status === 404) {
+          console.debug('Activation POST returned 404 — trying GET fallback')
+          try {
+            const getRes = await fetch(
+              `${apiBase}/api/payments/payfast/subscription-activate?planType=${encodeURIComponent(
+                planType,
+              )}`,
+              { credentials: 'include' },
+            )
+
+            const getText = await getRes.text()
+            const locationHeader =
+              getRes.headers.get('location') || getRes.headers.get('Location')
+            if (locationHeader) {
+              window.location.href = locationHeader
+              return
+            }
+            if (getRes.status === 204 || (getRes.ok && !getText.trim())) {
+              router.push('/')
+              return
+            }
+            try {
+              const data = JSON.parse(getText)
+              if (data.error) {
+                alert('Payment activation failed: ' + data.error)
+                return
+              }
+              if (data.success) {
+                router.push('/dashboard')
+                return
+              }
+              if (data.url || data.redirectUrl) {
+                window.location.href = data.url || data.redirectUrl
+                return
+              }
+            } catch (err) {
+              alert('Payment activation failed: ' + (err as Error).message)
+            }
+            if (getText && /^(https?:)?\/\//i.test(getText)) {
+              window.location.href = getText
+              return
+            }
+            console.debug('GET fallback returned unexpected body:', {
+              status: getRes.status,
+              body: getText,
+            })
+            // fall through to original handling which will surface an error
+          } catch (err) {
+            console.debug('GET fallback failed:', err)
+          }
+        }
+
+        const text = await res.text()
+        if (isLocal && res.status === 403) {
+          console.debug(
+            'Activation endpoint returned 403. Response body:',
+            text,
+          )
+        }
+
+        // If server responded with a Location header, redirect there
+        const locationHeader =
+          res.headers.get('location') || res.headers.get('Location')
+        if (locationHeader) {
+          window.location.href = locationHeader
+          return
+        }
+
+        // If the response is empty but successful (204 or empty 2xx), treat as activated
+        if (res.status === 204 || (res.ok && !text.trim())) {
+          router.push('/dashboard')
+          return
+        }
+
+        // Try parse JSON first (some backends return JSON with { success, url, error })
+        try {
+          const data = JSON.parse(text)
+          if (data.error) {
+            alert('Payment activation failed: ' + data.error)
+            return
+          }
+          if (data.success) {
+            router.push('/dashboard')
+            return
+          }
+          if (data.url || data.redirectUrl) {
+            window.location.href = data.url || data.redirectUrl
+            return
+          }
+          // Unknown JSON payload — show it to the user instead of redirecting
+          alert('Unexpected response: ' + JSON.stringify(data))
+          return
+        } catch (err) {
+          console.debug(
+            'Response is not JSON, treating as URL or message:',
+            err,
+          )
+        }
+
+        // Only redirect if the text looks like a URL (avoid redirecting to JSON/error strings)
+        if (text && /^(https?:)?\/\//i.test(text)) {
+          window.location.href = text
+          return
+        }
+
+        console.debug('Activation endpoint returned unexpected body:', {
+          status: res.status,
+          body: text,
+        })
+        throw new Error('Empty or non-URL response from activation endpoint')
+      }
+
+      // Production: request URL for redirect-based flow
       const params = new URLSearchParams({
         itemName: tier.name + ' Subscription',
         amount: recurringAmount,
@@ -143,21 +329,32 @@ export default function SubscriptionsPage() {
         planType,
         userEmail,
       })
+
       const res = await fetch(
-        `${
-          process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE
-        }/api/payments/payfast/subscription-url?${params.toString()}`,
-        {
-          credentials: 'include',
-        },
+        `${apiBase}/api/payments/payfast/subscription-url?${params.toString()}`,
+        { credentials: 'include' },
       )
-      const url = await res.text()
-      // Dispatch Redux action to update user/business context after payment initiation
-      // You should implement an action like updateUserPlanType or updateBusinessStatus in your authSlice/store
-      // Example:
-      // dispatch(updateUserPlanType({ planType }))
-      // If business is created, dispatch(updateBusinessStatus(...))
-      window.location.href = url
+
+      const data = await res.json()
+      // Handle error responses first
+      if (data && data.error) {
+        alert('Failed to create subscription URL: ' + data.error)
+        return
+      }
+      // Prefer explicit redirect fields, then success flag
+      if (data && (data.redirectUrl || data.url)) {
+        window.location.href = data.redirectUrl || data.url
+        return
+      }
+      if (data && data.success) {
+        router.push('/dashboard')
+        return
+      }
+
+      throw new Error(
+        'Unexpected response from subscription-url endpoint: ' +
+          JSON.stringify(data),
+      )
     } catch (e) {
       alert(
         'Failed to initiate payment. Please try again. ' + (e as Error).message,
@@ -185,7 +382,7 @@ export default function SubscriptionsPage() {
           const isPaid = tier.name !== 'Free User'
           const tierPlanTypeMap: Record<string, string> = {
             'Free User': 'FREE_USER',
-            'Verified User': 'VERIFIED_USER',
+            'Seller +': 'SELLER_PLUS',
             Reseller: 'RESELLER',
             'Pro Store': 'PRO_STORE',
           }
@@ -195,7 +392,7 @@ export default function SubscriptionsPage() {
             : userPlanType
           const planOrder = [
             'FREE_USER',
-            'VERIFIED_USER',
+            'SELLER_PLUS',
             'RESELLER',
             'PRO_STORE',
           ]

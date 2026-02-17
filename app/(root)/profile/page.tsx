@@ -26,6 +26,7 @@ import {
   ShieldCheck,
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { Spinner } from '@/components/ui/spinner'
 import {
   Tooltip,
   TooltipContent,
@@ -52,6 +53,7 @@ export default function Profile() {
   const [editing, setEditing] = useState(false)
   const [hovered, setHovered] = useState(false)
   const [usernameCheckLoading, setUsernameCheckLoading] = useState(false)
+  const [profileImageLoading, setProfileImageLoading] = useState(false)
   const dispatch = useDispatch<AppDispatch>()
   const user = useSelector((state: RootState) => state.userContext)
   const userContext = useSelector((state: RootState) => state.userContext)
@@ -162,6 +164,7 @@ export default function Profile() {
 
     const xsrfToken = getCookie('XSRF-TOKEN')
 
+    setProfileImageLoading(true)
     try {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE}/api/users/upload-profile-image`,
@@ -188,6 +191,8 @@ export default function Profile() {
     } catch (err) {
       toast.error('Upload failed. Please try again.')
       console.error(err)
+    } finally {
+      setProfileImageLoading(false)
     }
   }
 
@@ -228,6 +233,11 @@ export default function Profile() {
             </div>{' '}
             <div className='relative flex justify-center items-center w-full mb-3'>
               <label className='relative w-[140px] h-[140px] cursor-pointer'>
+                {profileImageLoading && (
+                  <div className='absolute inset-0 flex justify-center items-center bg-black bg-opacity-50 rounded-full z-20'>
+                    <Spinner />
+                  </div>
+                )}
                 {user && user.profileImageUrl ? (
                   <Image
                     src={generateImageUrl(user.profileImageUrl)}
@@ -248,6 +258,7 @@ export default function Profile() {
                 <input
                   type='file'
                   accept='image/*'
+                  disabled={profileImageLoading}
                   className='hidden'
                   onChange={handleFileChange}
                 />

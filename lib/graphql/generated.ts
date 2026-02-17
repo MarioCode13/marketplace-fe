@@ -479,7 +479,7 @@ export type Notification = {
 export enum PlanType {
   ProStore = 'PRO_STORE',
   Reseller = 'RESELLER',
-  VerifiedUser = 'VERIFIED_USER'
+  SellerPlus = 'SELLER_PLUS'
 }
 
 export type ProfileCompletion = {
