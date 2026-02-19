@@ -120,7 +120,7 @@ export default function SubscriptionsPage() {
     let recurringAmount = '0.00'
     let planType = ''
 
-    if (tier.name === 'Seller +') {
+    if (tier.name === 'User +' || tier.name === 'Seller +') {
       recurringAmount = '49.00'
       planType = 'seller_plus'
     }
@@ -235,7 +235,7 @@ export default function SubscriptionsPage() {
                 return
               }
               if (data.success) {
-                router.push('/dashboard')
+                router.push('/')
                 return
               }
               if (data.url || data.redirectUrl) {
@@ -277,7 +277,7 @@ export default function SubscriptionsPage() {
 
         // If the response is empty but successful (204 or empty 2xx), treat as activated
         if (res.status === 204 || (res.ok && !text.trim())) {
-          router.push('/dashboard')
+          router.push('/')
           return
         }
 
@@ -289,7 +289,7 @@ export default function SubscriptionsPage() {
             return
           }
           if (data.success) {
-            router.push('/dashboard')
+            router.push('/')
             return
           }
           if (data.url || data.redirectUrl) {
@@ -347,7 +347,7 @@ export default function SubscriptionsPage() {
         return
       }
       if (data && data.success) {
-        router.push('/dashboard')
+        router.push('/')
         return
       }
 
@@ -382,14 +382,20 @@ export default function SubscriptionsPage() {
           const isPaid = tier.name !== 'Free User'
           const tierPlanTypeMap: Record<string, string> = {
             'Free User': 'FREE_USER',
+            'User +': 'SELLER_PLUS',
             'Seller +': 'SELLER_PLUS',
             Reseller: 'RESELLER',
             'Pro Store': 'PRO_STORE',
           }
           const tierPlanType = tierPlanTypeMap[tier.name] || ''
-          const currentPlanType = userContext.businessId
+          // Prefer business plan only when the user is actually a business user
+          let currentPlanType = userContext.isBusinessUser
             ? businessPlanType
             : userPlanType
+          // If logged in but no planType is set, treat as FREE_USER so UI enables upgrades
+          if (isLoggedIn && !currentPlanType) {
+            currentPlanType = 'FREE_USER'
+          }
           const planOrder = [
             'FREE_USER',
             'SELLER_PLUS',
@@ -427,7 +433,8 @@ export default function SubscriptionsPage() {
               tooltipText =
                 'You are on a higher plan. Downgrades to Free are not supported.'
             } else {
-              isDisabled = true
+              // For logged-in free users, allow upgrading to paid tiers
+              isDisabled = false
               buttonText = 'Upgrade'
               tooltipText = 'Upgrade to a paid plan for more features.'
             }
