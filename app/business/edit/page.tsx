@@ -78,6 +78,8 @@ export default function BusinessEditPage() {
     addressLine2: '',
     postalCode: '',
     slug: '',
+    cipcRegistrationNo: '',
+    cipcBusinessName: '',
   })
 
   const [slugWarning, setSlugWarning] = useState<string | null>(null)
@@ -171,6 +173,8 @@ export default function BusinessEditPage() {
         addressLine2: business.addressLine2 || '',
         postalCode: business.postalCode || '',
         slug: business.slug || '',
+        cipcRegistrationNo: business.cipcRegistrationNo || '',
+        cipcBusinessName: business.cipcBusinessName || '',
       })
       // If business has an existing slug, mark it as valid
       if (business.slug) {
@@ -283,6 +287,17 @@ export default function BusinessEditPage() {
       return
     }
 
+    // Require CIPC registration details before allowing verification
+    if (
+      !businessForm.cipcRegistrationNo?.trim() ||
+      !businessForm.cipcBusinessName?.trim()
+    ) {
+      toast.error(
+        'Please provide your CIPC registration number and registered business name before verifying.'
+      )
+      return
+    }
+
     setVerifyingBusiness(true)
     try {
       const res = await fetch(
@@ -343,9 +358,16 @@ export default function BusinessEditPage() {
           businessForm.contactNumber !== (business.contactNumber || '') ||
           businessForm.addressLine1 !== (business.addressLine1 || '') ||
           businessForm.addressLine2 !== (business.addressLine2 || '') ||
-          businessForm.postalCode !== (business.postalCode || '')
+          businessForm.postalCode !== (business.postalCode || '') ||
+          businessForm.cipcRegistrationNo !==
+            (business.cipcRegistrationNo || '') ||
+          businessForm.cipcBusinessName !==
+            (business.cipcBusinessName || '')
 
-        if (businessChanged || businessForm.slug !== (business.slug || '')) {
+        if (
+          businessChanged ||
+          businessForm.slug !== (business.slug || '')
+        ) {
           const { data: updated } = await updateBusiness({
             variables: {
               input: {
@@ -356,6 +378,8 @@ export default function BusinessEditPage() {
                 addressLine2: businessForm.addressLine2,
                 postalCode: businessForm.postalCode,
                 slug: businessForm.slug,
+                cipcRegistrationNo: businessForm.cipcRegistrationNo,
+                cipcBusinessName: businessForm.cipcBusinessName,
               },
             },
           })
@@ -573,8 +597,44 @@ export default function BusinessEditPage() {
                   name='postalCode'
                   value={businessForm.postalCode}
                   onChange={handleBusinessChange}
-                  disabled={!canEditBusiness}
+                  disabled={
+                    !canEditBusiness ||
+                    !!business.trustRating?.verifiedWithThirdParty
+                  }
                   placeholder='Enter postal code'
+                />
+              </div>
+            </div>
+
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+              <div>
+                <label className='block font-medium mb-1'>
+                  CIPC Registration Number
+                </label>
+                <Input
+                  name='cipcRegistrationNo'
+                  value={businessForm.cipcRegistrationNo}
+                  onChange={handleBusinessChange}
+                  disabled={
+                    !canEditBusiness ||
+                    !!business.trustRating?.verifiedWithThirdParty
+                  }
+                  placeholder='e.g. K2045/567017/07'
+                />
+              </div>
+              <div>
+                <label className='block font-medium mb-1'>
+                  Registered Business Name (CIPC)
+                </label>
+                <Input
+                  name='cipcBusinessName'
+                  value={businessForm.cipcBusinessName}
+                  onChange={handleBusinessChange}
+                  disabled={
+                    !canEditBusiness ||
+                    !!business.trustRating?.verifiedWithThirdParty
+                  }
+                  placeholder='e.g. TEST COMPANY (PTY) LTD'
                 />
               </div>
             </div>

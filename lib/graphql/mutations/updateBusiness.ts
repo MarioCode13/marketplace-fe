@@ -10,6 +10,8 @@ export const UPDATE_BUSINESS = gql`
       addressLine1
       addressLine2
       postalCode
+      cipcRegistrationNo
+      cipcBusinessName
     }
   }
 `

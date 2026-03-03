@@ -11,6 +11,8 @@ export const GET_BUSINESS_BY_ID = gql`
       addressLine1
       addressLine2
       postalCode
+      cipcRegistrationNo
+      cipcBusinessName
       planType
       trustRating{
         verifiedWithThirdParty
