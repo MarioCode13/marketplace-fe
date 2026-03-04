@@ -36,6 +36,7 @@ import {
 import { TrustRatingDisplay } from '@/components/TrustRatingDisplay'
 import { generateImageUrl } from '@/lib/utils'
 import { CHECK_USERNAME_AVAILABLE } from '@/lib/graphql/mutations/authMutations'
+import { checkImageContent } from '@/lib/utils/contentModeration'
 
 const UPDATE_PROFILE = gql`
   mutation UpdateProfile($id: ID!, $username: String!, $email: String!) {
@@ -166,6 +167,17 @@ export default function Profile() {
 
     setProfileImageLoading(true)
     try {
+      // Check for explicit content
+      const contentCheck = await checkImageContent(file)
+      if (contentCheck.isExplicit) {
+        toast.error(
+          contentCheck.reason ||
+            'Image contains explicit content and cannot be uploaded',
+        )
+        setProfileImageLoading(false)
+        return
+      }
+
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE}/api/users/upload-profile-image`,
         {

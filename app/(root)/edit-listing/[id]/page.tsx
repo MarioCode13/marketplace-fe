@@ -38,6 +38,7 @@ import CategoryCascader, {
 import { buildCategoryTree, FlatCategory, formatEnum } from '@/lib/utils'
 import CityAutocomplete from '@/components/drawers/CityAutocomplete'
 import { listingSchema, type ListingFormData } from '@/lib/validation'
+import { checkImageContent } from '@/lib/utils/contentModeration'
 
 export default function EditListingPage() {
   const router = useRouter()
@@ -183,6 +184,17 @@ export default function EditListingPage() {
     const xsrfToken = getCookie('XSRF-TOKEN')
 
     try {
+      // Check for explicit content
+      const contentCheck = await checkImageContent(file)
+      if (contentCheck.isExplicit) {
+        toast.error(
+          contentCheck.reason ||
+            'Image contains explicit content and cannot be uploaded',
+        )
+        setUploading(false)
+        return
+      }
+
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE}/api/listings/upload-images`,
         {

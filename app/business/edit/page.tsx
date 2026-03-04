@@ -31,6 +31,7 @@ import PreviewModal from '@/components/modals/PreviewModal'
 import Link from 'next/link'
 import AddTeamMember from './AddTeamMember'
 import OmnicheckTermsModal from '@/components/modals/OmnicheckTermsModal'
+import { checkImageContent } from '@/lib/utils/contentModeration'
 
 export default function BusinessEditPage() {
   const router = useRouter()
@@ -63,7 +64,7 @@ export default function BusinessEditPage() {
 
   // Get current user's role in the business
   const currentUserBusinessRole = business?.businessUsers?.find(
-    (bu: BusinessUser) => bu.user.id === userId
+    (bu: BusinessUser) => bu.user.id === userId,
   )?.role
 
   const canEditBusiness = currentUserBusinessRole === 'OWNER'
@@ -129,7 +130,7 @@ export default function BusinessEditPage() {
   const [showPreview, setShowPreview] = useState(false)
   const [showTermsModal, setShowTermsModal] = useState(false)
   const [updateStoreBranding, { loading: brandingSaving }] = useMutation(
-    UPDATE_STORE_BRANDING
+    UPDATE_STORE_BRANDING,
   )
   const [updateBusiness, { loading: businessSaving }] =
     useMutation(UPDATE_BUSINESS)
@@ -139,7 +140,7 @@ export default function BusinessEditPage() {
   const [uploadingBanner, setUploadingBanner] = useState(false)
   const [uploadLogoError, setUploadLogoError] = useState<string | null>(null)
   const [uploadBannerError, setUploadBannerError] = useState<string | null>(
-    null
+    null,
   )
   const [verifyingBusiness, setVerifyingBusiness] = useState(false)
 
@@ -185,7 +186,7 @@ export default function BusinessEditPage() {
   }, [business])
 
   const handleChange = async (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     setForm({ ...form, [e.target.name]: e.target.value })
   }
@@ -199,7 +200,7 @@ export default function BusinessEditPage() {
   }
 
   const handleBusinessChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target
     setBusinessForm({ ...businessForm, [name]: value })
@@ -221,16 +222,28 @@ export default function BusinessEditPage() {
     if (e.target.files && e.target.files[0]) {
       setUploadingLogo(true)
       setUploadLogoError(null)
+      const file = e.target.files[0]
       const formData = new FormData()
-      formData.append('image', e.target.files[0])
+      formData.append('image', file)
       try {
+        // Check for explicit content
+        const contentCheck = await checkImageContent(file)
+        if (contentCheck.isExplicit) {
+          toast.error(
+            contentCheck.reason ||
+              'Image contains explicit content and cannot be uploaded',
+          )
+          setUploadingLogo(false)
+          return
+        }
+
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_API_BASE}/api/store/upload-logo`,
           {
             method: 'POST',
             body: formData,
             credentials: 'include', // Send cookies for authentication
-          }
+          },
         )
         if (!res.ok) throw new Error('Failed to upload logo')
         const url = await res.text()
@@ -247,16 +260,28 @@ export default function BusinessEditPage() {
     if (e.target.files && e.target.files[0]) {
       setUploadingBanner(true)
       setUploadBannerError(null)
+      const file = e.target.files[0]
       const formData = new FormData()
-      formData.append('image', e.target.files[0])
+      formData.append('image', file)
       try {
+        // Check for explicit content
+        const contentCheck = await checkImageContent(file)
+        if (contentCheck.isExplicit) {
+          toast.error(
+            contentCheck.reason ||
+              'Image contains explicit content and cannot be uploaded',
+          )
+          setUploadingBanner(false)
+          return
+        }
+
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_API_BASE}/api/store/upload-banner`,
           {
             method: 'POST',
             body: formData,
             credentials: 'include', // Send cookies for authentication
-          }
+          },
         )
         if (!res.ok) throw new Error('Failed to upload banner')
         toast.success('Image uploaded successfully!')
@@ -264,7 +289,7 @@ export default function BusinessEditPage() {
         setForm((prev) => ({ ...prev, bannerUrl: url }))
       } catch (err: unknown) {
         setUploadBannerError(
-          err instanceof Error ? err.message : 'Upload failed'
+          err instanceof Error ? err.message : 'Upload failed',
         )
         toast.error('Image upload failed: ' + err)
       } finally {
@@ -282,7 +307,7 @@ export default function BusinessEditPage() {
 
     if (!business?.name || business.name.trim() === '') {
       toast.error(
-        'Business name is required for verification. Please update your business name first.'
+        'Business name is required for verification. Please update your business name first.',
       )
       return
     }
@@ -293,7 +318,7 @@ export default function BusinessEditPage() {
       !businessForm.cipcBusinessName?.trim()
     ) {
       toast.error(
-        'Please provide your CIPC registration number and registered business name before verifying.'
+        'Please provide your CIPC registration number and registered business name before verifying.',
       )
       return
     }
@@ -307,7 +332,7 @@ export default function BusinessEditPage() {
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ businessId: business.id }),
-        }
+        },
       )
 
       const data = await res.json()
@@ -323,13 +348,13 @@ export default function BusinessEditPage() {
       } else {
         toast.error(
           data.error ||
-            'Business verification failed. Please check your business name and try again.'
+            'Business verification failed. Please check your business name and try again.',
         )
       }
     } catch (err) {
       toast.error(
         'Business verification failed: ' +
-          (err instanceof Error ? err.message : 'Unknown error')
+          (err instanceof Error ? err.message : 'Unknown error'),
       )
     } finally {
       setVerifyingBusiness(false)
@@ -361,13 +386,9 @@ export default function BusinessEditPage() {
           businessForm.postalCode !== (business.postalCode || '') ||
           businessForm.cipcRegistrationNo !==
             (business.cipcRegistrationNo || '') ||
-          businessForm.cipcBusinessName !==
-            (business.cipcBusinessName || '')
+          businessForm.cipcBusinessName !== (business.cipcBusinessName || '')
 
-        if (
-          businessChanged ||
-          businessForm.slug !== (business.slug || '')
-        ) {
+        if (businessChanged || businessForm.slug !== (business.slug || '')) {
           const { data: updated } = await updateBusiness({
             variables: {
               input: {
@@ -427,7 +448,7 @@ export default function BusinessEditPage() {
       router.push(redirectUrl)
     } catch (error) {
       toast.error(
-        'Failed to save changes. Please try again. ' + (error as Error).message
+        'Failed to save changes. Please try again. ' + (error as Error).message,
       )
     }
   }
@@ -485,10 +506,10 @@ export default function BusinessEditPage() {
                   {planType === 'PRO_STORE'
                     ? 'Pro Store'
                     : planType === 'RESELLER'
-                    ? 'Reseller'
-                    : planType
-                    ? planType
-                    : 'Free'}
+                      ? 'Reseller'
+                      : planType
+                        ? planType
+                        : 'Free'}
                 </strong>
                 {canEditBusiness && planType !== 'PRO_STORE' && (
                   <Button

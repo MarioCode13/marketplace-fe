@@ -36,6 +36,7 @@ import CategoryCascader, {
 } from '@/components/drawers/CategoryCascader'
 import { buildCategoryTree, FlatCategory, formatEnum } from '@/lib/utils'
 import { listingSchema, type ListingFormData } from '@/lib/validation'
+import { checkImageContent } from '@/lib/utils/contentModeration'
 
 const CREATE_LISTING = gql`
   mutation CreateListing(
@@ -162,6 +163,17 @@ export default function SellPage() {
     formData.append('images', file)
 
     try {
+      // Check for explicit content
+      const contentCheck = await checkImageContent(file)
+      if (contentCheck.isExplicit) {
+        toast.error(
+          contentCheck.reason ||
+            'Image contains explicit content and cannot be uploaded',
+        )
+        setUploading(false)
+        return
+      }
+
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE}/api/listings/upload-images`,
         {
