@@ -17,6 +17,14 @@ export type Scalars = {
   Float: { input: number; output: number; }
 };
 
+export type ApprovalDashboardStats = {
+  __typename?: 'ApprovalDashboardStats';
+  pendingFlaggedSlugs: Scalars['Int']['output'];
+  pendingNsfwApprovals: Scalars['Int']['output'];
+  pendingSlugApprovals: Scalars['Int']['output'];
+  totalPendingApprovals: Scalars['Int']['output'];
+};
+
 export type AuthResponse = {
   __typename?: 'AuthResponse';
   email: Scalars['String']['output'];
@@ -36,15 +44,9 @@ export type Business = {
   addressLine2?: Maybe<Scalars['String']['output']>;
   businessType?: Maybe<Scalars['String']['output']>;
   businessUsers: Array<BusinessUser>;
-  /**
-   * 
-   * Registered business name as per CIPC (optional, user-supplied or populated from Omnicheck).
-   */
+  /** Registered business name as per CIPC (optional, user-supplied or populated from Omnicheck). */
   cipcBusinessName?: Maybe<Scalars['String']['output']>;
-  /**
-   * 
-   * CIPC registration number for this business (optional, user-supplied or populated from Omnicheck).
-   */
+  /** CIPC registration number for this business (optional, user-supplied or populated from Omnicheck). */
   cipcRegistrationNo?: Maybe<Scalars['String']['output']>;
   city?: Maybe<City>;
   contactNumber?: Maybe<Scalars['String']['output']>;
@@ -107,6 +109,31 @@ export enum Condition {
   New = 'NEW'
 }
 
+export type ContentApprovalQueueItem = {
+  __typename?: 'ContentApprovalQueueItem';
+  approvalNotes?: Maybe<Scalars['String']['output']>;
+  createdAt: Scalars['String']['output'];
+  flagType: ContentFlagType;
+  flaggedData?: Maybe<Scalars['String']['output']>;
+  id: Scalars['ID']['output'];
+  listing: Listing;
+  reviewedAt?: Maybe<Scalars['String']['output']>;
+  reviewedBy?: Maybe<User>;
+  status: ContentApprovalStatus;
+  updatedAt: Scalars['String']['output'];
+};
+
+export enum ContentApprovalStatus {
+  Approved = 'APPROVED',
+  Declined = 'DECLINED',
+  Pending = 'PENDING'
+}
+
+export enum ContentFlagType {
+  NsfwImage = 'NSFW_IMAGE',
+  ProblematicSlug = 'PROBLEMATIC_SLUG'
+}
+
 /**
  *  Canonical GraphQL definitions for location types.
  *  If any other .graphqls files define Country, Region or City, convert them to "extend type"
@@ -153,10 +180,7 @@ export type CreateSubscriptionInput = {
   planType: PlanType;
   stripeCustomerId?: InputMaybe<Scalars['String']['input']>;
   stripeSubscriptionId?: InputMaybe<Scalars['String']['input']>;
-  /**
-   * 
-   * Either userId or businessId must be provided, but not both.
-   */
+  /** Either userId or businessId must be provided, but not both. */
   userId?: InputMaybe<Scalars['ID']['input']>;
 };
 
@@ -169,6 +193,35 @@ export enum DocumentType {
   ProfilePhoto = 'PROFILE_PHOTO',
   ProofOfAddress = 'PROOF_OF_ADDRESS',
   TaxClearance = 'TAX_CLEARANCE'
+}
+
+export type FlaggedSlug = {
+  __typename?: 'FlaggedSlug';
+  business: Business;
+  createdAt: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  reason: Scalars['String']['output'];
+  reviewNotes?: Maybe<Scalars['String']['output']>;
+  reviewedAt?: Maybe<Scalars['String']['output']>;
+  reviewedBy?: Maybe<User>;
+  slug: Scalars['String']['output'];
+  status: FlaggedSlugStatus;
+  updatedAt: Scalars['String']['output'];
+};
+
+export type FlaggedSlugPage = {
+  __typename?: 'FlaggedSlugPage';
+  hasNextPage: Scalars['Boolean']['output'];
+  items: Array<FlaggedSlug>;
+  pageNumber: Scalars['Int']['output'];
+  pageSize: Scalars['Int']['output'];
+  totalCount: Scalars['Int']['output'];
+};
+
+export enum FlaggedSlugStatus {
+  Approved = 'APPROVED',
+  Pending = 'PENDING',
+  Rejected = 'REJECTED'
 }
 
 export type Invitation = {
@@ -197,6 +250,15 @@ export type Listing = {
   expiresAt: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   images: Array<Scalars['String']['output']>;
+  nsfwApprovalStatus?: Maybe<ContentApprovalStatus>;
+  /**
+   *  Added
+   *  NSFW Content Fields
+   */
+  nsfwFlagged: Scalars['Boolean']['output'];
+  nsfwReviewNotes?: Maybe<Scalars['String']['output']>;
+  nsfwReviewedAt?: Maybe<Scalars['String']['output']>;
+  nsfwReviewedBy?: Maybe<User>;
   price: Scalars['Float']['output'];
   quantity: Scalars['Int']['output'];
   sold: Scalars['Boolean']['output'];
@@ -214,6 +276,9 @@ export type Mutation = {
   __typename?: 'Mutation';
   acceptBusinessInvitation: Scalars['Boolean']['output'];
   acceptInvitation: Invitation;
+  approveFlaggedSlug: FlaggedSlug;
+  /**  Admin NSFW Content Approval Mutations */
+  approveListing: ContentApprovalQueueItem;
   cancelSubscription: Subscription;
   cancelTransaction: Transaction;
   completeTransaction: Transaction;
@@ -225,6 +290,7 @@ export type Mutation = {
   createTransaction: Transaction;
   declineBusinessInvitation: Scalars['Boolean']['output'];
   declineInvitation: Invitation;
+  declineListing: ContentApprovalQueueItem;
   deleteBusinessVerificationDocument: Scalars['Boolean']['output'];
   deleteListing: Scalars['Boolean']['output'];
   deleteReview: Scalars['Boolean']['output'];
@@ -234,11 +300,13 @@ export type Mutation = {
   markNotificationRead: Scalars['Boolean']['output'];
   reactivateSubscription: Subscription;
   register: AuthResponse;
+  rejectFlaggedSlug: FlaggedSlug;
   sendInvitation: Invitation;
   transferBusinessOwnership: Scalars['Boolean']['output'];
   unlinkUserFromBusiness: Scalars['Boolean']['output'];
   updateBusiness?: Maybe<Business>;
   updateBusinessAndBranding?: Maybe<Business>;
+  updateExplicitContentPreference: User;
   updateListing: Listing;
   updateListingDescription: Listing;
   updateListingPrice: Listing;
@@ -249,6 +317,8 @@ export type Mutation = {
   updateUserPlanType?: Maybe<User>;
   uploadBusinessVerificationDocument: VerificationDocument;
   uploadListingImage: Scalars['String']['output'];
+  /**  User NSFW Preference Mutations */
+  verifyUserAge: User;
 };
 
 
@@ -259,6 +329,18 @@ export type MutationAcceptBusinessInvitationArgs = {
 
 export type MutationAcceptInvitationArgs = {
   invitationId: Scalars['ID']['input'];
+};
+
+
+export type MutationApproveFlaggedSlugArgs = {
+  approvalNotes?: InputMaybe<Scalars['String']['input']>;
+  flaggedSlugId: Scalars['ID']['input'];
+};
+
+
+export type MutationApproveListingArgs = {
+  approvalNotes?: InputMaybe<Scalars['String']['input']>;
+  approvalQueueId: Scalars['ID']['input'];
 };
 
 
@@ -331,6 +413,12 @@ export type MutationDeclineInvitationArgs = {
 };
 
 
+export type MutationDeclineListingArgs = {
+  approvalQueueId: Scalars['ID']['input'];
+  declineReason: Scalars['String']['input'];
+};
+
+
 export type MutationDeleteBusinessVerificationDocumentArgs = {
   businessId: Scalars['ID']['input'];
   documentId: Scalars['ID']['input'];
@@ -377,6 +465,12 @@ export type MutationRegisterArgs = {
 };
 
 
+export type MutationRejectFlaggedSlugArgs = {
+  flaggedSlugId: Scalars['ID']['input'];
+  rejectionReason: Scalars['String']['input'];
+};
+
+
 export type MutationSendInvitationArgs = {
   businessId: Scalars['ID']['input'];
   recipientEmail: Scalars['String']['input'];
@@ -404,6 +498,11 @@ export type MutationUpdateBusinessArgs = {
 export type MutationUpdateBusinessAndBrandingArgs = {
   branding?: InputMaybe<UpdateStoreBrandingInput>;
   business: UpdateBusinessInput;
+};
+
+
+export type MutationUpdateExplicitContentPreferenceArgs = {
+  allowExplicit: Scalars['Boolean']['input'];
 };
 
 
@@ -474,6 +573,20 @@ export type MutationUploadListingImageArgs = {
   image: Scalars['String']['input'];
 };
 
+
+export type MutationVerifyUserAgeArgs = {
+  dateOfBirth: Scalars['String']['input'];
+};
+
+export type NsfwContentPage = {
+  __typename?: 'NSFWContentPage';
+  hasNextPage: Scalars['Boolean']['output'];
+  items: Array<ContentApprovalQueueItem>;
+  pageNumber: Scalars['Int']['output'];
+  pageSize: Scalars['Int']['output'];
+  totalCount: Scalars['Int']['output'];
+};
+
 export type Notification = {
   __typename?: 'Notification';
   actionRequired: Scalars['Boolean']['output'];
@@ -516,7 +629,11 @@ export type Query = {
   businessTrustRating?: Maybe<BusinessTrustRating>;
   canContactSellers: Scalars['Boolean']['output'];
   checkUsernameAvailable: Scalars['Boolean']['output'];
+  getAdminDashboardStats: ApprovalDashboardStats;
   getAllUsers: Array<User>;
+  getApprovalQueueItem?: Maybe<ContentApprovalQueueItem>;
+  getApprovalsByType: NsfwContentPage;
+  getApprovalsForListing: Array<ContentApprovalQueueItem>;
   getAvailablePlans: Array<Scalars['String']['output']>;
   getBusinessBySlug?: Maybe<Business>;
   getBusinessDocumentByType?: Maybe<VerificationDocument>;
@@ -529,10 +646,15 @@ export type Query = {
   getCategoryById?: Maybe<Category>;
   getConditions?: Maybe<Array<Maybe<Condition>>>;
   getExpiringSubscriptions: Array<Subscription>;
+  getFlaggedSlug?: Maybe<FlaggedSlug>;
+  getFlaggedSlugsByStatus: FlaggedSlugPage;
   getListingById?: Maybe<Listing>;
   getListingTransactions: Array<Transaction>;
   getListings: ListingPageResponse;
   getMyReviewForTransaction?: Maybe<Review>;
+  /**  Admin NSFW Content Approval Queries */
+  getPendingApprovals: NsfwContentPage;
+  getPendingFlaggedSlugs: FlaggedSlugPage;
   getProfileImage?: Maybe<Scalars['String']['output']>;
   getRecentUserReviews: Array<Review>;
   getReview: Review;
@@ -597,6 +719,24 @@ export type QueryCheckUsernameAvailableArgs = {
 };
 
 
+export type QueryGetApprovalQueueItemArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryGetApprovalsByTypeArgs = {
+  flagType: ContentFlagType;
+  page?: InputMaybe<Scalars['Int']['input']>;
+  size?: InputMaybe<Scalars['Int']['input']>;
+  status?: InputMaybe<ContentApprovalStatus>;
+};
+
+
+export type QueryGetApprovalsForListingArgs = {
+  listingId: Scalars['ID']['input'];
+};
+
+
 export type QueryGetBusinessBySlugArgs = {
   slug: Scalars['String']['input'];
 };
@@ -638,6 +778,18 @@ export type QueryGetExpiringSubscriptionsArgs = {
 };
 
 
+export type QueryGetFlaggedSlugArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryGetFlaggedSlugsByStatusArgs = {
+  page?: InputMaybe<Scalars['Int']['input']>;
+  size?: InputMaybe<Scalars['Int']['input']>;
+  status: FlaggedSlugStatus;
+};
+
+
 export type QueryGetListingByIdArgs = {
   id: Scalars['ID']['input'];
 };
@@ -670,6 +822,18 @@ export type QueryGetListingsArgs = {
 
 export type QueryGetMyReviewForTransactionArgs = {
   transactionId: Scalars['ID']['input'];
+};
+
+
+export type QueryGetPendingApprovalsArgs = {
+  page?: InputMaybe<Scalars['Int']['input']>;
+  size?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+export type QueryGetPendingFlaggedSlugsArgs = {
+  page?: InputMaybe<Scalars['Int']['input']>;
+  size?: InputMaybe<Scalars['Int']['input']>;
 };
 
 
@@ -834,7 +998,6 @@ export type Review = {
   comment?: Maybe<Scalars['String']['output']>;
   createdAt: Scalars['String']['output'];
   /**
-   * 
    * A review in a transaction. Both buyer and seller can review each other.
    * The reviewer is the party leaving the review, and reviewedUser is the other party being reviewed.
    */
@@ -998,22 +1161,23 @@ export type UpdateStoreBrandingInput = {
 
 export type User = {
   __typename?: 'User';
+  ageVerified: Scalars['Boolean']['output'];
+  allowsExplicitContent: Scalars['Boolean']['output'];
   bio?: Maybe<Scalars['String']['output']>;
   business?: Maybe<Business>;
   city?: Maybe<City>;
   contactNumber?: Maybe<Scalars['String']['output']>;
   createdAt: Scalars['String']['output'];
   customCity?: Maybe<Scalars['String']['output']>;
+  /**  Age Verification & NSFW Content Fields */
+  dateOfBirth?: Maybe<Scalars['String']['output']>;
   email?: Maybe<Scalars['String']['output']>;
   firstName?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
   idNumber?: Maybe<Scalars['String']['output']>;
   lastName?: Maybe<Scalars['String']['output']>;
   listings: Array<Listing>;
-  /**
-   * 
-   * Computed from the user's active subscription. Not stored on the user.
-   */
+  /** Computed from the user's active subscription. Not stored on the user. */
   planType?: Maybe<PlanType>;
   profileCompletion?: Maybe<ProfileCompletion>;
   profileImageUrl?: Maybe<Scalars['String']['output']>;

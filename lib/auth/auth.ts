@@ -3,7 +3,7 @@ import { jwtDecode } from 'jwt-decode'
 export interface DecodedToken {
     id: string
     username: string
-    role: 'VISITOR' | 'HAS_ACCOUNT' | 'SUBSCRIBED'
+    role: 'VISITOR' | 'HAS_ACCOUNT' | 'SUBSCRIBED' | 'ADMIN'
     exp: number
     userId: string
 }

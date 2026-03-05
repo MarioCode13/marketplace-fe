@@ -43,6 +43,7 @@ export default function Navbar() {
   const isStoreUser =
     user?.planType === 'RESELLER' || user?.planType === 'PRO_STORE'
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const isAdmin = user?.role === 'ADMIN'
 
   const handleLogout = async () => {
     console.log('Dispatching logoutUser')
@@ -80,6 +81,16 @@ export default function Navbar() {
               Browse
             </Link>
           </li>
+          {isLoggedIn && isAdmin && (
+            <li>
+              <Link
+                href='/admin/approvals'
+                className='hover:text-primary transition'
+              >
+                Admin
+              </Link>
+            </li>
+          )}
           {isLoggedIn && isStoreUser && businessData?.myBusiness ? (
             <li>
               <Link
@@ -248,6 +259,17 @@ export default function Navbar() {
                 Browse
               </Link>
             </li>
+            {isLoggedIn && isAdmin && (
+              <li>
+                <Link
+                  href='/admin/approvals'
+                  onClick={() => setDrawerOpen(false)}
+                  className='hover:text-primary transition'
+                >
+                  Admin
+                </Link>
+              </li>
+            )}
             {isStoreUser && businessData?.myBusiness?.slug && (
               <li>
                 <Link

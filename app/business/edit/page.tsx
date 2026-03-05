@@ -93,11 +93,26 @@ export default function BusinessEditPage() {
     fetchPolicy: 'network-only',
     onCompleted: (data) => {
       const result = data?.validateSlug
-      if (result?.status === 'APPROVED') {
+      if (!result) {
+        setSlugWarning('Error validating slug.')
+        setSlugValid(false)
+        setSlugLoading(false)
+        return
+      }
+
+      if (result.status === 'APPROVED') {
         setSlugWarning(null)
         setSlugValid(true)
+      } else if (result.status === 'PENDING') {
+        // Slug requires admin approval but can be saved
+        setSlugWarning(
+          result.message ||
+            'This slug is pending admin approval. You can save your changes, but the store URL may not be active until it is approved.',
+        )
+        setSlugValid(true)
       } else {
-        setSlugWarning(result?.message || 'This slug is not available.')
+        // REJECTED or any other non-approvable status
+        setSlugWarning(result.message || 'This slug is not available.')
         setSlugValid(false)
       }
       setSlugLoading(false)
