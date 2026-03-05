@@ -264,7 +264,7 @@
           },
           {
             "name": "cipcBusinessName",
-            "description": "Registered business name as per CIPC (optional, user-supplied or populated from Omnicheck).",
+            "description": "\r\nRegistered business name as per CIPC (optional, user-supplied or populated from Omnicheck).\r",
             "args": [],
             "type": {
               "kind": "SCALAR",
@@ -276,7 +276,7 @@
           },
           {
             "name": "cipcRegistrationNo",
-            "description": "CIPC registration number for this business (optional, user-supplied or populated from Omnicheck).",
+            "description": "\r\nCIPC registration number for this business (optional, user-supplied or populated from Omnicheck).\r",
             "args": [],
             "type": {
               "kind": "SCALAR",
@@ -1477,7 +1477,7 @@
           },
           {
             "name": "userId",
-            "description": "Either userId or businessId must be provided, but not both.",
+            "description": "\r\nEither userId or businessId must be provided, but not both.\r",
             "type": {
               "kind": "SCALAR",
               "name": "ID",
@@ -2826,6 +2826,18 @@
                 "deprecationReason": null
               },
               {
+                "name": "nsfwFlagged",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "Boolean",
+                  "ofType": null
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              },
+              {
                 "name": "price",
                 "description": null,
                 "type": {
@@ -2847,6 +2859,18 @@
                 "type": {
                   "kind": "SCALAR",
                   "name": "Int",
+                  "ofType": null
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              },
+              {
+                "name": "sellerMarked18Plus",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "Boolean",
                   "ofType": null
                 },
                 "defaultValue": null,
@@ -7578,7 +7602,7 @@
           },
           {
             "name": "id",
-            "description": "A review in a transaction. Both buyer and seller can review each other.\nThe reviewer is the party leaving the review, and reviewedUser is the other party being reviewed.",
+            "description": "\r\nA review in a transaction. Both buyer and seller can review each other.\r\nThe reviewer is the party leaving the review, and reviewedUser is the other party being reviewed.\r",
             "args": [],
             "type": {
               "kind": "NON_NULL",
@@ -9419,7 +9443,7 @@
           },
           {
             "name": "planType",
-            "description": "Computed from the user's active subscription. Not stored on the user.",
+            "description": "\r\nComputed from the user's active subscription. Not stored on the user.\r",
             "args": [],
             "type": {
               "kind": "ENUM",

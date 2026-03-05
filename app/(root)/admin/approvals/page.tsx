@@ -43,11 +43,13 @@ export default function AdminApprovalsPage() {
   const [page, setPage] = useState(0)
   const pageSize = 10
 
-  const { data, loading, error, refetch } =
-    useQuery<GetPendingApprovalsData>(GET_PENDING_APPROVALS, {
+  const { data, loading, error, refetch } = useQuery<GetPendingApprovalsData>(
+    GET_PENDING_APPROVALS,
+    {
       variables: { page, size: pageSize },
       fetchPolicy: 'network-only',
-    })
+    },
+  )
 
   const [approveListing, { loading: approving }] = useMutation(APPROVE_LISTING)
   const [declineListing, { loading: declining }] = useMutation(DECLINE_LISTING)
@@ -55,13 +57,17 @@ export default function AdminApprovalsPage() {
   const handleApprove = async (id: string) => {
     try {
       await approveListing({
-        variables: { approvalQueueId: id, approvalNotes: 'Approved via admin UI' },
+        variables: {
+          approvalQueueId: id,
+          approvalNotes: 'Approved via admin UI',
+        },
       })
       toast.success('Listing approved')
       await refetch()
     } catch (err) {
       toast.error(
-        'Failed to approve listing: ' + (err instanceof Error ? err.message : ''),
+        'Failed to approve listing: ' +
+          (err instanceof Error ? err.message : ''),
       )
     }
   }
@@ -78,7 +84,8 @@ export default function AdminApprovalsPage() {
       await refetch()
     } catch (err) {
       toast.error(
-        'Failed to decline listing: ' + (err instanceof Error ? err.message : ''),
+        'Failed to decline listing: ' +
+          (err instanceof Error ? err.message : ''),
       )
     }
   }
@@ -112,7 +119,10 @@ export default function AdminApprovalsPage() {
 
         <div className='space-y-4'>
           {items.map((item) => (
-            <Card key={item.id} className='p-4 flex flex-col gap-2'>
+            <Card
+              key={item.id}
+              className='p-4 flex flex-col gap-2'
+            >
               <div className='flex items-center justify-between gap-2 flex-wrap'>
                 <div>
                   <div className='text-sm text-muted-foreground'>
@@ -162,7 +172,7 @@ export default function AdminApprovalsPage() {
                   Approve
                 </Button>
                 <Button
-                  variant='outline'
+                  variant='outlined'
                   color='secondary'
                   disabled={approving || declining}
                   onClick={() => handleDecline(item.id)}
@@ -177,7 +187,7 @@ export default function AdminApprovalsPage() {
         {pageData && pageData.totalCount > pageData.pageSize && (
           <div className='flex items-center justify-between mt-6'>
             <Button
-              variant='outline'
+              variant='outlined'
               disabled={page === 0}
               onClick={() => setPage((p) => Math.max(0, p - 1))}
             >
@@ -185,10 +195,10 @@ export default function AdminApprovalsPage() {
             </Button>
             <div className='text-sm text-muted-foreground'>
               Page {pageData.pageNumber + 1} of{' '}
-                {Math.ceil(pageData.totalCount / pageData.pageSize)}
+              {Math.ceil(pageData.totalCount / pageData.pageSize)}
             </div>
             <Button
-              variant='outline'
+              variant='outlined'
               disabled={!pageData.hasNextPage}
               onClick={() => {
                 if (pageData.hasNextPage) {
@@ -204,4 +214,3 @@ export default function AdminApprovalsPage() {
     </div>
   )
 }
-

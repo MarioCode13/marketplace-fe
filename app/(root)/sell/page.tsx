@@ -36,7 +36,7 @@ import CategoryCascader, {
 } from '@/components/drawers/CategoryCascader'
 import { buildCategoryTree, FlatCategory, formatEnum } from '@/lib/utils'
 import { listingSchema, type ListingFormData } from '@/lib/validation'
-import { checkImageContent } from '@/lib/utils/contentModeration'
+import { checkImageForApproval } from '@/lib/utils/contentModeration'
 
 const CREATE_LISTING = gql`
   mutation CreateListing(
@@ -51,6 +51,8 @@ const CREATE_LISTING = gql`
     $condition: Condition!
     $userId: ID!
     $businessId: ID
+    $nsfwFlagged: Boolean
+    $sellerMarked18Plus: Boolean
   ) {
     createListing(
       title: $title
@@ -64,6 +66,8 @@ const CREATE_LISTING = gql`
       condition: $condition
       userId: $userId
       businessId: $businessId
+      nsfwFlagged: $nsfwFlagged
+      sellerMarked18Plus: $sellerMarked18Plus
     ) {
       id
       title
@@ -71,6 +75,8 @@ const CREATE_LISTING = gql`
       price
       quantity
       createdAt
+      nsfwFlagged
+      nsfwApprovalStatus
       city {
         name
       }
@@ -109,6 +115,10 @@ export default function SellPage() {
   const [showCustomCity, setShowCustomCity] = useState(false)
 
   const [images, setImages] = useState<string[]>([])
+  const [hasExplicitImages, setHasExplicitImages] = useState(false)
+  const [flaggedImageWarning, setFlaggedImageWarning] = useState<string | null>(
+    null,
+  )
 
   const {
     register,
@@ -127,11 +137,18 @@ export default function SellPage() {
       condition: 'NEW',
       quantity: '',
       customCity: '',
+      sellerMarked18Plus: false,
     },
   })
 
   const handleRemoveImage = (index: number) => {
-    setImages(images.filter((_, i) => i !== index))
+    const newImages = images.filter((_, i) => i !== index)
+    setImages(newImages)
+    // Reset explicit image flag if all images removed
+    if (newImages.length === 0) {
+      setHasExplicitImages(false)
+      setFlaggedImageWarning(null)
+    }
   }
 
   const [createListing, { loading }] = useMutation(CREATE_LISTING, {
@@ -163,15 +180,17 @@ export default function SellPage() {
     formData.append('images', file)
 
     try {
-      // Check for explicit content
-      const contentCheck = await checkImageContent(file)
-      if (contentCheck.isExplicit) {
-        toast.error(
-          contentCheck.reason ||
-            'Image contains explicit content and cannot be uploaded',
+      // Check if image should be flagged for admin review
+      const approvalCheck = await checkImageForApproval(file)
+      if (approvalCheck.isFlagged) {
+        setHasExplicitImages(true)
+        if (approvalCheck.message) {
+          setFlaggedImageWarning(approvalCheck.message)
+        }
+        toast.warning(
+          approvalCheck.message ||
+            'Image flagged for review - listing will require admin approval',
         )
-        setUploading(false)
-        return
       }
 
       const res = await fetch(
@@ -228,13 +247,24 @@ export default function SellPage() {
             ? parseInt(formData.quantity, 10)
             : undefined,
           businessId: userContext.businessId || undefined,
+          nsfwFlagged: hasExplicitImages || undefined,
+          sellerMarked18Plus: formData.sellerMarked18Plus || undefined,
         },
       })
 
       if (result.data?.createListing?.id) {
-        toast.success('Listing created successfully!')
+        const listing = result.data.createListing
+        if (listing.nsfwFlagged) {
+          toast.success(
+            'Listing created! Your listing contains potentially explicit images and requires admin approval before appearing on the live listings page.',
+          )
+        } else {
+          toast.success('Listing created successfully!')
+        }
         reset()
         setImages([])
+        setHasExplicitImages(false)
+        setFlaggedImageWarning(null)
         setCityState({
           city: '',
           cityLabel: '',
@@ -472,6 +502,22 @@ export default function SellPage() {
               </p>
             )}
           </div>
+
+          <div className='flex items-center gap-3'>
+            <input
+              type='checkbox'
+              id='sellerMarked18Plus'
+              {...register('sellerMarked18Plus')}
+              className='w-4 h-4 cursor-pointer'
+            />
+            <Label
+              htmlFor='sellerMarked18Plus'
+              className='cursor-pointer'
+            >
+              This listing is 18+ content
+            </Label>
+          </div>
+
           <div>
             <CityAutocomplete
               value={cityState.city}
@@ -529,6 +575,13 @@ export default function SellPage() {
             data-disabled={images.length >= 5}
           >
             <Label className='mb-2'>Images</Label>
+            {flaggedImageWarning && (
+              <div className='mb-3 p-3 bg-yellow-50 border border-yellow-200 rounded-md'>
+                <p className='text-sm text-yellow-800'>
+                  <strong>⚠️ Content Notice:</strong> {flaggedImageWarning}
+                </p>
+              </div>
+            )}
             <ImageUploadArea
               onImageUpload={handleImageUpload}
               loading={uploading}

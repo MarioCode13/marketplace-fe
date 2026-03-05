@@ -44,9 +44,15 @@ export type Business = {
   addressLine2?: Maybe<Scalars['String']['output']>;
   businessType?: Maybe<Scalars['String']['output']>;
   businessUsers: Array<BusinessUser>;
-  /** Registered business name as per CIPC (optional, user-supplied or populated from Omnicheck). */
+  /**
+   * 
+   * Registered business name as per CIPC (optional, user-supplied or populated from Omnicheck).
+   */
   cipcBusinessName?: Maybe<Scalars['String']['output']>;
-  /** CIPC registration number for this business (optional, user-supplied or populated from Omnicheck). */
+  /**
+   * 
+   * CIPC registration number for this business (optional, user-supplied or populated from Omnicheck).
+   */
   cipcRegistrationNo?: Maybe<Scalars['String']['output']>;
   city?: Maybe<City>;
   contactNumber?: Maybe<Scalars['String']['output']>;
@@ -180,7 +186,10 @@ export type CreateSubscriptionInput = {
   planType: PlanType;
   stripeCustomerId?: InputMaybe<Scalars['String']['input']>;
   stripeSubscriptionId?: InputMaybe<Scalars['String']['input']>;
-  /** Either userId or businessId must be provided, but not both. */
+  /**
+   * 
+   * Either userId or businessId must be provided, but not both.
+   */
   userId?: InputMaybe<Scalars['ID']['input']>;
 };
 
@@ -374,8 +383,10 @@ export type MutationCreateListingArgs = {
   customCity?: InputMaybe<Scalars['String']['input']>;
   description: Scalars['String']['input'];
   images: Array<Scalars['String']['input']>;
+  nsfwFlagged?: InputMaybe<Scalars['Boolean']['input']>;
   price: Scalars['Float']['input'];
   quantity?: InputMaybe<Scalars['Int']['input']>;
+  sellerMarked18Plus?: InputMaybe<Scalars['Boolean']['input']>;
   title: Scalars['String']['input'];
   userId: Scalars['ID']['input'];
 };
@@ -998,6 +1009,7 @@ export type Review = {
   comment?: Maybe<Scalars['String']['output']>;
   createdAt: Scalars['String']['output'];
   /**
+   * 
    * A review in a transaction. Both buyer and seller can review each other.
    * The reviewer is the party leaving the review, and reviewedUser is the other party being reviewed.
    */
@@ -1177,7 +1189,10 @@ export type User = {
   idNumber?: Maybe<Scalars['String']['output']>;
   lastName?: Maybe<Scalars['String']['output']>;
   listings: Array<Listing>;
-  /** Computed from the user's active subscription. Not stored on the user. */
+  /**
+   * 
+   * Computed from the user's active subscription. Not stored on the user.
+   */
   planType?: Maybe<PlanType>;
   profileCompletion?: Maybe<ProfileCompletion>;
   profileImageUrl?: Maybe<Scalars['String']['output']>;
@@ -1252,10 +1267,11 @@ export type CreateListingMutationVariables = Exact<{
   condition: Condition;
   userId: Scalars['ID']['input'];
   businessId?: InputMaybe<Scalars['ID']['input']>;
+  nsfwFlagged?: InputMaybe<Scalars['Boolean']['input']>;
 }>;
 
 
-export type CreateListingMutation = { __typename?: 'Mutation', createListing: { __typename?: 'Listing', id: string, title: string, description: string, price: number, quantity: number, createdAt: string, city?: { __typename?: 'City', name: string } | null } };
+export type CreateListingMutation = { __typename?: 'Mutation', createListing: { __typename?: 'Listing', id: string, title: string, description: string, price: number, quantity: number, createdAt: string, nsfwFlagged: boolean, nsfwApprovalStatus?: ContentApprovalStatus | null, city?: { __typename?: 'City', name: string } | null } };
 
 export type GetConditionsQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1266,6 +1282,22 @@ export type GetAllUsersQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type GetAllUsersQuery = { __typename?: 'Query', getAllUsers: Array<{ __typename?: 'User', id: string, username: string, email?: string | null }> };
+
+export type ApproveListingMutationVariables = Exact<{
+  approvalQueueId: Scalars['ID']['input'];
+  approvalNotes?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+
+export type ApproveListingMutation = { __typename?: 'Mutation', approveListing: { __typename?: 'ContentApprovalQueueItem', id: string, status: ContentApprovalStatus, approvalNotes?: string | null, listing: { __typename?: 'Listing', id: string, nsfwApprovalStatus?: ContentApprovalStatus | null } } };
+
+export type DeclineListingMutationVariables = Exact<{
+  approvalQueueId: Scalars['ID']['input'];
+  declineReason: Scalars['String']['input'];
+}>;
+
+
+export type DeclineListingMutation = { __typename?: 'Mutation', declineListing: { __typename?: 'ContentApprovalQueueItem', id: string, status: ContentApprovalStatus, approvalNotes?: string | null, listing: { __typename?: 'Listing', id: string, nsfwApprovalStatus?: ContentApprovalStatus | null } } };
 
 export type CheckUsernameAvailableQueryVariables = Exact<{
   username: Scalars['String']['input'];
@@ -1327,7 +1359,7 @@ export type UpdateListingMutationVariables = Exact<{
 }>;
 
 
-export type UpdateListingMutation = { __typename?: 'Mutation', updateListing: { __typename?: 'Listing', id: string, title: string, description: string, price: number, quantity: number, images: Array<string>, condition: Condition, customCity?: string | null, category?: { __typename?: 'Category', id: string, name: string } | null, city?: { __typename?: 'City', id: string, name: string } | null } };
+export type UpdateListingMutation = { __typename?: 'Mutation', updateListing: { __typename?: 'Listing', id: string, title: string, description: string, price: number, quantity: number, images: Array<string>, condition: Condition, nsfwFlagged: boolean, nsfwApprovalStatus?: ContentApprovalStatus | null, customCity?: string | null, category?: { __typename?: 'Category', id: string, name: string } | null, city?: { __typename?: 'City', id: string, name: string } | null } };
 
 export type MarkNotificationReadMutationVariables = Exact<{
   notificationId: Scalars['ID']['input'];
@@ -1480,6 +1512,14 @@ export type GetNotificationsQueryVariables = Exact<{
 
 
 export type GetNotificationsQuery = { __typename?: 'Query', notifications: Array<{ __typename?: 'Notification', id: string, message: string, type: string, read: boolean, actionRequired: boolean, data?: string | null, createdAt: string, user: { __typename?: 'User', id: string, username: string } }> };
+
+export type GetPendingApprovalsQueryVariables = Exact<{
+  page?: InputMaybe<Scalars['Int']['input']>;
+  size?: InputMaybe<Scalars['Int']['input']>;
+}>;
+
+
+export type GetPendingApprovalsQuery = { __typename?: 'Query', getPendingApprovals: { __typename?: 'NSFWContentPage', totalCount: number, pageNumber: number, pageSize: number, hasNextPage: boolean, items: Array<{ __typename?: 'ContentApprovalQueueItem', id: string, flagType: ContentFlagType, status: ContentApprovalStatus, approvalNotes?: string | null, createdAt: string, listing: { __typename?: 'Listing', id: string, title: string, nsfwFlagged: boolean, nsfwApprovalStatus?: ContentApprovalStatus | null, images: Array<string> } }> } };
 
 export type GetSellerProfileQueryVariables = Exact<{
   id: Scalars['ID']['input'];
@@ -1774,7 +1814,7 @@ export type RegisterMutationHookResult = ReturnType<typeof useRegisterMutation>;
 export type RegisterMutationResult = Apollo.MutationResult<RegisterMutation>;
 export type RegisterMutationOptions = Apollo.BaseMutationOptions<RegisterMutation, RegisterMutationVariables>;
 export const CreateListingDocument = gql`
-    mutation CreateListing($title: String!, $description: String!, $images: [String!]!, $categoryId: ID!, $price: Float!, $quantity: Int, $customCity: String, $cityId: ID, $condition: Condition!, $userId: ID!, $businessId: ID) {
+    mutation CreateListing($title: String!, $description: String!, $images: [String!]!, $categoryId: ID!, $price: Float!, $quantity: Int, $customCity: String, $cityId: ID, $condition: Condition!, $userId: ID!, $businessId: ID, $nsfwFlagged: Boolean) {
   createListing(
     title: $title
     description: $description
@@ -1787,6 +1827,7 @@ export const CreateListingDocument = gql`
     condition: $condition
     userId: $userId
     businessId: $businessId
+    nsfwFlagged: $nsfwFlagged
   ) {
     id
     title
@@ -1794,6 +1835,8 @@ export const CreateListingDocument = gql`
     price
     quantity
     createdAt
+    nsfwFlagged
+    nsfwApprovalStatus
     city {
       name
     }
@@ -1826,6 +1869,7 @@ export type CreateListingMutationFn = Apollo.MutationFunction<CreateListingMutat
  *      condition: // value for 'condition'
  *      userId: // value for 'userId'
  *      businessId: // value for 'businessId'
+ *      nsfwFlagged: // value for 'nsfwFlagged'
  *   },
  * });
  */
@@ -1914,6 +1958,86 @@ export type GetAllUsersQueryHookResult = ReturnType<typeof useGetAllUsersQuery>;
 export type GetAllUsersLazyQueryHookResult = ReturnType<typeof useGetAllUsersLazyQuery>;
 export type GetAllUsersSuspenseQueryHookResult = ReturnType<typeof useGetAllUsersSuspenseQuery>;
 export type GetAllUsersQueryResult = Apollo.QueryResult<GetAllUsersQuery, GetAllUsersQueryVariables>;
+export const ApproveListingDocument = gql`
+    mutation ApproveListing($approvalQueueId: ID!, $approvalNotes: String) {
+  approveListing(approvalQueueId: $approvalQueueId, approvalNotes: $approvalNotes) {
+    id
+    status
+    approvalNotes
+    listing {
+      id
+      nsfwApprovalStatus
+    }
+  }
+}
+    `;
+export type ApproveListingMutationFn = Apollo.MutationFunction<ApproveListingMutation, ApproveListingMutationVariables>;
+
+/**
+ * __useApproveListingMutation__
+ *
+ * To run a mutation, you first call `useApproveListingMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useApproveListingMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [approveListingMutation, { data, loading, error }] = useApproveListingMutation({
+ *   variables: {
+ *      approvalQueueId: // value for 'approvalQueueId'
+ *      approvalNotes: // value for 'approvalNotes'
+ *   },
+ * });
+ */
+export function useApproveListingMutation(baseOptions?: Apollo.MutationHookOptions<ApproveListingMutation, ApproveListingMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<ApproveListingMutation, ApproveListingMutationVariables>(ApproveListingDocument, options);
+      }
+export type ApproveListingMutationHookResult = ReturnType<typeof useApproveListingMutation>;
+export type ApproveListingMutationResult = Apollo.MutationResult<ApproveListingMutation>;
+export type ApproveListingMutationOptions = Apollo.BaseMutationOptions<ApproveListingMutation, ApproveListingMutationVariables>;
+export const DeclineListingDocument = gql`
+    mutation DeclineListing($approvalQueueId: ID!, $declineReason: String!) {
+  declineListing(approvalQueueId: $approvalQueueId, declineReason: $declineReason) {
+    id
+    status
+    approvalNotes
+    listing {
+      id
+      nsfwApprovalStatus
+    }
+  }
+}
+    `;
+export type DeclineListingMutationFn = Apollo.MutationFunction<DeclineListingMutation, DeclineListingMutationVariables>;
+
+/**
+ * __useDeclineListingMutation__
+ *
+ * To run a mutation, you first call `useDeclineListingMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDeclineListingMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [declineListingMutation, { data, loading, error }] = useDeclineListingMutation({
+ *   variables: {
+ *      approvalQueueId: // value for 'approvalQueueId'
+ *      declineReason: // value for 'declineReason'
+ *   },
+ * });
+ */
+export function useDeclineListingMutation(baseOptions?: Apollo.MutationHookOptions<DeclineListingMutation, DeclineListingMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<DeclineListingMutation, DeclineListingMutationVariables>(DeclineListingDocument, options);
+      }
+export type DeclineListingMutationHookResult = ReturnType<typeof useDeclineListingMutation>;
+export type DeclineListingMutationResult = Apollo.MutationResult<DeclineListingMutation>;
+export type DeclineListingMutationOptions = Apollo.BaseMutationOptions<DeclineListingMutation, DeclineListingMutationVariables>;
 export const CheckUsernameAvailableDocument = gql`
     query CheckUsernameAvailable($username: String!) {
   checkUsernameAvailable(username: $username)
@@ -2208,6 +2332,8 @@ export const UpdateListingDocument = gql`
     quantity
     images
     condition
+    nsfwFlagged
+    nsfwApprovalStatus
     category {
       id
       name
@@ -3374,6 +3500,64 @@ export type GetNotificationsQueryHookResult = ReturnType<typeof useGetNotificati
 export type GetNotificationsLazyQueryHookResult = ReturnType<typeof useGetNotificationsLazyQuery>;
 export type GetNotificationsSuspenseQueryHookResult = ReturnType<typeof useGetNotificationsSuspenseQuery>;
 export type GetNotificationsQueryResult = Apollo.QueryResult<GetNotificationsQuery, GetNotificationsQueryVariables>;
+export const GetPendingApprovalsDocument = gql`
+    query GetPendingApprovals($page: Int, $size: Int) {
+  getPendingApprovals(page: $page, size: $size) {
+    items {
+      id
+      flagType
+      status
+      approvalNotes
+      createdAt
+      listing {
+        id
+        title
+        nsfwFlagged
+        nsfwApprovalStatus
+        images
+      }
+    }
+    totalCount
+    pageNumber
+    pageSize
+    hasNextPage
+  }
+}
+    `;
+
+/**
+ * __useGetPendingApprovalsQuery__
+ *
+ * To run a query within a React component, call `useGetPendingApprovalsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetPendingApprovalsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetPendingApprovalsQuery({
+ *   variables: {
+ *      page: // value for 'page'
+ *      size: // value for 'size'
+ *   },
+ * });
+ */
+export function useGetPendingApprovalsQuery(baseOptions?: Apollo.QueryHookOptions<GetPendingApprovalsQuery, GetPendingApprovalsQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetPendingApprovalsQuery, GetPendingApprovalsQueryVariables>(GetPendingApprovalsDocument, options);
+      }
+export function useGetPendingApprovalsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetPendingApprovalsQuery, GetPendingApprovalsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetPendingApprovalsQuery, GetPendingApprovalsQueryVariables>(GetPendingApprovalsDocument, options);
+        }
+export function useGetPendingApprovalsSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GetPendingApprovalsQuery, GetPendingApprovalsQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<GetPendingApprovalsQuery, GetPendingApprovalsQueryVariables>(GetPendingApprovalsDocument, options);
+        }
+export type GetPendingApprovalsQueryHookResult = ReturnType<typeof useGetPendingApprovalsQuery>;
+export type GetPendingApprovalsLazyQueryHookResult = ReturnType<typeof useGetPendingApprovalsLazyQuery>;
+export type GetPendingApprovalsSuspenseQueryHookResult = ReturnType<typeof useGetPendingApprovalsSuspenseQuery>;
+export type GetPendingApprovalsQueryResult = Apollo.QueryResult<GetPendingApprovalsQuery, GetPendingApprovalsQueryVariables>;
 export const GetSellerProfileDocument = gql`
     query GetSellerProfile($id: ID!) {
   user(id: $id) {

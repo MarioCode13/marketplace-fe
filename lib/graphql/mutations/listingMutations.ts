@@ -16,6 +16,8 @@ export const UPDATE_LISTING = gql`
       quantity
       images
       condition
+      nsfwFlagged
+      nsfwApprovalStatus
       category {
         id
         name

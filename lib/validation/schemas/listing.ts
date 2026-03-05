@@ -68,6 +68,7 @@ export const listingSchema = z.object({
             (val) => isValidForInput(val),
             'Custom city contains invalid characters or patterns'
         ),
+    sellerMarked18Plus: z.boolean().optional(),
 })
 
 export type ListingFormData = z.infer<typeof listingSchema>

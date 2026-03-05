@@ -194,3 +194,102 @@ export async function checkImageContent(
         }
     }
 }
+
+/**
+ * Check if an image should be flagged for admin approval (18+ content)
+ * This is less strict than checkImageContent - allows uploads but marks them for review
+ * @param file - Image file to check
+ * @returns Object with isFlagged status, classification scores, and message
+ */
+export async function checkImageForApproval(
+    file: File,
+): Promise<{
+    isFlagged: boolean
+    classification: NSFWClassification
+    message?: string
+}> {
+    try {
+        if (!file.type.startsWith('image/')) {
+            return {
+                isFlagged: false,
+                classification: {
+                    porn: 0,
+                    hentai: 0,
+                    sexy: 0,
+                    neutral: 1,
+                    drawing: 0,
+                },
+            }
+        }
+
+        const model = await loadNSFWModel()
+
+        // Convert File to HTMLImageElement for NSFWJS
+        const img = new Image()
+        img.crossOrigin = 'anonymous'
+        img.src = URL.createObjectURL(file)
+
+        // Wait for image to load with timeout
+        await Promise.race([
+            new Promise<void>((resolve) => {
+                img.onload = () => resolve()
+            }),
+            new Promise<void>((_, reject) =>
+                setTimeout(() => reject(new Error('Image load timeout')), 5000)
+            ),
+        ])
+
+        // Run classification
+        const predictions = await model.classify(img)
+
+        // Clean up
+        URL.revokeObjectURL(img.src)
+
+        // Convert predictions array to object for easier access
+        const classification: NSFWClassification = {
+            porn: 0,
+            hentai: 0,
+            sexy: 0,
+            neutral: 0,
+            drawing: 0,
+        }
+
+        predictions.forEach((pred) => {
+            const className = pred.className.toLowerCase() as keyof NSFWClassification
+            classification[className] = pred.probability
+        })
+
+        // Flag for approval if any adult content indicators are present
+        // Much more lenient than the explicit content detection
+        // Flags: porn > 2%, hentai > 2%, OR (sexy > 15% AND neutral < 80%)
+        const hasPornContent = classification.porn > 0.02
+        const hasHentaiContent = classification.hentai > 0.02
+        const hasSuggestiveContent = 
+            classification.sexy > 0.15 && classification.neutral < 0.8
+        const isFlagged = hasPornContent || hasHentaiContent || hasSuggestiveContent
+
+        let message: string | undefined
+        if (isFlagged) {
+            message = 'Image contains potentially explicit content. This listing will require admin approval before appearing on the live listings page.'
+        }
+
+        return {
+            isFlagged,
+            classification,
+            message,
+        }
+    } catch (error) {
+        console.error('✗ ERROR checking image for approval:', error)
+        // On error, don't flag - allow upload
+        return {
+            isFlagged: false,
+            classification: {
+                porn: 0,
+                hentai: 0,
+                sexy: 0,
+                neutral: 1,
+                drawing: 0,
+            },
+        }
+    }
+}

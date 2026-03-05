@@ -38,7 +38,7 @@ import CategoryCascader, {
 import { buildCategoryTree, FlatCategory, formatEnum } from '@/lib/utils'
 import CityAutocomplete from '@/components/drawers/CityAutocomplete'
 import { listingSchema, type ListingFormData } from '@/lib/validation'
-import { checkImageContent } from '@/lib/utils/contentModeration'
+import { checkImageContent, checkImageForApproval } from '@/lib/utils/contentModeration'
 
 export default function EditListingPage() {
   const router = useRouter()
@@ -53,6 +53,10 @@ export default function EditListingPage() {
 
   const [uploading, setUploading] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [hasExplicitImages, setHasExplicitImages] = useState(false)
+  const [flaggedImageWarning, setFlaggedImageWarning] = useState<string | null>(
+    null,
+  )
 
   const [cityState, setCityState] = useState({
     city: '',
@@ -122,6 +126,7 @@ export default function EditListingPage() {
       setValue('categoryId', listing.category?.id || '')
       setValue('condition', listing.condition)
       setValue('customCity', listing?.customCity || '')
+      setValue('sellerMarked18Plus', listing.sellerMarked18Plus || false)
 
       setCityState({
         city: listing.city?.id || '',
@@ -162,7 +167,13 @@ export default function EditListingPage() {
   }, [listingData, userId, meData, router, businessId, isBusinessUser])
 
   const handleRemoveImage = (index: number) => {
-    setImages(images.filter((_, i) => i !== index))
+    const newImages = images.filter((_, i) => i !== index)
+    setImages(newImages)
+    // Reset explicit image flag if all images removed
+    if (newImages.length === 0) {
+      setHasExplicitImages(false)
+      setFlaggedImageWarning(null)
+    }
   }
 
   function getCookie(name: string): string | undefined {
@@ -184,15 +195,17 @@ export default function EditListingPage() {
     const xsrfToken = getCookie('XSRF-TOKEN')
 
     try {
-      // Check for explicit content
-      const contentCheck = await checkImageContent(file)
-      if (contentCheck.isExplicit) {
-        toast.error(
-          contentCheck.reason ||
-            'Image contains explicit content and cannot be uploaded',
+      // Check if image should be flagged for admin review
+      const approvalCheck = await checkImageForApproval(file)
+      if (approvalCheck.isFlagged) {
+        setHasExplicitImages(true)
+        if (approvalCheck.message) {
+          setFlaggedImageWarning(approvalCheck.message)
+        }
+        toast.warning(
+          approvalCheck.message ||
+            'Image flagged for review - listing will require admin approval',
         )
-        setUploading(false)
-        return
       }
 
       const res = await fetch(
@@ -239,11 +252,18 @@ export default function EditListingPage() {
           : undefined,
       }
 
-      await updateListing({
+      const result = await updateListing({
         variables: { input },
       })
 
-      toast.success('Listing updated successfully!')
+      if (hasExplicitImages) {
+        toast.success(
+          'Listing updated! Your listing contains potentially explicit images and requires admin approval before appearing on the live listings page.',
+        )
+      } else {
+        toast.success('Listing updated successfully!')
+      }
+      
       router.push(`/listings/${listingId}`)
     } catch (err) {
       toast.error('Failed to update listing: ' + (err as Error).message)
@@ -484,8 +504,30 @@ export default function EditListingPage() {
               </div>
             </div>
 
+            <div className='flex items-center gap-3'>
+              <input
+                type='checkbox'
+                id='sellerMarked18Plus'
+                {...register('sellerMarked18Plus')}
+                className='w-4 h-4 cursor-pointer'
+              />
+              <Label
+                htmlFor='sellerMarked18Plus'
+                className='cursor-pointer'
+              >
+                This listing is 18+ content
+              </Label>
+            </div>
+
             <div>
               <Label>Images ({images.length}/5)</Label>
+              {flaggedImageWarning && (
+                <div className='mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-md'>
+                  <p className='text-sm text-yellow-800'>
+                    <strong>⚠️ Content Notice:</strong> {flaggedImageWarning}
+                  </p>
+                </div>
+              )}
               <div className='mt-2 space-y-4'>
                 <ImageUploadArea
                   onImageUpload={handleImageUpload}
