@@ -7,7 +7,7 @@ import { useMutation } from '@apollo/client'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/store/store'
-import { gql, useQuery } from '@apollo/client'
+import { useQuery } from '@apollo/client'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { toast } from 'sonner'
@@ -25,6 +25,7 @@ import { Loader2, Users, Eye, ShieldCheck } from 'lucide-react'
 import { UPDATE_STORE_BRANDING } from '@/lib/graphql/mutations/businessMutations'
 import { UPDATE_BUSINESS } from '@/lib/graphql/mutations/updateBusiness'
 import { GET_BUSINESS_BY_ID } from '@/lib/graphql/queries/getBusinessById'
+import { VALIDATE_SLUG } from '@/lib/graphql/queries/validateSlug'
 
 import { BusinessUser, UpdateStoreBrandingInput } from '@/lib/graphql/generated'
 import PreviewModal from '@/components/modals/PreviewModal'
@@ -87,26 +88,22 @@ export default function BusinessEditPage() {
   const [slugLoading, setSlugLoading] = useState(false)
   const [slugValid, setSlugValid] = useState(true)
 
-  // Slug availability query
-  const IS_STORE_SLUG_AVAILABLE = gql`
-    query IsStoreSlugAvailable($slug: String!) {
-      isStoreSlugAvailable(slug: $slug)
-    }
-  `
-  const [checkSlugAvailable] = useLazyQuery(IS_STORE_SLUG_AVAILABLE, {
+  // Slug validation query
+  const [validateSlug] = useLazyQuery(VALIDATE_SLUG, {
     fetchPolicy: 'network-only',
     onCompleted: (data) => {
-      if (data?.isStoreSlugAvailable) {
+      const result = data?.validateSlug
+      if (result?.status === 'APPROVED') {
         setSlugWarning(null)
         setSlugValid(true)
       } else {
-        setSlugWarning('This slug is already in use.')
+        setSlugWarning(result?.message || 'This slug is not available.')
         setSlugValid(false)
       }
       setSlugLoading(false)
     },
     onError: () => {
-      setSlugWarning('Error checking slug availability.')
+      setSlugWarning('Error validating slug.')
       setSlugValid(false)
       setSlugLoading(false)
     },
@@ -209,7 +206,12 @@ export default function BusinessEditPage() {
       setSlugWarning(null)
       setSlugValid(false)
       if (business && value && value !== business.slug) {
-        checkSlugAvailable({ variables: { slug: value } })
+        validateSlug({
+          variables: {
+            slug: value,
+            excludeBusinessId: business.id, // Exclude current business from validation
+          },
+        })
       } else {
         setSlugLoading(false)
         setSlugWarning(null)

@@ -36,6 +36,16 @@ export type Business = {
   addressLine2?: Maybe<Scalars['String']['output']>;
   businessType?: Maybe<Scalars['String']['output']>;
   businessUsers: Array<BusinessUser>;
+  /**
+   * 
+   * Registered business name as per CIPC (optional, user-supplied or populated from Omnicheck).
+   */
+  cipcBusinessName?: Maybe<Scalars['String']['output']>;
+  /**
+   * 
+   * CIPC registration number for this business (optional, user-supplied or populated from Omnicheck).
+   */
+  cipcRegistrationNo?: Maybe<Scalars['String']['output']>;
   city?: Maybe<City>;
   contactNumber?: Maybe<Scalars['String']['output']>;
   email: Scalars['String']['output'];
@@ -563,6 +573,7 @@ export type Query = {
   storeBySlug?: Maybe<User>;
   user?: Maybe<User>;
   userSubscriptions: Array<Subscription>;
+  validateSlug: SlugValidationResult;
 };
 
 
@@ -804,6 +815,12 @@ export type QueryUserSubscriptionsArgs = {
   userId: Scalars['ID']['input'];
 };
 
+
+export type QueryValidateSlugArgs = {
+  businessId?: InputMaybe<Scalars['ID']['input']>;
+  slug: Scalars['String']['input'];
+};
+
 export type Region = {
   __typename?: 'Region';
   cities: Array<City>;
@@ -828,6 +845,21 @@ export type Review = {
   reviewer: User;
   transaction: Transaction;
   updatedAt: Scalars['String']['output'];
+};
+
+export enum SlugStatus {
+  Approved = 'APPROVED',
+  Invalid = 'INVALID',
+  PendingReview = 'PENDING_REVIEW',
+  Rejected = 'REJECTED'
+}
+
+export type SlugValidationResult = {
+  __typename?: 'SlugValidationResult';
+  message: Scalars['String']['output'];
+  similarTo?: Maybe<Scalars['String']['output']>;
+  similarity?: Maybe<Scalars['Float']['output']>;
+  status: SlugStatus;
 };
 
 export type StoreBranding = {
@@ -928,6 +960,8 @@ export type UpdateBusinessInput = {
   addressLine1?: InputMaybe<Scalars['String']['input']>;
   addressLine2?: InputMaybe<Scalars['String']['input']>;
   businessId: Scalars['ID']['input'];
+  cipcBusinessName?: InputMaybe<Scalars['String']['input']>;
+  cipcRegistrationNo?: InputMaybe<Scalars['String']['input']>;
   cityId?: InputMaybe<Scalars['ID']['input']>;
   contactNumber?: InputMaybe<Scalars['String']['input']>;
   email?: InputMaybe<Scalars['String']['input']>;
@@ -1063,13 +1097,6 @@ export type GetConditionsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type GetConditionsQuery = { __typename?: 'Query', getConditions?: Array<Condition | null> | null };
-
-export type IsStoreSlugAvailableQueryVariables = Exact<{
-  slug: Scalars['String']['input'];
-}>;
-
-
-export type IsStoreSlugAvailableQuery = { __typename?: 'Query', isStoreSlugAvailable: boolean };
 
 export type GetAllUsersQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1216,14 +1243,14 @@ export type UpdateBusinessMutationVariables = Exact<{
 }>;
 
 
-export type UpdateBusinessMutation = { __typename?: 'Mutation', updateBusiness?: { __typename?: 'Business', id: string, name: string, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, postalCode?: string | null } | null };
+export type UpdateBusinessMutation = { __typename?: 'Mutation', updateBusiness?: { __typename?: 'Business', id: string, name: string, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, postalCode?: string | null, cipcRegistrationNo?: string | null, cipcBusinessName?: string | null } | null };
 
 export type GetBusinessByIdQueryVariables = Exact<{
   id: Scalars['ID']['input'];
 }>;
 
 
-export type GetBusinessByIdQuery = { __typename?: 'Query', business?: { __typename?: 'Business', id: string, name: string, slug?: string | null, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, postalCode?: string | null, planType?: PlanType | null, trustRating?: { __typename?: 'BusinessTrustRating', verifiedWithThirdParty: boolean, averageRating: number, reviewCount: number } | null, owner: { __typename?: 'User', id: string, planType?: PlanType | null }, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, lightOrDark?: string | null, primaryColor?: string | null, secondaryColor?: string | null, textColor?: string | null, cardTextColor?: string | null, backgroundColor?: string | null, about?: string | null, storeName?: string | null } | null, businessUsers: Array<{ __typename?: 'BusinessUser', id: string, role: BusinessUserRole, user: { __typename?: 'User', id: string, username: string, email?: string | null, profileImageUrl?: string | null, planType?: PlanType | null, trustRating?: { __typename?: 'TrustRating', starRating: number, trustLevel: string, overallScore: number, totalReviews: number, totalTransactions: number, successfulTransactions: number } | null } }> } | null };
+export type GetBusinessByIdQuery = { __typename?: 'Query', business?: { __typename?: 'Business', id: string, name: string, slug?: string | null, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, postalCode?: string | null, cipcRegistrationNo?: string | null, cipcBusinessName?: string | null, planType?: PlanType | null, trustRating?: { __typename?: 'BusinessTrustRating', verifiedWithThirdParty: boolean, averageRating: number, reviewCount: number } | null, owner: { __typename?: 'User', id: string, planType?: PlanType | null }, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, lightOrDark?: string | null, primaryColor?: string | null, secondaryColor?: string | null, textColor?: string | null, cardTextColor?: string | null, backgroundColor?: string | null, about?: string | null, storeName?: string | null } | null, businessUsers: Array<{ __typename?: 'BusinessUser', id: string, role: BusinessUserRole, user: { __typename?: 'User', id: string, username: string, email?: string | null, profileImageUrl?: string | null, planType?: PlanType | null, trustRating?: { __typename?: 'TrustRating', starRating: number, trustLevel: string, overallScore: number, totalReviews: number, totalTransactions: number, successfulTransactions: number } | null } }> } | null };
 
 export type GetBusinessBySlugQueryVariables = Exact<{
   slug: Scalars['String']['input'];
@@ -1441,6 +1468,21 @@ export type SearchCitiesQueryVariables = Exact<{
 
 
 export type SearchCitiesQuery = { __typename?: 'Query', searchCities: Array<{ __typename?: 'City', id: string, name: string, slug: string, region?: { __typename?: 'Region', id: string, name: string, country: { __typename?: 'Country', id: string, name: string, code: string } } | null }> };
+
+export type ValidateSlugQueryVariables = Exact<{
+  slug: Scalars['String']['input'];
+  excludeBusinessId?: InputMaybe<Scalars['ID']['input']>;
+}>;
+
+
+export type ValidateSlugQuery = { __typename?: 'Query', validateSlug: { __typename?: 'SlugValidationResult', message: string, similarTo?: string | null, similarity?: number | null, status: SlugStatus } };
+
+export type IsStoreSlugAvailableQueryVariables = Exact<{
+  slug: Scalars['String']['input'];
+}>;
+
+
+export type IsStoreSlugAvailableQuery = { __typename?: 'Query', isStoreSlugAvailable: boolean };
 
 
 export const CompleteProfileDocument = gql`
@@ -1667,44 +1709,6 @@ export type GetConditionsQueryHookResult = ReturnType<typeof useGetConditionsQue
 export type GetConditionsLazyQueryHookResult = ReturnType<typeof useGetConditionsLazyQuery>;
 export type GetConditionsSuspenseQueryHookResult = ReturnType<typeof useGetConditionsSuspenseQuery>;
 export type GetConditionsQueryResult = Apollo.QueryResult<GetConditionsQuery, GetConditionsQueryVariables>;
-export const IsStoreSlugAvailableDocument = gql`
-    query IsStoreSlugAvailable($slug: String!) {
-  isStoreSlugAvailable(slug: $slug)
-}
-    `;
-
-/**
- * __useIsStoreSlugAvailableQuery__
- *
- * To run a query within a React component, call `useIsStoreSlugAvailableQuery` and pass it any options that fit your needs.
- * When your component renders, `useIsStoreSlugAvailableQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useIsStoreSlugAvailableQuery({
- *   variables: {
- *      slug: // value for 'slug'
- *   },
- * });
- */
-export function useIsStoreSlugAvailableQuery(baseOptions: Apollo.QueryHookOptions<IsStoreSlugAvailableQuery, IsStoreSlugAvailableQueryVariables> & ({ variables: IsStoreSlugAvailableQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<IsStoreSlugAvailableQuery, IsStoreSlugAvailableQueryVariables>(IsStoreSlugAvailableDocument, options);
-      }
-export function useIsStoreSlugAvailableLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<IsStoreSlugAvailableQuery, IsStoreSlugAvailableQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<IsStoreSlugAvailableQuery, IsStoreSlugAvailableQueryVariables>(IsStoreSlugAvailableDocument, options);
-        }
-export function useIsStoreSlugAvailableSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<IsStoreSlugAvailableQuery, IsStoreSlugAvailableQueryVariables>) {
-          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
-          return Apollo.useSuspenseQuery<IsStoreSlugAvailableQuery, IsStoreSlugAvailableQueryVariables>(IsStoreSlugAvailableDocument, options);
-        }
-export type IsStoreSlugAvailableQueryHookResult = ReturnType<typeof useIsStoreSlugAvailableQuery>;
-export type IsStoreSlugAvailableLazyQueryHookResult = ReturnType<typeof useIsStoreSlugAvailableLazyQuery>;
-export type IsStoreSlugAvailableSuspenseQueryHookResult = ReturnType<typeof useIsStoreSlugAvailableSuspenseQuery>;
-export type IsStoreSlugAvailableQueryResult = Apollo.QueryResult<IsStoreSlugAvailableQuery, IsStoreSlugAvailableQueryVariables>;
 export const GetAllUsersDocument = gql`
     query GetAllUsers {
   getAllUsers {
@@ -2491,6 +2495,8 @@ export const UpdateBusinessDocument = gql`
     addressLine1
     addressLine2
     postalCode
+    cipcRegistrationNo
+    cipcBusinessName
   }
 }
     `;
@@ -2531,6 +2537,8 @@ export const GetBusinessByIdDocument = gql`
     addressLine1
     addressLine2
     postalCode
+    cipcRegistrationNo
+    cipcBusinessName
     planType
     trustRating {
       verifiedWithThirdParty
@@ -4651,3 +4659,85 @@ export type SearchCitiesQueryHookResult = ReturnType<typeof useSearchCitiesQuery
 export type SearchCitiesLazyQueryHookResult = ReturnType<typeof useSearchCitiesLazyQuery>;
 export type SearchCitiesSuspenseQueryHookResult = ReturnType<typeof useSearchCitiesSuspenseQuery>;
 export type SearchCitiesQueryResult = Apollo.QueryResult<SearchCitiesQuery, SearchCitiesQueryVariables>;
+export const ValidateSlugDocument = gql`
+    query ValidateSlug($slug: String!, $excludeBusinessId: ID) {
+  validateSlug(slug: $slug, businessId: $excludeBusinessId) {
+    message
+    similarTo
+    similarity
+    status
+  }
+}
+    `;
+
+/**
+ * __useValidateSlugQuery__
+ *
+ * To run a query within a React component, call `useValidateSlugQuery` and pass it any options that fit your needs.
+ * When your component renders, `useValidateSlugQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useValidateSlugQuery({
+ *   variables: {
+ *      slug: // value for 'slug'
+ *      excludeBusinessId: // value for 'excludeBusinessId'
+ *   },
+ * });
+ */
+export function useValidateSlugQuery(baseOptions: Apollo.QueryHookOptions<ValidateSlugQuery, ValidateSlugQueryVariables> & ({ variables: ValidateSlugQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<ValidateSlugQuery, ValidateSlugQueryVariables>(ValidateSlugDocument, options);
+      }
+export function useValidateSlugLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<ValidateSlugQuery, ValidateSlugQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<ValidateSlugQuery, ValidateSlugQueryVariables>(ValidateSlugDocument, options);
+        }
+export function useValidateSlugSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<ValidateSlugQuery, ValidateSlugQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<ValidateSlugQuery, ValidateSlugQueryVariables>(ValidateSlugDocument, options);
+        }
+export type ValidateSlugQueryHookResult = ReturnType<typeof useValidateSlugQuery>;
+export type ValidateSlugLazyQueryHookResult = ReturnType<typeof useValidateSlugLazyQuery>;
+export type ValidateSlugSuspenseQueryHookResult = ReturnType<typeof useValidateSlugSuspenseQuery>;
+export type ValidateSlugQueryResult = Apollo.QueryResult<ValidateSlugQuery, ValidateSlugQueryVariables>;
+export const IsStoreSlugAvailableDocument = gql`
+    query IsStoreSlugAvailable($slug: String!) {
+  isStoreSlugAvailable(slug: $slug)
+}
+    `;
+
+/**
+ * __useIsStoreSlugAvailableQuery__
+ *
+ * To run a query within a React component, call `useIsStoreSlugAvailableQuery` and pass it any options that fit your needs.
+ * When your component renders, `useIsStoreSlugAvailableQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useIsStoreSlugAvailableQuery({
+ *   variables: {
+ *      slug: // value for 'slug'
+ *   },
+ * });
+ */
+export function useIsStoreSlugAvailableQuery(baseOptions: Apollo.QueryHookOptions<IsStoreSlugAvailableQuery, IsStoreSlugAvailableQueryVariables> & ({ variables: IsStoreSlugAvailableQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<IsStoreSlugAvailableQuery, IsStoreSlugAvailableQueryVariables>(IsStoreSlugAvailableDocument, options);
+      }
+export function useIsStoreSlugAvailableLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<IsStoreSlugAvailableQuery, IsStoreSlugAvailableQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<IsStoreSlugAvailableQuery, IsStoreSlugAvailableQueryVariables>(IsStoreSlugAvailableDocument, options);
+        }
+export function useIsStoreSlugAvailableSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<IsStoreSlugAvailableQuery, IsStoreSlugAvailableQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<IsStoreSlugAvailableQuery, IsStoreSlugAvailableQueryVariables>(IsStoreSlugAvailableDocument, options);
+        }
+export type IsStoreSlugAvailableQueryHookResult = ReturnType<typeof useIsStoreSlugAvailableQuery>;
+export type IsStoreSlugAvailableLazyQueryHookResult = ReturnType<typeof useIsStoreSlugAvailableLazyQuery>;
+export type IsStoreSlugAvailableSuspenseQueryHookResult = ReturnType<typeof useIsStoreSlugAvailableSuspenseQuery>;
+export type IsStoreSlugAvailableQueryResult = Apollo.QueryResult<IsStoreSlugAvailableQuery, IsStoreSlugAvailableQueryVariables>;
