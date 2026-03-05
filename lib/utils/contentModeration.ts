@@ -264,7 +264,7 @@ export async function checkImageForApproval(
         // Flags: porn > 2%, hentai > 2%, OR (sexy > 15% AND neutral < 80%)
         const hasPornContent = classification.porn > 0.02
         const hasHentaiContent = classification.hentai > 0.02
-        const hasSuggestiveContent = 
+        const hasSuggestiveContent =
             classification.sexy > 0.15 && classification.neutral < 0.8
         const isFlagged = hasPornContent || hasHentaiContent || hasSuggestiveContent
 

@@ -38,7 +38,10 @@ import CategoryCascader, {
 import { buildCategoryTree, FlatCategory, formatEnum } from '@/lib/utils'
 import CityAutocomplete from '@/components/drawers/CityAutocomplete'
 import { listingSchema, type ListingFormData } from '@/lib/validation'
-import { checkImageContent, checkImageForApproval } from '@/lib/utils/contentModeration'
+import {
+  checkImageContent,
+  checkImageForApproval,
+} from '@/lib/utils/contentModeration'
 
 export default function EditListingPage() {
   const router = useRouter()
@@ -263,7 +266,7 @@ export default function EditListingPage() {
       } else {
         toast.success('Listing updated successfully!')
       }
-      
+
       router.push(`/listings/${listingId}`)
     } catch (err) {
       toast.error('Failed to update listing: ' + (err as Error).message)
