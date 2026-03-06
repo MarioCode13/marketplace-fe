@@ -1,3 +1,4 @@
+import { headers } from 'next/headers'
 import { getServerApolloClient } from '@/lib/apollo/server'
 import { GET_LISTINGS } from '@/lib/graphql/queries'
 import Listings from './Listings'
@@ -32,7 +33,11 @@ export default async function Page({
   searchParams?: NextSearchParams
 }) {
   const resolvedParams = (await searchParams) || {}
-  const client = getServerApolloClient()
+  const h = await headers()
+  const client = getServerApolloClient({
+    cookie: h.get('cookie') ?? '',
+    authorization: h.get('authorization') ?? '',
+  })
 
   const getParamValue = (key: string): string | undefined => {
     const value = resolvedParams[key]

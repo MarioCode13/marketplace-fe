@@ -20,6 +20,7 @@ export interface CardListing {
   images: string[]
   createdAt: string
   sold?: boolean
+  nsfwApprovalStatus?: string | null
   user?: {
     id: string
     username: string
@@ -194,13 +195,17 @@ export default function ListingCard({
                   </>
                 )}
               </div>
-
-              <p
-                className='text-sm text-gray-500 mt-2'
-                style={cardTextColor ? { color: cardTextColor } : undefined}
-              >
-                {dayjs(listing.createdAt).format('DD MMM YYYY')}
-              </p>
+              <div className='flex justify-between'>
+                <p
+                  className='text-sm text-gray-500 mt-2'
+                  style={cardTextColor ? { color: cardTextColor } : undefined}
+                >
+                  {dayjs(listing.createdAt).format('DD MMM YYYY')}
+                </p>
+                {listing.nsfwApprovalStatus === 'PENDING' && (
+                  <Badge className='text-xs h-6 mt-2 '>Pending</Badge>
+                )}
+              </div>
             </div>
           </div>
         </div>

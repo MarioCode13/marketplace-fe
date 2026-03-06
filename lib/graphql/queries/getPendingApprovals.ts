@@ -15,6 +15,17 @@ export const GET_PENDING_APPROVALS = gql`
           nsfwFlagged
           nsfwApprovalStatus
           images
+          user {
+            id
+            firstName
+            lastName
+            username
+          }
+          business {
+            id
+            slug
+            name
+          }
         }
       }
       totalCount

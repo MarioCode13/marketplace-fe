@@ -10,6 +10,7 @@ export const MY_LISTINGS = gql`
         images
         price
         sold
+        nsfwApprovalStatus
         city {
           id
           name

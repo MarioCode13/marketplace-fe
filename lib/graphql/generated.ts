@@ -1268,6 +1268,7 @@ export type CreateListingMutationVariables = Exact<{
   userId: Scalars['ID']['input'];
   businessId?: InputMaybe<Scalars['ID']['input']>;
   nsfwFlagged?: InputMaybe<Scalars['Boolean']['input']>;
+  sellerMarked18Plus?: InputMaybe<Scalars['Boolean']['input']>;
 }>;
 
 
@@ -1519,7 +1520,7 @@ export type GetPendingApprovalsQueryVariables = Exact<{
 }>;
 
 
-export type GetPendingApprovalsQuery = { __typename?: 'Query', getPendingApprovals: { __typename?: 'NSFWContentPage', totalCount: number, pageNumber: number, pageSize: number, hasNextPage: boolean, items: Array<{ __typename?: 'ContentApprovalQueueItem', id: string, flagType: ContentFlagType, status: ContentApprovalStatus, approvalNotes?: string | null, createdAt: string, listing: { __typename?: 'Listing', id: string, title: string, nsfwFlagged: boolean, nsfwApprovalStatus?: ContentApprovalStatus | null, images: Array<string> } }> } };
+export type GetPendingApprovalsQuery = { __typename?: 'Query', getPendingApprovals: { __typename?: 'NSFWContentPage', totalCount: number, pageNumber: number, pageSize: number, hasNextPage: boolean, items: Array<{ __typename?: 'ContentApprovalQueueItem', id: string, flagType: ContentFlagType, status: ContentApprovalStatus, approvalNotes?: string | null, createdAt: string, listing: { __typename?: 'Listing', id: string, title: string, nsfwFlagged: boolean, nsfwApprovalStatus?: ContentApprovalStatus | null, images: Array<string>, user?: { __typename?: 'User', id: string, firstName?: string | null, lastName?: string | null, username: string } | null, business?: { __typename?: 'Business', id: string, slug?: string | null, name: string } | null } }> } };
 
 export type GetSellerProfileQueryVariables = Exact<{
   id: Scalars['ID']['input'];
@@ -1814,7 +1815,7 @@ export type RegisterMutationHookResult = ReturnType<typeof useRegisterMutation>;
 export type RegisterMutationResult = Apollo.MutationResult<RegisterMutation>;
 export type RegisterMutationOptions = Apollo.BaseMutationOptions<RegisterMutation, RegisterMutationVariables>;
 export const CreateListingDocument = gql`
-    mutation CreateListing($title: String!, $description: String!, $images: [String!]!, $categoryId: ID!, $price: Float!, $quantity: Int, $customCity: String, $cityId: ID, $condition: Condition!, $userId: ID!, $businessId: ID, $nsfwFlagged: Boolean) {
+    mutation CreateListing($title: String!, $description: String!, $images: [String!]!, $categoryId: ID!, $price: Float!, $quantity: Int, $customCity: String, $cityId: ID, $condition: Condition!, $userId: ID!, $businessId: ID, $nsfwFlagged: Boolean, $sellerMarked18Plus: Boolean) {
   createListing(
     title: $title
     description: $description
@@ -1828,6 +1829,7 @@ export const CreateListingDocument = gql`
     userId: $userId
     businessId: $businessId
     nsfwFlagged: $nsfwFlagged
+    sellerMarked18Plus: $sellerMarked18Plus
   ) {
     id
     title
@@ -1870,6 +1872,7 @@ export type CreateListingMutationFn = Apollo.MutationFunction<CreateListingMutat
  *      userId: // value for 'userId'
  *      businessId: // value for 'businessId'
  *      nsfwFlagged: // value for 'nsfwFlagged'
+ *      sellerMarked18Plus: // value for 'sellerMarked18Plus'
  *   },
  * });
  */
@@ -3515,6 +3518,17 @@ export const GetPendingApprovalsDocument = gql`
         nsfwFlagged
         nsfwApprovalStatus
         images
+        user {
+          id
+          firstName
+          lastName
+          username
+        }
+        business {
+          id
+          slug
+          name
+        }
       }
     }
     totalCount

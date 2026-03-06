@@ -44,6 +44,7 @@ export const GET_LISTINGS = gql`
         images
         price
         sold
+        nsfwApprovalStatus
         city {
           id
           name

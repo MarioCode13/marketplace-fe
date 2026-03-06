@@ -1,3 +1,4 @@
+import { headers } from 'next/headers'
 import { getServerApolloClient } from '@/lib/apollo/server'
 import { GET_LISTINGS, GET_CATEGORIES } from '@/lib/graphql/queries'
 import Listings from '../Listings'
@@ -27,7 +28,11 @@ type PageProps = {
 export default async function SlugPage({ params, searchParams }: PageProps) {
   const { slugParts = [] } = await params
   const resolvedParams = (await searchParams) ?? {}
-  const client = getServerApolloClient()
+  const h = await headers()
+  const client = getServerApolloClient({
+    cookie: h.get('cookie') ?? '',
+    authorization: h.get('authorization') ?? '',
+  })
 
   // Fetch categories early to resolve category slugs
   let allCategories: Array<{

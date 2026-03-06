@@ -1,6 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { useSelector } from 'react-redux'
+import Link from 'next/link'
+import Image from 'next/image'
 import { useQuery, useMutation } from '@apollo/client'
 import { GET_PENDING_APPROVALS } from '@/lib/graphql/queries/getPendingApprovals'
 import {
@@ -11,6 +15,8 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
+import { generateImageUrl } from '@/lib/utils'
+import { RootState } from '@/store/store'
 
 interface ApprovalItem {
   id: string
@@ -24,6 +30,17 @@ interface ApprovalItem {
     nsfwFlagged: boolean
     nsfwApprovalStatus?: string | null
     images: string[]
+    business?: {
+      id: string
+      slug?: string | null
+      name: string
+    } | null
+    user?: {
+      id: string
+      firstName?: string | null
+      lastName?: string | null
+      username: string
+    } | null
   }
 }
 
@@ -40,6 +57,20 @@ interface GetPendingApprovalsData {
 }
 
 export default function AdminApprovalsPage() {
+  const router = useRouter()
+  const { userId, role } = useSelector((state: RootState) => state.userContext)
+
+  // Check if user is admin, redirect if not
+  useEffect(() => {
+    if (userId === null) {
+      // User not logged in, redirect to login
+      router.push('/login')
+    } else if (role !== 'ADMIN') {
+      // User logged in but not admin, redirect to home
+      router.push('/')
+    }
+  }, [userId, role, router])
+
   const [page, setPage] = useState(0)
   const pageSize = 10
 
@@ -53,6 +84,19 @@ export default function AdminApprovalsPage() {
 
   const [approveListing, { loading: approving }] = useMutation(APPROVE_LISTING)
   const [declineListing, { loading: declining }] = useMutation(DECLINE_LISTING)
+
+  // Don't render anything if not authorized
+  if (!userId || role !== 'ADMIN') {
+    return (
+      <div className='w-full flex justify-center'>
+        <div className='w-full max-w-5xl py-8 px-4'>
+          <div className='text-center py-16 text-muted-foreground'>
+            Checking permissions...
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   const handleApprove = async (id: string) => {
     try {
@@ -121,18 +165,47 @@ export default function AdminApprovalsPage() {
           {items.map((item) => (
             <Card
               key={item.id}
-              className='p-4 flex flex-col gap-2'
+              className='p-4 flex flex-col gap-4'
             >
               <div className='flex items-center justify-between gap-2 flex-wrap'>
                 <div>
+                  {item.listing.business ? (
+                    <Link
+                      href={
+                        item.listing.business.slug
+                          ? `/${item.listing.business.slug}`
+                          : `/store/${item.listing.business.id}`
+                      }
+                      className='text-lg text-blue-600 hover:underline'
+                    >
+                      Business: {item.listing.business.name}
+                    </Link>
+                  ) : item.listing.user ? (
+                    <Link
+                      href={`/seller/${item.listing.user.id}`}
+                      className='text-lg text-blue-600 hover:underline'
+                    >
+                      User: {item.listing.user.firstName}{' '}
+                      {item.listing.user.lastName}
+                    </Link>
+                  ) : null}
+                  <h2 className='text-xl font-semibold  mb-4 '>
+                    {item.listing.title || 'Untitled listing'}
+                  </h2>
+
                   <div className='text-sm text-muted-foreground'>
                     Listing ID: {item.listing.id}
                   </div>
-                  <h2 className='text-lg font-semibold'>
-                    {item.listing.title || 'Untitled listing'}
-                  </h2>
                 </div>
-                <div className='flex items-center gap-2'>
+                <div className='flex items-center gap-2 flex-wrap'>
+                  {item.listing.nsfwFlagged && (
+                    <Badge
+                      variant={'secondary'}
+                      className='uppercase'
+                    >
+                      18+
+                    </Badge>
+                  )}
                   <Badge variant='outline'>{item.flagType}</Badge>
                   <Badge
                     className='uppercase'
@@ -143,42 +216,65 @@ export default function AdminApprovalsPage() {
                 </div>
               </div>
 
-              <div className='text-sm text-muted-foreground'>
-                Created at: {new Date(item.createdAt).toLocaleString()}
-              </div>
-
-              {item.listing.nsfwApprovalStatus && (
-                <div className='text-sm'>
-                  NSFW status:{' '}
-                  <span className='font-medium'>
-                    {item.listing.nsfwApprovalStatus}
-                  </span>
+              {item.listing.images && item.listing.images.length > 0 && (
+                <div className='grid grid-cols-2 sm:grid-cols-4 gap-2'>
+                  {item.listing.images.map((image, index) => (
+                    <div
+                      key={index}
+                      className='relative aspect-square rounded-md overflow-hidden bg-muted'
+                    >
+                      <Image
+                        src={generateImageUrl(image)}
+                        alt={`Listing image ${index + 1}`}
+                        fill
+                        className='object-cover'
+                      />
+                    </div>
+                  ))}
                 </div>
               )}
 
-              {item.approvalNotes && (
-                <div className='text-sm text-muted-foreground'>
-                  Notes: {item.approvalNotes}
-                </div>
-              )}
+              <div className='flex justify-between items-center flex-wrap gap-4'>
+                <div>
+                  <div className='text-sm text-muted-foreground'>
+                    Created at: {new Date(item.createdAt).toLocaleString()}
+                  </div>
 
-              <div className='mt-3 flex gap-2'>
-                <Button
-                  variant='contained'
-                  color='primary'
-                  disabled={approving || declining}
-                  onClick={() => handleApprove(item.id)}
-                >
-                  Approve
-                </Button>
-                <Button
-                  variant='outlined'
-                  color='secondary'
-                  disabled={approving || declining}
-                  onClick={() => handleDecline(item.id)}
-                >
-                  Decline
-                </Button>
+                  {item.listing.nsfwApprovalStatus && (
+                    <div className='text-sm'>
+                      NSFW status:{' '}
+                      <span className='font-medium'>
+                        {item.listing.nsfwApprovalStatus}
+                      </span>
+                    </div>
+                  )}
+
+                  {item.approvalNotes && (
+                    <div className='text-sm text-muted-foreground'>
+                      Notes: {item.approvalNotes}
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <div className='mt-3 flex gap-2'>
+                    <Button
+                      variant='contained'
+                      color='primary'
+                      disabled={approving || declining}
+                      onClick={() => handleApprove(item.id)}
+                    >
+                      Approve
+                    </Button>
+                    <Button
+                      variant='outlined'
+                      color='primary'
+                      disabled={approving || declining}
+                      onClick={() => handleDecline(item.id)}
+                    >
+                      Decline
+                    </Button>
+                  </div>
+                </div>
               </div>
             </Card>
           ))}
