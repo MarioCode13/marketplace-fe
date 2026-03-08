@@ -273,28 +273,28 @@ export default function VerificationDisclosurePage() {
               <p className='text-foreground'>
                 <strong>General Support:</strong>{' '}
                 <a
-                  href='mailto:support@marketplace.com'
+                  href='mailto:info@dealio.org.za'
                   className='text-blue-600 hover:underline'
                 >
-                  support@marketplace.com
+                  info@dealio.org.za
                 </a>
               </p>
               <p className='text-foreground'>
                 <strong>Report Fraud:</strong>{' '}
                 <a
-                  href='mailto:fraud@marketplace.com'
+                  href='mailto:info@dealio.org.za'
                   className='text-blue-600 hover:underline'
                 >
-                  fraud@marketplace.com
+                  info@dealio.org.za
                 </a>
               </p>
               <p className='text-foreground'>
                 <strong>Verification Issues:</strong>{' '}
                 <a
-                  href='mailto:verification@marketplace.com'
+                  href='mailto:info@dealio.org.za'
                   className='text-blue-600 hover:underline'
                 >
-                  verification@marketplace.com
+                  info@dealio.org.za
                 </a>
               </p>
             </div>

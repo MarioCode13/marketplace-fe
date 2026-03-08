@@ -1,7 +1,14 @@
 'use client'
 
 import Link from 'next/link'
-import { Heart, Shield, FileText, AlertTriangle, Mail, MapPin } from 'lucide-react'
+import {
+  Heart,
+  Shield,
+  FileText,
+  AlertTriangle,
+  Mail,
+  MapPin,
+} from 'lucide-react'
 
 export default function Footer() {
   return (
@@ -10,12 +17,10 @@ export default function Footer() {
         <div className='grid grid-cols-1 md:grid-cols-4 gap-8'>
           {/* Company Info */}
           <div className='space-y-4'>
-            <h3 className='text-lg font-semibold text-foreground'>
-              Dealio
-            </h3>
+            <h3 className='text-lg font-semibold text-foreground'>Dealio</h3>
             <p className='text-sm text-muted-foreground'>
-              South Africa&apos;s trusted marketplace for buying and selling secondhand items. 
-              Secure, transparent, and built on trust.
+              South Africa&apos;s trusted marketplace for buying and selling
+              secondhand items. Secure, transparent, and built on trust.
             </p>
             <div className='flex items-center gap-2 text-sm text-muted-foreground'>
               <Heart className='w-4 h-4' />
@@ -28,7 +33,10 @@ export default function Footer() {
               </div>
               <div className='flex items-center gap-2'>
                 <Mail className='w-4 h-4' />
-                <a href='mailto:support@dealio.org.za' className='hover:text-foreground transition-colors'>
+                <a
+                  href='mailto:support@dealio.org.za'
+                  className='hover:text-foreground transition-colors'
+                >
                   support@dealio.org.za
                 </a>
               </div>
@@ -55,14 +63,6 @@ export default function Footer() {
                   className='text-muted-foreground hover:text-foreground transition-colors'
                 >
                   Sell an Item
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href='/profile'
-                  className='text-muted-foreground hover:text-foreground transition-colors'
-                >
-                  My Profile
                 </Link>
               </li>
               <li>
@@ -176,11 +176,13 @@ export default function Footer() {
               <AlertTriangle className='w-4 h-4' />
               <span>
                 Users transact at their own risk. Always verify items and users
-                independently. Dealio provides a platform but does not guarantee transactions.
+                independently. Dealio provides a platform but does not guarantee
+                transactions.
               </span>
             </div>
             <div className='text-sm text-muted-foreground'>
-              © {new Date().getFullYear()} Dealio (dealio.org.za). All rights reserved.
+              © {new Date().getFullYear()} Dealio (dealio.org.za). All rights
+              reserved.
             </div>
           </div>
         </div>

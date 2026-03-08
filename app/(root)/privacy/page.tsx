@@ -63,7 +63,7 @@ export default function PrivacyPolicyPage() {
               <ul className='list-disc list-inside space-y-2 text-foreground mb-6'>
                 <li>
                   <strong>Account Information:</strong> Username, email address,
-                  password
+                  password (for both personal and business accounts)
                 </li>
                 <li>
                   <strong>Profile Information:</strong> First name, last name,
@@ -75,7 +75,7 @@ export default function PrivacyPolicyPage() {
                 </li>
                 <li>
                   <strong>Listing Information:</strong> Item descriptions,
-                  photos, prices, locations
+                  photos, prices, locations (personal or business-owned)
                 </li>
                 <li>
                   <strong>Transaction Data:</strong> Sale records, buyer/seller
@@ -83,7 +83,34 @@ export default function PrivacyPolicyPage() {
                 </li>
                 <li>
                   <strong>Communication Data:</strong> Messages between users,
-                  support requests
+                  support requests, and in-app notifications
+                </li>
+              </ul>
+
+              <h3 className='text-xl font-medium mb-3'>
+                2.1a Business Account Information
+              </h3>
+              <p className='text-foreground leading-relaxed mb-4'>
+                For users with business accounts, we also collect:
+              </p>
+              <ul className='list-disc list-inside space-y-2 text-foreground mb-6'>
+                <li>
+                  <strong>Business Details:</strong> Business name, description,
+                  branding, store customization, and subscription status
+                </li>
+                <li>
+                  <strong>Team Management Data:</strong> Information about users
+                  invited to the business, their roles (Owner, Manager,
+                  Contributor), and role change history
+                </li>
+                <li>
+                  <strong>Business Listings:</strong> Items owned and sold by
+                  the business, including creation timestamp and creator
+                  information
+                </li>
+                <li>
+                  <strong>Subscription Data:</strong> Billing information,
+                  subscription tier, renewal dates, and payment history
                 </li>
               </ul>
 
@@ -111,17 +138,23 @@ export default function PrivacyPolicyPage() {
               <p className='text-foreground leading-relaxed mb-4'>
                 We use your personal information for the following purposes:
               </p>
-              <ul className='list-disc list-inside space-y-2 text-foreground'>
+              <ul className='list-disc list-inside space-y-2 text-foreground mb-6'>
                 <li>To provide and maintain our marketplace platform</li>
                 <li>To verify your identity and prevent fraud</li>
-                <li>To facilitate transactions between users</li>
+                <li>To facilitate transactions between users and businesses</li>
                 <li>
                   To communicate with you about your account and transactions
                 </li>
                 <li>To provide customer support and resolve disputes</li>
+                <li>To manage business accounts and team memberships</li>
+                <li>To process subscription payments and manage billing</li>
                 <li>To improve our services and develop new features</li>
                 <li>To comply with legal obligations and enforce our terms</li>
                 <li>To send you important updates and notifications</li>
+                <li>
+                  To manage business invitations, role assignments, and team
+                  communications
+                </li>
               </ul>
             </section>
 
@@ -169,8 +202,15 @@ export default function PrivacyPolicyPage() {
                   and listing details are visible to other users
                 </li>
                 <li>
+                  <strong>With Business Team Members:</strong> If you are part
+                  of a business account, other team members with appropriate
+                  permissions can access business-related information, listings,
+                  and subscription details
+                </li>
+                <li>
                   <strong>Service Providers:</strong> With trusted third-party
-                  services that help us operate our platform
+                  services that help us operate our platform, including payment
+                  processors
                 </li>
                 <li>
                   <strong>Legal Requirements:</strong> We may disclose your
@@ -201,7 +241,8 @@ export default function PrivacyPolicyPage() {
                 <strong>
                   We will never disclose your personal documents or identifying
                   information to other users or third parties without a lawful
-                  basis.
+                  basis, except as necessary for business account team members
+                  to perform their roles.
                 </strong>
               </p>
             </section>
@@ -296,10 +337,10 @@ export default function PrivacyPolicyPage() {
               <p className='text-foreground leading-relaxed mt-4'>
                 To exercise these rights, please contact us at{' '}
                 <a
-                  href='mailto:privacy@marketplace.com'
+                  href='mailto:info@dealio.org.za'
                   className='text-blue-600 hover:underline'
                 >
-                  privacy@marketplace.com
+                  info@dealio.org.za
                 </a>
               </p>
             </section>
@@ -372,19 +413,19 @@ export default function PrivacyPolicyPage() {
                 <p className='text-foreground'>
                   <strong>Email:</strong>{' '}
                   <a
-                    href='mailto:privacy@marketplace.com'
+                    href='mailto:info@dealio.org.za'
                     className='text-blue-600 hover:underline'
                   >
-                    privacy@marketplace.com
+                    info@dealio.org.za
                   </a>
                 </p>
                 <p className='text-foreground'>
                   <strong>Data Protection Officer:</strong>{' '}
                   <a
-                    href='mailto:dpo@marketplace.com'
+                    href='mailto:info@dealio.org.za'
                     className='text-blue-600 hover:underline'
                   >
-                    dpo@marketplace.com
+                    info@dealio.org.za
                   </a>
                 </p>
               </div>

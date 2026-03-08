@@ -1,7 +1,7 @@
 'use client'
 
 import { gql, useMutation, useLazyQuery } from '@apollo/client'
-import { ChangeEvent, useState } from 'react'
+import { ChangeEvent, useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useDispatch } from 'react-redux'
 import { useSelector } from 'react-redux'
@@ -59,7 +59,13 @@ export default function Profile() {
   const user = useSelector((state: RootState) => state.userContext)
   const userContext = useSelector((state: RootState) => state.userContext)
   const business = userContext.business
-  const userId = userContext.userId
+  const userId = userContext.userId // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!userId) {
+      router.push('/login')
+    }
+  }, [userId, router])
+
   const profileComplete = user?.profileCompletion?.complete || false
   const businessId = userContext.businessId || business?.id
   const [updateProfile] = useMutation(UPDATE_PROFILE)
@@ -206,6 +212,15 @@ export default function Profile() {
     } finally {
       setProfileImageLoading(false)
     }
+  }
+
+  // Show loading spinner while checking authentication
+  if (!userId) {
+    return (
+      <div className='w-full flex justify-center items-center min-h-screen'>
+        <Spinner />
+      </div>
+    )
   }
 
   return (
