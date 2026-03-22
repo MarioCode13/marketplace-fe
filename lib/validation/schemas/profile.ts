@@ -32,6 +32,32 @@ export const profileSchema = z.object({
             (val) => isValidForInput(val),
             'Last name contains invalid characters or patterns'
         ),
+    username: z
+        .string()
+        .optional()
+        .refine(
+            (val) => !val || val.length >= 3,
+            'Username must be at least 3 characters'
+        )
+        .refine(
+            (val) => !val || /^[a-zA-Z0-9_]+$/.test(val),
+            'Username can only contain letters, numbers, and underscores'
+        )
+        .refine(
+            (val) => isValidForInput(val),
+            'Username contains invalid characters or patterns'
+        ),
+    email: z
+        .string()
+        .optional()
+        .refine(
+            (val) => !val || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val),
+            'Please enter a valid email address'
+        )
+        .refine(
+            (val) => !val || isValidForInput(val),
+            'Email contains invalid characters or patterns'
+        ),
     bio: z
         .string()
         .optional()

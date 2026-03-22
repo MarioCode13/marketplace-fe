@@ -69,6 +69,8 @@ export default function CompleteProfilePage() {
   } = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
+      username: user?.username || '',
+      email: user?.email || '',
       firstName: user?.firstName || '',
       lastName: user?.lastName || '',
       bio: user?.bio || '',
@@ -79,6 +81,8 @@ export default function CompleteProfilePage() {
 
   useEffect(() => {
     if (user) {
+      setValue('username', user.username || '')
+      setValue('email', user.email || '')
       setValue('firstName', user.firstName || '')
       setValue('lastName', user.lastName || '')
       setValue('bio', user.bio || '')
@@ -99,6 +103,8 @@ export default function CompleteProfilePage() {
 
   if (loading) return <p>Loading...</p>
   if (error) return <p>Error loading profile</p>
+
+  const isProfileComplete = Boolean(user?.profileCompletion?.complete)
 
   const hasLocation =
     (typeof formState.city === 'string' && formState.city.trim() !== '') ||
@@ -227,6 +233,8 @@ export default function CompleteProfilePage() {
     try {
       const submitData = {
         id: user.id,
+        username: data.username || undefined,
+        email: data.email || undefined,
         firstName: data.firstName || undefined,
         lastName: data.lastName || undefined,
         bio: data.bio || undefined,
@@ -251,7 +259,7 @@ export default function CompleteProfilePage() {
     <div className='flex items-center justify-center bg-background'>
       <div className='w-full max-w-md rounded-lg p-6 shadow-lg bg-componentBackground my-6'>
         <h2 className='mb-4 text-2xl font-bold text-foreground'>
-          Complete Your Profile
+          {isProfileComplete ? 'Edit Profile' : 'Complete Your Profile'}
         </h2>
         {/* Profile Image Section */}
         <div className='flex justify-center mb-6'>
@@ -319,6 +327,37 @@ export default function CompleteProfilePage() {
           onSubmit={handleSubmit(onSubmit)}
           className='space-y-4'
         >
+          <div>
+            <Label htmlFor='username'>Username</Label>
+            <Input
+              id='username'
+              placeholder='Enter your username'
+              {...register('username')}
+              disabled={isProfileComplete}
+              className={errors.username ? 'border-red-500' : ''}
+            />
+            {errors.username && (
+              <p className='text-sm text-red-500 mt-1'>
+                {errors.username.message}
+              </p>
+            )}
+          </div>
+          <div>
+            <Label htmlFor='email'>Email</Label>
+            <Input
+              id='email'
+              placeholder='Enter your email'
+              type='email'
+              {...register('email')}
+              disabled={isProfileComplete}
+              className={errors.email ? 'border-red-500' : ''}
+            />
+            {errors.email && (
+              <p className='text-sm text-red-500 mt-1'>
+                {errors.email.message}
+              </p>
+            )}
+          </div>
           <div>
             <Label htmlFor='firstName'>First Name</Label>
             <Input
@@ -427,13 +466,19 @@ export default function CompleteProfilePage() {
               id='idNumber'
               placeholder='Enter your 13-digit ID number'
               maxLength={13}
-              disabled={user?.trustRating?.verifiedId}
+              disabled={user?.trustRating?.verifiedId || isProfileComplete}
               {...register('idNumber')}
               className={errors.idNumber ? 'border-red-500' : ''}
             />
             {errors.idNumber && (
               <p className='text-sm text-red-500 mt-1'>
                 {errors.idNumber.message}
+              </p>
+            )}
+            {isProfileComplete && (
+              <p className='text-xs text-muted-foreground mt-1'>
+                Profile is complete; username, email, and ID number cannot be
+                changed.
               </p>
             )}
           </div>
@@ -484,7 +529,11 @@ export default function CompleteProfilePage() {
             color={'primary'}
             disabled={isSubmitting || Object.keys(errors).length > 0}
           >
-            {isSubmitting ? 'Saving...' : 'Save & Continue'}
+            {isSubmitting
+              ? 'Saving...'
+              : isProfileComplete
+                ? 'Save Changes'
+                : 'Save & Continue'}
           </Button>
         </form>
       </div>

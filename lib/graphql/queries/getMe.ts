@@ -32,6 +32,9 @@ export const GET_ME = gql`
       trustRating{
         verifiedId
       }
+      profileCompletion {
+        completionPercentage
+      }
     }
   }
 ` 

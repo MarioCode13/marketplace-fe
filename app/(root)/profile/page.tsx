@@ -1,14 +1,11 @@
 'use client'
 
-import { gql, useMutation, useLazyQuery } from '@apollo/client'
 import { ChangeEvent, useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useDispatch } from 'react-redux'
 import { useSelector } from 'react-redux'
 import { AppDispatch, RootState } from '@/store/store'
 import { logoutUser, refetchUserProfile } from '@/store/userContextSlice'
-import { Label } from '@/components/ui/label'
-import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import Image from 'next/image'
 import {
@@ -20,7 +17,6 @@ import {
   Pencil,
   User,
   CheckCircle,
-  ArrowRight,
   Shield,
   Star,
   ShieldCheck,
@@ -35,25 +31,12 @@ import {
 } from '@/components/ui/tooltip'
 import { TrustRatingDisplay } from '@/components/TrustRatingDisplay'
 import { generateImageUrl } from '@/lib/utils'
-import { CHECK_USERNAME_AVAILABLE } from '@/lib/graphql/mutations/authMutations'
 import { checkImageContent } from '@/lib/utils/contentModeration'
-
-const UPDATE_PROFILE = gql`
-  mutation UpdateProfile($id: ID!, $username: String!, $email: String!) {
-    updateUser(id: $id, username: $username, email: $email) {
-      id
-      username
-      email
-    }
-  }
-`
 
 export default function Profile() {
   const router = useRouter()
 
-  const [editing, setEditing] = useState(false)
   const [hovered, setHovered] = useState(false)
-  const [usernameCheckLoading, setUsernameCheckLoading] = useState(false)
   const [profileImageLoading, setProfileImageLoading] = useState(false)
   const dispatch = useDispatch<AppDispatch>()
   const user = useSelector((state: RootState) => state.userContext)
@@ -68,27 +51,14 @@ export default function Profile() {
 
   const profileComplete = user?.profileCompletion?.complete || false
   const businessId = userContext.businessId || business?.id
-  const [updateProfile] = useMutation(UPDATE_PROFILE)
-  const [checkUsernameAvailable] = useLazyQuery(CHECK_USERNAME_AVAILABLE)
-  const [form, setForm] = useState({
-    username: user?.username ?? '',
-    email: user?.email ?? '',
-  })
 
-  const {
-    data: businessTrustData,
-    loading: businessTrustLoading,
-    refetch: refetchBusinessTrust,
-  } = useBusinessTrustRatingQuery({
-    variables: { businessId: businessId ?? '' },
-    skip: !businessId,
-  })
+  const { data: businessTrustData, loading: businessTrustLoading } =
+    useBusinessTrustRatingQuery({
+      variables: { businessId: businessId ?? '' },
+      skip: !businessId,
+    })
   // Only fetch user trust rating if not a business user
-  const {
-    data: trustData,
-    loading: trustLoading,
-    refetch: refetchUserTrust,
-  } = useGetTrustRatingQuery({
+  const { data: trustData, loading: trustLoading } = useGetTrustRatingQuery({
     variables: { userId: userId ?? '' },
     skip: !userId || !!businessId,
   })
@@ -100,53 +70,6 @@ export default function Profile() {
   const canEditBusinessProfile = userContext.isBusinessOwner
   const canUpgrade = user?.planType !== 'PRO_STORE'
   const reseller = user?.planType === 'RESELLER'
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value })
-  }
-
-  const handleUsernameBlur = async (username: string) => {
-    if (!username || username.length < 3) return
-    // Don't check if username hasn't changed
-    if (username === user?.username) return
-
-    setUsernameCheckLoading(true)
-    try {
-      const { data } = await checkUsernameAvailable({
-        variables: { username },
-      })
-      const isAvailable = data.checkUsernameAvailable
-
-      if (!isAvailable) {
-        toast.error('Username is not available')
-      } else {
-        toast.success('Username is available')
-      }
-    } catch {
-      toast.error('Failed to check username availability')
-    } finally {
-      setUsernameCheckLoading(false)
-    }
-  }
-
-  const handleEdit = () => {
-    setForm({ username: user?.username ?? '', email: user?.email ?? '' })
-    setEditing(true)
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    await updateProfile({ variables: { id: userId, ...form } })
-    // After mutation, refetch user profile via Redux thunk
-    dispatch(refetchUserProfile())
-    // Refetch trust rating queries to get updated data
-    if (businessId) {
-      await refetchBusinessTrust()
-    } else if (userId) {
-      await refetchUserTrust()
-    }
-    setEditing(false)
-  }
 
   const handleLogout = () => {
     dispatch(logoutUser())
@@ -300,74 +223,38 @@ export default function Profile() {
                 </div>
               </label>
             </div>
-            {editing ? (
-              <form
-                onSubmit={handleSubmit}
-                className='mt-6'
-              >
-                <Label htmlFor='username'>Username</Label>
-                <Input
-                  id='username'
-                  name='username'
-                  value={form.username}
-                  onChange={handleChange}
-                  onBlur={(e) => handleUsernameBlur(e.target.value)}
-                  disabled={!user || usernameCheckLoading}
-                  className='mb-3'
-                />
-                <Label htmlFor='email'>Email</Label>
-                <Input
-                  id='email'
-                  name='email'
-                  value={form.email}
-                  onChange={handleChange}
-                  className='mb-3'
-                  disabled={!user}
-                />
-                <Button
-                  variant={'contained'}
-                  color={'primary'}
-                  className='w-full mt-3'
-                  type='submit'
-                  disabled={!user}
-                >
-                  Save Changes
-                </Button>
-              </form>
-            ) : (
-              <div>
-                {user ? (
-                  <>
-                    <p>
-                      <strong>Username:</strong> {user.username}
-                    </p>
-                    <p>
-                      <strong>Email:</strong> {user.email}
-                    </p>
-                    <Button
-                      variant={'contained'}
-                      color={'primary'}
-                      className='w-full mt-3'
-                      onClick={handleEdit}
-                    >
-                      Edit
-                    </Button>
-                  </>
-                ) : (
-                  <p className='text-sm text-gray-500'>Loading user data...</p>
-                )}
-              </div>
-            )}
-            {!profileComplete && (
+            <div className='mt-6'>
+              {user ? (
+                <>
+                  <p>
+                    <strong>Username:</strong> {user.username}
+                  </p>
+                  <p>
+                    <strong>Email:</strong> {user.email}
+                  </p>
+                </>
+              ) : (
+                <p className='text-sm text-gray-500'>Loading user data...</p>
+              )}
+
               <Button
-                color={'secondary'}
                 variant={'contained'}
-                className='w-full mt-2'
+                color={'primary'}
+                className='w-full mt-3'
                 onClick={() => router.push('/profile/complete')}
               >
-                Complete Your Profile <ArrowRight className='w-4 h-4 ml-2' />
+                {profileComplete ? 'Edit Profile' : 'Complete Your Profile'}
               </Button>
-            )}
+
+              <Button
+                variant={'outlined'}
+                color={'primary'}
+                className='w-full mt-3'
+                onClick={() => router.push('/profile/preferences')}
+              >
+                Account Preferences
+              </Button>
+            </div>
             {/* Trust Rating Section */}
             {businessId ? (
               businessTrustLoading ? (
