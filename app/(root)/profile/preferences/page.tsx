@@ -3,16 +3,22 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { gql, useMutation, useQuery } from '@apollo/client'
+import { useSelector } from 'react-redux'
+import { RootState } from '@/store/store'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 
-const GET_ME_EXPLICIT = gql`
-  query MeForExplicitContent {
+const GET_ME_PREFERENCES = gql`
+  query MeForPreferences {
     me {
       id
-      ageVerified
-      allowsExplicitContent
-      dateOfBirth
+      eligibleForExplicitContent
+      preferences {
+        allowsExplicitContent
+        emailMarketingOptIn
+      }
       profileCompletion {
         completionPercentage
       }
@@ -20,91 +26,98 @@ const GET_ME_EXPLICIT = gql`
   }
 `
 
-const VERIFY_USER_AGE = gql`
-  mutation VerifyUserAge($dateOfBirth: String!) {
-    verifyUserAge(dateOfBirth: $dateOfBirth) {
+const UPDATE_USER_PREFERENCES = gql`
+  mutation UpdateUserPreferences($input: UserPreferencesInput!) {
+    updateUserPreferences(input: $input) {
       id
-      ageVerified
-    }
-  }
-`
-
-const UPDATE_EXPLICIT_CONTENT_PREFERENCE = gql`
-  mutation UpdateExplicitContentPreference($allowExplicit: Boolean!) {
-    updateExplicitContentPreference(allowExplicit: $allowExplicit) {
-      id
-      allowsExplicitContent
+      eligibleForExplicitContent
+      preferences {
+        allowsExplicitContent
+        emailMarketingOptIn
+      }
     }
   }
 `
 
 export default function ProfilePreferencesPage() {
   const router = useRouter()
-  const { data, loading, error, refetch } = useQuery(GET_ME_EXPLICIT, {
+  const userId = useSelector((state: RootState) => state.userContext.userId)
+
+  useEffect(() => {
+    if (!userId) {
+      router.push('/login')
+    }
+  }, [userId, router])
+
+  const { data, loading, error, refetch } = useQuery(GET_ME_PREFERENCES, {
     fetchPolicy: 'network-only',
+    skip: !userId,
   })
 
-  const [verifyUserAge] = useMutation(VERIFY_USER_AGE)
-  const [updateExplicit] = useMutation(UPDATE_EXPLICIT_CONTENT_PREFERENCE)
+  const [updatePreferences] = useMutation(UPDATE_USER_PREFERENCES)
 
   const me = data?.me
   const [allowExplicit, setAllowExplicit] = useState(false)
-  const [dobValue, setDobValue] = useState(me?.dateOfBirth ?? '')
+  const [marketingOptIn, setMarketingOptIn] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
-  const [isVerifying, setIsVerifying] = useState(false)
+  const [isSavingMarketing, setIsSavingMarketing] = useState(false)
 
   useEffect(() => {
-    setAllowExplicit(me?.allowsExplicitContent ?? false)
-    if (me?.dateOfBirth) setDobValue(me.dateOfBirth)
+    setAllowExplicit(me?.preferences?.allowsExplicitContent ?? false)
+    setMarketingOptIn(me?.preferences?.emailMarketingOptIn ?? true)
   }, [me])
 
-  const handleVerify = async () => {
-    if (!dobValue) {
-      toast.error('Enter your date of birth to verify your age.')
-      return
-    }
-
-    setIsVerifying(true)
-    try {
-      const { data } = await verifyUserAge({
-        variables: { dateOfBirth: dobValue },
-      })
-
-      if (data?.verifyUserAge?.ageVerified) {
-        toast.success('Age verified successfully!')
-        await refetch({ fetchPolicy: 'network-only' })
-      } else {
-        toast.error('Age verification failed. You must be 18+ to proceed.')
-      }
-    } catch (err) {
-      toast.error('Unable to verify age. Please try again later.')
-      console.error(err)
-    } finally {
-      setIsVerifying(false)
-    }
-  }
-
   const handleToggleExplicit = async () => {
-    if (!me?.ageVerified) {
-      toast.error('You must verify age before enabling explicit content.')
+    const next = !allowExplicit
+    if (next && !me?.eligibleForExplicitContent) {
+      toast.error(
+        'Verify your South African ID (18+) in your profile before enabling explicit content.'
+      )
       return
     }
 
     setIsSaving(true)
     try {
-      const newValue = !allowExplicit
-      await updateExplicit({
-        variables: { allowExplicit: newValue },
+      const newValue = next
+      await updatePreferences({
+        variables: {
+          input: { allowsExplicitContent: newValue },
+        },
       })
       setAllowExplicit(newValue)
       toast.success('Explicit content preference updated.')
-      await refetch({ fetchPolicy: 'network-only' })
+      await refetch()
     } catch (err) {
       toast.error('Failed to update explicit content preference.')
       console.error(err)
     } finally {
       setIsSaving(false)
     }
+  }
+
+  const handleMarketingChange = async (checked: boolean) => {
+    setIsSavingMarketing(true)
+    try {
+      await updatePreferences({
+        variables: { input: { emailMarketingOptIn: checked } },
+      })
+      setMarketingOptIn(checked)
+      toast.success(
+        checked
+          ? 'You may receive occasional marketing emails from Dealio.'
+          : 'Marketing emails are turned off.'
+      )
+      await refetch()
+    } catch (err) {
+      toast.error('Could not update email preference.')
+      console.error(err)
+    } finally {
+      setIsSavingMarketing(false)
+    }
+  }
+
+  if (!userId) {
+    return null
   }
 
   if (loading) {
@@ -125,58 +138,54 @@ export default function ProfilePreferencesPage() {
           <div>
             <p className='font-medium'>Explicit Content</p>
             <p className='text-sm text-muted-foreground mb-2'>
-              Allow mature content after age verification.
+              Allow mature content after your South African ID is verified and
+              shows you are 18 or older.
             </p>
             <div className='flex items-center gap-3'>
               <span>{allowExplicit ? 'Enabled' : 'Disabled'}</span>
-              <Button
-                onClick={handleToggleExplicit}
-                disabled={isSaving}
-              >
+              <Button onClick={handleToggleExplicit} disabled={isSaving}>
                 {isSaving ? 'Saving...' : allowExplicit ? 'Disable' : 'Enable'}
               </Button>
             </div>
-            {!me?.ageVerified && (
-              <p className='text-sm text-red-500 mt-2'>
-                You need to verify that you are 18+ before enabling explicit
-                content.
+            {!me?.eligibleForExplicitContent && (
+              <p className='text-sm text-muted-foreground mt-2'>
+                Complete ID verification on your profile with a valid SA ID
+                number. We use your verified ID and the date encoded in your ID
+                number to confirm you are 18+.
+              </p>
+            )}
+            {me?.eligibleForExplicitContent && (
+              <p className='text-sm text-success mt-2'>
+                You are eligible to enable explicit content (verified ID, 18+).
               </p>
             )}
           </div>
 
           <div className='border-t border-muted-foreground pt-4'>
-            <p className='font-medium'>Age Verification</p>
-            <p className='text-sm text-muted-foreground mb-2'>
-              Verify your age (18+) to control explicit content preference.
+            <p className='font-medium'>Marketing emails</p>
+            <p className='text-sm text-muted-foreground mb-3'>
+              Tips, product news, and offers. Account and purchase-related
+              emails are not affected.
             </p>
-            <input
-              type='date'
-              value={dobValue}
-              onChange={(e) => setDobValue(e.target.value)}
-              className='w-full p-2 border rounded-md mb-2'
-            />
-            <Button
-              onClick={handleVerify}
-              disabled={isVerifying}
-            >
-              {isVerifying ? 'Verifying...' : 'Verify Age'}
-            </Button>
-            {me?.ageVerified && (
-              <p className='text-sm text-success mt-2'>Age verified ✓</p>
-            )}
+            <div className='flex items-start gap-3'>
+              <Checkbox
+                id='marketing-email'
+                checked={marketingOptIn}
+                disabled={isSavingMarketing}
+                onCheckedChange={(v) => {
+                  void handleMarketingChange(v === true)
+                }}
+              />
+              <Label
+                htmlFor='marketing-email'
+                className='text-sm font-normal leading-snug cursor-pointer'
+              >
+                I agree to receive marketing emails from Dealio
+              </Label>
+            </div>
           </div>
 
-          <div className='border-t border-muted-foreground pt-4'>
-            <p className='font-medium'>Future notifications</p>
-            <p className='text-sm text-muted-foreground'>
-              Email notification settings will appear here soon.
-            </p>
-          </div>
-
-          <Button
-            variant='outlined'
-            onClick={() => router.push('/profile')}
-          >
+          <Button variant='outlined' onClick={() => router.push('/profile')}>
             Back to Profile
           </Button>
         </div>

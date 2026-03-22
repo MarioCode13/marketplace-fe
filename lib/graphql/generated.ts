@@ -1237,14 +1237,24 @@ export type CompleteProfileMutationVariables = Exact<{
 
 export type CompleteProfileMutation = { __typename?: 'Mutation', updateUser?: { __typename?: 'User', id: string } | null };
 
-export type UpdateProfileMutationVariables = Exact<{
-  id: Scalars['ID']['input'];
-  username: Scalars['String']['input'];
-  email: Scalars['String']['input'];
+export type MeForExplicitContentQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type MeForExplicitContentQuery = { __typename?: 'Query', me?: { __typename?: 'User', id: string, ageVerified: boolean, allowsExplicitContent: boolean, dateOfBirth?: string | null, profileCompletion?: { __typename?: 'ProfileCompletion', completionPercentage: number } | null } | null };
+
+export type VerifyUserAgeMutationVariables = Exact<{
+  dateOfBirth: Scalars['String']['input'];
 }>;
 
 
-export type UpdateProfileMutation = { __typename?: 'Mutation', updateUser?: { __typename?: 'User', id: string, username: string, email?: string | null } | null };
+export type VerifyUserAgeMutation = { __typename?: 'Mutation', verifyUserAge: { __typename?: 'User', id: string, ageVerified: boolean } };
+
+export type UpdateExplicitContentPreferenceMutationVariables = Exact<{
+  allowExplicit: Scalars['Boolean']['input'];
+}>;
+
+
+export type UpdateExplicitContentPreferenceMutation = { __typename?: 'Mutation', updateExplicitContentPreference: { __typename?: 'User', id: string, allowsExplicitContent: boolean } };
 
 export type RegisterMutationVariables = Exact<{
   username: Scalars['String']['input'];
@@ -1495,12 +1505,12 @@ export type GetListingsQueryVariables = Exact<{
 }>;
 
 
-export type GetListingsQuery = { __typename?: 'Query', getListings: { __typename?: 'ListingPageResponse', totalCount: number, listings: Array<{ __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, sold: boolean, customCity?: string | null, condition: Condition, createdAt: string, expiresAt: string, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, category?: { __typename?: 'Category', id: string, name: string } | null, user?: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null, trustRating?: { __typename?: 'TrustRating', verifiedId: boolean, starRating: number, totalReviews: number } | null } | null, business?: { __typename?: 'Business', name: string, trustRating?: { __typename?: 'BusinessTrustRating', verifiedWithThirdParty: boolean, averageRating: number, reviewCount: number } | null } | null }> } };
+export type GetListingsQuery = { __typename?: 'Query', getListings: { __typename?: 'ListingPageResponse', totalCount: number, listings: Array<{ __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, sold: boolean, nsfwApprovalStatus?: ContentApprovalStatus | null, customCity?: string | null, condition: Condition, createdAt: string, expiresAt: string, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, category?: { __typename?: 'Category', id: string, name: string } | null, user?: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null, trustRating?: { __typename?: 'TrustRating', verifiedId: boolean, starRating: number, totalReviews: number } | null } | null, business?: { __typename?: 'Business', name: string, trustRating?: { __typename?: 'BusinessTrustRating', verifiedWithThirdParty: boolean, averageRating: number, reviewCount: number } | null } | null }> } };
 
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type MeQuery = { __typename?: 'Query', me?: { __typename?: 'User', id: string, username: string, email?: string | null, firstName?: string | null, lastName?: string | null, bio?: string | null, profileImageUrl?: string | null, planType?: PlanType | null, role: string, customCity?: string | null, contactNumber?: string | null, idNumber?: string | null, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, subscription?: { __typename?: 'Subscription', status: SubscriptionStatus, planType: PlanType } | null, trustRating?: { __typename?: 'TrustRating', verifiedId: boolean } | null } | null };
+export type MeQuery = { __typename?: 'Query', me?: { __typename?: 'User', id: string, username: string, email?: string | null, firstName?: string | null, lastName?: string | null, bio?: string | null, profileImageUrl?: string | null, planType?: PlanType | null, role: string, customCity?: string | null, contactNumber?: string | null, idNumber?: string | null, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, subscription?: { __typename?: 'Subscription', status: SubscriptionStatus, planType: PlanType } | null, trustRating?: { __typename?: 'TrustRating', verifiedId: boolean } | null, profileCompletion?: { __typename?: 'ProfileCompletion', completionPercentage: number } | null } | null };
 
 export type GetMyBusinessQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1665,7 +1675,7 @@ export type MyListingsQueryVariables = Exact<{
 }>;
 
 
-export type MyListingsQuery = { __typename?: 'Query', myListings: { __typename?: 'ListingPageResponse', totalCount: number, listings: Array<{ __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, sold: boolean, customCity?: string | null, condition: Condition, createdAt: string, expiresAt: string, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, user?: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } | null }> } };
+export type MyListingsQuery = { __typename?: 'Query', myListings: { __typename?: 'ListingPageResponse', totalCount: number, listings: Array<{ __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, sold: boolean, nsfwApprovalStatus?: ContentApprovalStatus | null, customCity?: string | null, condition: Condition, createdAt: string, expiresAt: string, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, user?: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null } | null }> } };
 
 export type SearchCitiesQueryVariables = Exact<{
   query: Scalars['String']['input'];
@@ -1739,43 +1749,119 @@ export function useCompleteProfileMutation(baseOptions?: Apollo.MutationHookOpti
 export type CompleteProfileMutationHookResult = ReturnType<typeof useCompleteProfileMutation>;
 export type CompleteProfileMutationResult = Apollo.MutationResult<CompleteProfileMutation>;
 export type CompleteProfileMutationOptions = Apollo.BaseMutationOptions<CompleteProfileMutation, CompleteProfileMutationVariables>;
-export const UpdateProfileDocument = gql`
-    mutation UpdateProfile($id: ID!, $username: String!, $email: String!) {
-  updateUser(id: $id, username: $username, email: $email) {
+export const MeForExplicitContentDocument = gql`
+    query MeForExplicitContent {
+  me {
     id
-    username
-    email
+    ageVerified
+    allowsExplicitContent
+    dateOfBirth
+    profileCompletion {
+      completionPercentage
+    }
   }
 }
     `;
-export type UpdateProfileMutationFn = Apollo.MutationFunction<UpdateProfileMutation, UpdateProfileMutationVariables>;
 
 /**
- * __useUpdateProfileMutation__
+ * __useMeForExplicitContentQuery__
  *
- * To run a mutation, you first call `useUpdateProfileMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useUpdateProfileMutation` returns a tuple that includes:
+ * To run a query within a React component, call `useMeForExplicitContentQuery` and pass it any options that fit your needs.
+ * When your component renders, `useMeForExplicitContentQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useMeForExplicitContentQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useMeForExplicitContentQuery(baseOptions?: Apollo.QueryHookOptions<MeForExplicitContentQuery, MeForExplicitContentQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<MeForExplicitContentQuery, MeForExplicitContentQueryVariables>(MeForExplicitContentDocument, options);
+      }
+export function useMeForExplicitContentLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<MeForExplicitContentQuery, MeForExplicitContentQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<MeForExplicitContentQuery, MeForExplicitContentQueryVariables>(MeForExplicitContentDocument, options);
+        }
+export function useMeForExplicitContentSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<MeForExplicitContentQuery, MeForExplicitContentQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<MeForExplicitContentQuery, MeForExplicitContentQueryVariables>(MeForExplicitContentDocument, options);
+        }
+export type MeForExplicitContentQueryHookResult = ReturnType<typeof useMeForExplicitContentQuery>;
+export type MeForExplicitContentLazyQueryHookResult = ReturnType<typeof useMeForExplicitContentLazyQuery>;
+export type MeForExplicitContentSuspenseQueryHookResult = ReturnType<typeof useMeForExplicitContentSuspenseQuery>;
+export type MeForExplicitContentQueryResult = Apollo.QueryResult<MeForExplicitContentQuery, MeForExplicitContentQueryVariables>;
+export const VerifyUserAgeDocument = gql`
+    mutation VerifyUserAge($dateOfBirth: String!) {
+  verifyUserAge(dateOfBirth: $dateOfBirth) {
+    id
+    ageVerified
+  }
+}
+    `;
+export type VerifyUserAgeMutationFn = Apollo.MutationFunction<VerifyUserAgeMutation, VerifyUserAgeMutationVariables>;
+
+/**
+ * __useVerifyUserAgeMutation__
+ *
+ * To run a mutation, you first call `useVerifyUserAgeMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useVerifyUserAgeMutation` returns a tuple that includes:
  * - A mutate function that you can call at any time to execute the mutation
  * - An object with fields that represent the current status of the mutation's execution
  *
  * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
  *
  * @example
- * const [updateProfileMutation, { data, loading, error }] = useUpdateProfileMutation({
+ * const [verifyUserAgeMutation, { data, loading, error }] = useVerifyUserAgeMutation({
  *   variables: {
- *      id: // value for 'id'
- *      username: // value for 'username'
- *      email: // value for 'email'
+ *      dateOfBirth: // value for 'dateOfBirth'
  *   },
  * });
  */
-export function useUpdateProfileMutation(baseOptions?: Apollo.MutationHookOptions<UpdateProfileMutation, UpdateProfileMutationVariables>) {
+export function useVerifyUserAgeMutation(baseOptions?: Apollo.MutationHookOptions<VerifyUserAgeMutation, VerifyUserAgeMutationVariables>) {
         const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<UpdateProfileMutation, UpdateProfileMutationVariables>(UpdateProfileDocument, options);
+        return Apollo.useMutation<VerifyUserAgeMutation, VerifyUserAgeMutationVariables>(VerifyUserAgeDocument, options);
       }
-export type UpdateProfileMutationHookResult = ReturnType<typeof useUpdateProfileMutation>;
-export type UpdateProfileMutationResult = Apollo.MutationResult<UpdateProfileMutation>;
-export type UpdateProfileMutationOptions = Apollo.BaseMutationOptions<UpdateProfileMutation, UpdateProfileMutationVariables>;
+export type VerifyUserAgeMutationHookResult = ReturnType<typeof useVerifyUserAgeMutation>;
+export type VerifyUserAgeMutationResult = Apollo.MutationResult<VerifyUserAgeMutation>;
+export type VerifyUserAgeMutationOptions = Apollo.BaseMutationOptions<VerifyUserAgeMutation, VerifyUserAgeMutationVariables>;
+export const UpdateExplicitContentPreferenceDocument = gql`
+    mutation UpdateExplicitContentPreference($allowExplicit: Boolean!) {
+  updateExplicitContentPreference(allowExplicit: $allowExplicit) {
+    id
+    allowsExplicitContent
+  }
+}
+    `;
+export type UpdateExplicitContentPreferenceMutationFn = Apollo.MutationFunction<UpdateExplicitContentPreferenceMutation, UpdateExplicitContentPreferenceMutationVariables>;
+
+/**
+ * __useUpdateExplicitContentPreferenceMutation__
+ *
+ * To run a mutation, you first call `useUpdateExplicitContentPreferenceMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateExplicitContentPreferenceMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateExplicitContentPreferenceMutation, { data, loading, error }] = useUpdateExplicitContentPreferenceMutation({
+ *   variables: {
+ *      allowExplicit: // value for 'allowExplicit'
+ *   },
+ * });
+ */
+export function useUpdateExplicitContentPreferenceMutation(baseOptions?: Apollo.MutationHookOptions<UpdateExplicitContentPreferenceMutation, UpdateExplicitContentPreferenceMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpdateExplicitContentPreferenceMutation, UpdateExplicitContentPreferenceMutationVariables>(UpdateExplicitContentPreferenceDocument, options);
+      }
+export type UpdateExplicitContentPreferenceMutationHookResult = ReturnType<typeof useUpdateExplicitContentPreferenceMutation>;
+export type UpdateExplicitContentPreferenceMutationResult = Apollo.MutationResult<UpdateExplicitContentPreferenceMutation>;
+export type UpdateExplicitContentPreferenceMutationOptions = Apollo.BaseMutationOptions<UpdateExplicitContentPreferenceMutation, UpdateExplicitContentPreferenceMutationVariables>;
 export const RegisterDocument = gql`
     mutation Register($username: String!, $email: String!, $password: String!) {
   register(username: $username, email: $email, password: $password) {
@@ -3216,6 +3302,7 @@ export const GetListingsDocument = gql`
       images
       price
       sold
+      nsfwApprovalStatus
       city {
         id
         name
@@ -3336,6 +3423,9 @@ export const MeDocument = gql`
     }
     trustRating {
       verifiedId
+    }
+    profileCompletion {
+      completionPercentage
     }
   }
 }
@@ -4912,6 +5002,7 @@ export const MyListingsDocument = gql`
       images
       price
       sold
+      nsfwApprovalStatus
       city {
         id
         name
