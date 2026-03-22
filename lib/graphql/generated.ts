@@ -304,6 +304,8 @@ export type Mutation = {
   deleteListing: Scalars['Boolean']['output'];
   deleteReview: Scalars['Boolean']['output'];
   linkUserToBusiness: BusinessUser;
+  /** PayFast redirect URL to pay for a listing boost (seller must own the listing). */
+  listingBoostCheckoutUrl: Scalars['String']['output'];
   login: AuthResponse;
   markListingAsSold: Listing;
   markNotificationRead: Scalars['Boolean']['output'];
@@ -315,7 +317,6 @@ export type Mutation = {
   unlinkUserFromBusiness: Scalars['Boolean']['output'];
   updateBusiness?: Maybe<Business>;
   updateBusinessAndBranding?: Maybe<Business>;
-  updateExplicitContentPreference: User;
   updateListing: Listing;
   updateListingDescription: Listing;
   updateListingPrice: Listing;
@@ -324,10 +325,13 @@ export type Mutation = {
   updateStoreBranding?: Maybe<StoreBranding>;
   updateUser?: Maybe<User>;
   updateUserPlanType?: Maybe<User>;
+  /**
+   * 
+   * Partial update: omit fields you do not want to change. Use one call for explicit + email settings as you add them.
+   */
+  updateUserPreferences: User;
   uploadBusinessVerificationDocument: VerificationDocument;
   uploadListingImage: Scalars['String']['output'];
-  /**  User NSFW Preference Mutations */
-  verifyUserAge: User;
 };
 
 
@@ -453,6 +457,12 @@ export type MutationLinkUserToBusinessArgs = {
 };
 
 
+export type MutationListingBoostCheckoutUrlArgs = {
+  durationDays: Scalars['Int']['input'];
+  listingId: Scalars['ID']['input'];
+};
+
+
 export type MutationLoginArgs = {
   emailOrUsername: Scalars['String']['input'];
   password: Scalars['String']['input'];
@@ -512,11 +522,6 @@ export type MutationUpdateBusinessAndBrandingArgs = {
 };
 
 
-export type MutationUpdateExplicitContentPreferenceArgs = {
-  allowExplicit: Scalars['Boolean']['input'];
-};
-
-
 export type MutationUpdateListingArgs = {
   input: UpdateListingInput;
 };
@@ -573,6 +578,11 @@ export type MutationUpdateUserPlanTypeArgs = {
 };
 
 
+export type MutationUpdateUserPreferencesArgs = {
+  input: UserPreferencesInput;
+};
+
+
 export type MutationUploadBusinessVerificationDocumentArgs = {
   businessId: Scalars['ID']['input'];
   documentType: DocumentType;
@@ -582,11 +592,6 @@ export type MutationUploadBusinessVerificationDocumentArgs = {
 
 export type MutationUploadListingImageArgs = {
   image: Scalars['String']['input'];
-};
-
-
-export type MutationVerifyUserAgeArgs = {
-  dateOfBirth: Scalars['String']['input'];
 };
 
 export type NsfwContentPage = {
@@ -635,6 +640,8 @@ export type ProfileCompletion = {
 
 export type Query = {
   __typename?: 'Query';
+  /** Active boosted listings for the home carousel (NSFW-filtered for the viewer). */
+  boostedHomeListings: Array<Listing>;
   business?: Maybe<Business>;
   businessSubscriptions: Array<Subscription>;
   businessTrustRating?: Maybe<BusinessTrustRating>;
@@ -687,6 +694,8 @@ export type Query = {
   hasActiveSubscription: Scalars['Boolean']['output'];
   hasBoughtListing: Scalars['Boolean']['output'];
   isStoreSlugAvailable: Scalars['Boolean']['output'];
+  /** ZAR price for a listing boost; durationDays must be 7, 14, or 30. */
+  listingBoostPriceZar: Scalars['Float']['output'];
   listingsByUser: Array<Listing>;
   me?: Maybe<User>;
   myBusiness?: Maybe<Business>;
@@ -707,6 +716,11 @@ export type Query = {
   user?: Maybe<User>;
   userSubscriptions: Array<Subscription>;
   validateSlug: SlugValidationResult;
+};
+
+
+export type QueryBoostedHomeListingsArgs = {
+  limit?: InputMaybe<Scalars['Int']['input']>;
 };
 
 
@@ -945,6 +959,11 @@ export type QueryIsStoreSlugAvailableArgs = {
 };
 
 
+export type QueryListingBoostPriceZarArgs = {
+  durationDays: Scalars['Int']['input'];
+};
+
+
 export type QueryListingsByUserArgs = {
   userId: Scalars['ID']['input'];
 };
@@ -1174,15 +1193,20 @@ export type UpdateStoreBrandingInput = {
 export type User = {
   __typename?: 'User';
   ageVerified: Scalars['Boolean']['output'];
-  allowsExplicitContent: Scalars['Boolean']['output'];
   bio?: Maybe<Scalars['String']['output']>;
   business?: Maybe<Business>;
   city?: Maybe<City>;
   contactNumber?: Maybe<Scalars['String']['output']>;
   createdAt: Scalars['String']['output'];
   customCity?: Maybe<Scalars['String']['output']>;
-  /**  Age Verification & NSFW Content Fields */
+  /**  Age / profile (legacy DOB field; explicit content eligibility uses ID verification + SA ID) */
   dateOfBirth?: Maybe<Scalars['String']['output']>;
+  /**
+   * 
+   * True when the user has verified their SA ID via Omnicheck and the ID number encodes age 18+.
+   * Only meaningful on your own profile (other users always see false).
+   */
+  eligibleForExplicitContent: Scalars['Boolean']['output'];
   email?: Maybe<Scalars['String']['output']>;
   firstName?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
@@ -1194,6 +1218,11 @@ export type User = {
    * Computed from the user's active subscription. Not stored on the user.
    */
   planType?: Maybe<PlanType>;
+  /**
+   * 
+   * Account-scoped settings (explicit content, email opt-ins). Only populated for the authenticated user viewing their own profile.
+   */
+  preferences?: Maybe<UserPreferences>;
   profileCompletion?: Maybe<ProfileCompletion>;
   profileImageUrl?: Maybe<Scalars['String']['output']>;
   role: Scalars['String']['output'];
@@ -1202,6 +1231,18 @@ export type User = {
   trustRating?: Maybe<TrustRating>;
   username: Scalars['String']['output'];
   verificationDocuments?: Maybe<Array<VerificationDocument>>;
+};
+
+export type UserPreferences = {
+  __typename?: 'UserPreferences';
+  allowsExplicitContent: Scalars['Boolean']['output'];
+  /** Promotional / newsletter-style emails. On by default; user can opt out in preferences. */
+  emailMarketingOptIn?: Maybe<Scalars['Boolean']['output']>;
+};
+
+export type UserPreferencesInput = {
+  allowsExplicitContent?: InputMaybe<Scalars['Boolean']['input']>;
+  emailMarketingOptIn?: InputMaybe<Scalars['Boolean']['input']>;
 };
 
 export type VerificationDocument = {
@@ -1237,24 +1278,17 @@ export type CompleteProfileMutationVariables = Exact<{
 
 export type CompleteProfileMutation = { __typename?: 'Mutation', updateUser?: { __typename?: 'User', id: string } | null };
 
-export type MeForExplicitContentQueryVariables = Exact<{ [key: string]: never; }>;
+export type MeForPreferencesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type MeForExplicitContentQuery = { __typename?: 'Query', me?: { __typename?: 'User', id: string, ageVerified: boolean, allowsExplicitContent: boolean, dateOfBirth?: string | null, profileCompletion?: { __typename?: 'ProfileCompletion', completionPercentage: number } | null } | null };
+export type MeForPreferencesQuery = { __typename?: 'Query', me?: { __typename?: 'User', id: string, eligibleForExplicitContent: boolean, preferences?: { __typename?: 'UserPreferences', allowsExplicitContent: boolean, emailMarketingOptIn?: boolean | null } | null, profileCompletion?: { __typename?: 'ProfileCompletion', completionPercentage: number } | null } | null };
 
-export type VerifyUserAgeMutationVariables = Exact<{
-  dateOfBirth: Scalars['String']['input'];
+export type UpdateUserPreferencesMutationVariables = Exact<{
+  input: UserPreferencesInput;
 }>;
 
 
-export type VerifyUserAgeMutation = { __typename?: 'Mutation', verifyUserAge: { __typename?: 'User', id: string, ageVerified: boolean } };
-
-export type UpdateExplicitContentPreferenceMutationVariables = Exact<{
-  allowExplicit: Scalars['Boolean']['input'];
-}>;
-
-
-export type UpdateExplicitContentPreferenceMutation = { __typename?: 'Mutation', updateExplicitContentPreference: { __typename?: 'User', id: string, allowsExplicitContent: boolean } };
+export type UpdateUserPreferencesMutation = { __typename?: 'Mutation', updateUserPreferences: { __typename?: 'User', id: string, eligibleForExplicitContent: boolean, preferences?: { __typename?: 'UserPreferences', allowsExplicitContent: boolean, emailMarketingOptIn?: boolean | null } | null } };
 
 export type RegisterMutationVariables = Exact<{
   username: Scalars['String']['input'];
@@ -1365,6 +1399,14 @@ export type DeleteListingMutationVariables = Exact<{
 
 export type DeleteListingMutation = { __typename?: 'Mutation', deleteListing: boolean };
 
+export type ListingBoostCheckoutUrlMutationVariables = Exact<{
+  listingId: Scalars['ID']['input'];
+  durationDays: Scalars['Int']['input'];
+}>;
+
+
+export type ListingBoostCheckoutUrlMutation = { __typename?: 'Mutation', listingBoostCheckoutUrl: string };
+
 export type UpdateListingMutationVariables = Exact<{
   input: UpdateListingInput;
 }>;
@@ -1451,6 +1493,20 @@ export type UpdateBusinessMutationVariables = Exact<{
 
 
 export type UpdateBusinessMutation = { __typename?: 'Mutation', updateBusiness?: { __typename?: 'Business', id: string, name: string, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, postalCode?: string | null, cipcRegistrationNo?: string | null, cipcBusinessName?: string | null } | null };
+
+export type BoostedHomeListingsQueryVariables = Exact<{
+  limit?: InputMaybe<Scalars['Int']['input']>;
+}>;
+
+
+export type BoostedHomeListingsQuery = { __typename?: 'Query', boostedHomeListings: Array<{ __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, sold: boolean, condition: Condition, createdAt: string, customCity?: string | null, city?: { __typename?: 'City', id: string, name: string } | null, user?: { __typename?: 'User', id: string, username: string } | null, business?: { __typename?: 'Business', name: string } | null }> };
+
+export type ListingBoostPriceZarQueryVariables = Exact<{
+  durationDays: Scalars['Int']['input'];
+}>;
+
+
+export type ListingBoostPriceZarQuery = { __typename?: 'Query', listingBoostPriceZar: number };
 
 export type GetBusinessByIdQueryVariables = Exact<{
   id: Scalars['ID']['input'];
@@ -1749,13 +1805,15 @@ export function useCompleteProfileMutation(baseOptions?: Apollo.MutationHookOpti
 export type CompleteProfileMutationHookResult = ReturnType<typeof useCompleteProfileMutation>;
 export type CompleteProfileMutationResult = Apollo.MutationResult<CompleteProfileMutation>;
 export type CompleteProfileMutationOptions = Apollo.BaseMutationOptions<CompleteProfileMutation, CompleteProfileMutationVariables>;
-export const MeForExplicitContentDocument = gql`
-    query MeForExplicitContent {
+export const MeForPreferencesDocument = gql`
+    query MeForPreferences {
   me {
     id
-    ageVerified
-    allowsExplicitContent
-    dateOfBirth
+    eligibleForExplicitContent
+    preferences {
+      allowsExplicitContent
+      emailMarketingOptIn
+    }
     profileCompletion {
       completionPercentage
     }
@@ -1764,104 +1822,74 @@ export const MeForExplicitContentDocument = gql`
     `;
 
 /**
- * __useMeForExplicitContentQuery__
+ * __useMeForPreferencesQuery__
  *
- * To run a query within a React component, call `useMeForExplicitContentQuery` and pass it any options that fit your needs.
- * When your component renders, `useMeForExplicitContentQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * To run a query within a React component, call `useMeForPreferencesQuery` and pass it any options that fit your needs.
+ * When your component renders, `useMeForPreferencesQuery` returns an object from Apollo Client that contains loading, error, and data properties
  * you can use to render your UI.
  *
  * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
  *
  * @example
- * const { data, loading, error } = useMeForExplicitContentQuery({
+ * const { data, loading, error } = useMeForPreferencesQuery({
  *   variables: {
  *   },
  * });
  */
-export function useMeForExplicitContentQuery(baseOptions?: Apollo.QueryHookOptions<MeForExplicitContentQuery, MeForExplicitContentQueryVariables>) {
+export function useMeForPreferencesQuery(baseOptions?: Apollo.QueryHookOptions<MeForPreferencesQuery, MeForPreferencesQueryVariables>) {
         const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<MeForExplicitContentQuery, MeForExplicitContentQueryVariables>(MeForExplicitContentDocument, options);
+        return Apollo.useQuery<MeForPreferencesQuery, MeForPreferencesQueryVariables>(MeForPreferencesDocument, options);
       }
-export function useMeForExplicitContentLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<MeForExplicitContentQuery, MeForExplicitContentQueryVariables>) {
+export function useMeForPreferencesLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<MeForPreferencesQuery, MeForPreferencesQueryVariables>) {
           const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<MeForExplicitContentQuery, MeForExplicitContentQueryVariables>(MeForExplicitContentDocument, options);
+          return Apollo.useLazyQuery<MeForPreferencesQuery, MeForPreferencesQueryVariables>(MeForPreferencesDocument, options);
         }
-export function useMeForExplicitContentSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<MeForExplicitContentQuery, MeForExplicitContentQueryVariables>) {
+export function useMeForPreferencesSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<MeForPreferencesQuery, MeForPreferencesQueryVariables>) {
           const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
-          return Apollo.useSuspenseQuery<MeForExplicitContentQuery, MeForExplicitContentQueryVariables>(MeForExplicitContentDocument, options);
+          return Apollo.useSuspenseQuery<MeForPreferencesQuery, MeForPreferencesQueryVariables>(MeForPreferencesDocument, options);
         }
-export type MeForExplicitContentQueryHookResult = ReturnType<typeof useMeForExplicitContentQuery>;
-export type MeForExplicitContentLazyQueryHookResult = ReturnType<typeof useMeForExplicitContentLazyQuery>;
-export type MeForExplicitContentSuspenseQueryHookResult = ReturnType<typeof useMeForExplicitContentSuspenseQuery>;
-export type MeForExplicitContentQueryResult = Apollo.QueryResult<MeForExplicitContentQuery, MeForExplicitContentQueryVariables>;
-export const VerifyUserAgeDocument = gql`
-    mutation VerifyUserAge($dateOfBirth: String!) {
-  verifyUserAge(dateOfBirth: $dateOfBirth) {
+export type MeForPreferencesQueryHookResult = ReturnType<typeof useMeForPreferencesQuery>;
+export type MeForPreferencesLazyQueryHookResult = ReturnType<typeof useMeForPreferencesLazyQuery>;
+export type MeForPreferencesSuspenseQueryHookResult = ReturnType<typeof useMeForPreferencesSuspenseQuery>;
+export type MeForPreferencesQueryResult = Apollo.QueryResult<MeForPreferencesQuery, MeForPreferencesQueryVariables>;
+export const UpdateUserPreferencesDocument = gql`
+    mutation UpdateUserPreferences($input: UserPreferencesInput!) {
+  updateUserPreferences(input: $input) {
     id
-    ageVerified
+    eligibleForExplicitContent
+    preferences {
+      allowsExplicitContent
+      emailMarketingOptIn
+    }
   }
 }
     `;
-export type VerifyUserAgeMutationFn = Apollo.MutationFunction<VerifyUserAgeMutation, VerifyUserAgeMutationVariables>;
+export type UpdateUserPreferencesMutationFn = Apollo.MutationFunction<UpdateUserPreferencesMutation, UpdateUserPreferencesMutationVariables>;
 
 /**
- * __useVerifyUserAgeMutation__
+ * __useUpdateUserPreferencesMutation__
  *
- * To run a mutation, you first call `useVerifyUserAgeMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useVerifyUserAgeMutation` returns a tuple that includes:
+ * To run a mutation, you first call `useUpdateUserPreferencesMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateUserPreferencesMutation` returns a tuple that includes:
  * - A mutate function that you can call at any time to execute the mutation
  * - An object with fields that represent the current status of the mutation's execution
  *
  * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
  *
  * @example
- * const [verifyUserAgeMutation, { data, loading, error }] = useVerifyUserAgeMutation({
+ * const [updateUserPreferencesMutation, { data, loading, error }] = useUpdateUserPreferencesMutation({
  *   variables: {
- *      dateOfBirth: // value for 'dateOfBirth'
+ *      input: // value for 'input'
  *   },
  * });
  */
-export function useVerifyUserAgeMutation(baseOptions?: Apollo.MutationHookOptions<VerifyUserAgeMutation, VerifyUserAgeMutationVariables>) {
+export function useUpdateUserPreferencesMutation(baseOptions?: Apollo.MutationHookOptions<UpdateUserPreferencesMutation, UpdateUserPreferencesMutationVariables>) {
         const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<VerifyUserAgeMutation, VerifyUserAgeMutationVariables>(VerifyUserAgeDocument, options);
+        return Apollo.useMutation<UpdateUserPreferencesMutation, UpdateUserPreferencesMutationVariables>(UpdateUserPreferencesDocument, options);
       }
-export type VerifyUserAgeMutationHookResult = ReturnType<typeof useVerifyUserAgeMutation>;
-export type VerifyUserAgeMutationResult = Apollo.MutationResult<VerifyUserAgeMutation>;
-export type VerifyUserAgeMutationOptions = Apollo.BaseMutationOptions<VerifyUserAgeMutation, VerifyUserAgeMutationVariables>;
-export const UpdateExplicitContentPreferenceDocument = gql`
-    mutation UpdateExplicitContentPreference($allowExplicit: Boolean!) {
-  updateExplicitContentPreference(allowExplicit: $allowExplicit) {
-    id
-    allowsExplicitContent
-  }
-}
-    `;
-export type UpdateExplicitContentPreferenceMutationFn = Apollo.MutationFunction<UpdateExplicitContentPreferenceMutation, UpdateExplicitContentPreferenceMutationVariables>;
-
-/**
- * __useUpdateExplicitContentPreferenceMutation__
- *
- * To run a mutation, you first call `useUpdateExplicitContentPreferenceMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useUpdateExplicitContentPreferenceMutation` returns a tuple that includes:
- * - A mutate function that you can call at any time to execute the mutation
- * - An object with fields that represent the current status of the mutation's execution
- *
- * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
- *
- * @example
- * const [updateExplicitContentPreferenceMutation, { data, loading, error }] = useUpdateExplicitContentPreferenceMutation({
- *   variables: {
- *      allowExplicit: // value for 'allowExplicit'
- *   },
- * });
- */
-export function useUpdateExplicitContentPreferenceMutation(baseOptions?: Apollo.MutationHookOptions<UpdateExplicitContentPreferenceMutation, UpdateExplicitContentPreferenceMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<UpdateExplicitContentPreferenceMutation, UpdateExplicitContentPreferenceMutationVariables>(UpdateExplicitContentPreferenceDocument, options);
-      }
-export type UpdateExplicitContentPreferenceMutationHookResult = ReturnType<typeof useUpdateExplicitContentPreferenceMutation>;
-export type UpdateExplicitContentPreferenceMutationResult = Apollo.MutationResult<UpdateExplicitContentPreferenceMutation>;
-export type UpdateExplicitContentPreferenceMutationOptions = Apollo.BaseMutationOptions<UpdateExplicitContentPreferenceMutation, UpdateExplicitContentPreferenceMutationVariables>;
+export type UpdateUserPreferencesMutationHookResult = ReturnType<typeof useUpdateUserPreferencesMutation>;
+export type UpdateUserPreferencesMutationResult = Apollo.MutationResult<UpdateUserPreferencesMutation>;
+export type UpdateUserPreferencesMutationOptions = Apollo.BaseMutationOptions<UpdateUserPreferencesMutation, UpdateUserPreferencesMutationVariables>;
 export const RegisterDocument = gql`
     mutation Register($username: String!, $email: String!, $password: String!) {
   register(username: $username, email: $email, password: $password) {
@@ -2411,6 +2439,38 @@ export function useDeleteListingMutation(baseOptions?: Apollo.MutationHookOption
 export type DeleteListingMutationHookResult = ReturnType<typeof useDeleteListingMutation>;
 export type DeleteListingMutationResult = Apollo.MutationResult<DeleteListingMutation>;
 export type DeleteListingMutationOptions = Apollo.BaseMutationOptions<DeleteListingMutation, DeleteListingMutationVariables>;
+export const ListingBoostCheckoutUrlDocument = gql`
+    mutation ListingBoostCheckoutUrl($listingId: ID!, $durationDays: Int!) {
+  listingBoostCheckoutUrl(listingId: $listingId, durationDays: $durationDays)
+}
+    `;
+export type ListingBoostCheckoutUrlMutationFn = Apollo.MutationFunction<ListingBoostCheckoutUrlMutation, ListingBoostCheckoutUrlMutationVariables>;
+
+/**
+ * __useListingBoostCheckoutUrlMutation__
+ *
+ * To run a mutation, you first call `useListingBoostCheckoutUrlMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useListingBoostCheckoutUrlMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [listingBoostCheckoutUrlMutation, { data, loading, error }] = useListingBoostCheckoutUrlMutation({
+ *   variables: {
+ *      listingId: // value for 'listingId'
+ *      durationDays: // value for 'durationDays'
+ *   },
+ * });
+ */
+export function useListingBoostCheckoutUrlMutation(baseOptions?: Apollo.MutationHookOptions<ListingBoostCheckoutUrlMutation, ListingBoostCheckoutUrlMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<ListingBoostCheckoutUrlMutation, ListingBoostCheckoutUrlMutationVariables>(ListingBoostCheckoutUrlDocument, options);
+      }
+export type ListingBoostCheckoutUrlMutationHookResult = ReturnType<typeof useListingBoostCheckoutUrlMutation>;
+export type ListingBoostCheckoutUrlMutationResult = Apollo.MutationResult<ListingBoostCheckoutUrlMutation>;
+export type ListingBoostCheckoutUrlMutationOptions = Apollo.BaseMutationOptions<ListingBoostCheckoutUrlMutation, ListingBoostCheckoutUrlMutationVariables>;
 export const UpdateListingDocument = gql`
     mutation UpdateListing($input: UpdateListingInput!) {
   updateListing(input: $input) {
@@ -2905,6 +2965,103 @@ export function useUpdateBusinessMutation(baseOptions?: Apollo.MutationHookOptio
 export type UpdateBusinessMutationHookResult = ReturnType<typeof useUpdateBusinessMutation>;
 export type UpdateBusinessMutationResult = Apollo.MutationResult<UpdateBusinessMutation>;
 export type UpdateBusinessMutationOptions = Apollo.BaseMutationOptions<UpdateBusinessMutation, UpdateBusinessMutationVariables>;
+export const BoostedHomeListingsDocument = gql`
+    query BoostedHomeListings($limit: Int) {
+  boostedHomeListings(limit: $limit) {
+    id
+    title
+    description
+    images
+    price
+    sold
+    condition
+    createdAt
+    city {
+      id
+      name
+    }
+    customCity
+    user {
+      id
+      username
+    }
+    business {
+      name
+    }
+  }
+}
+    `;
+
+/**
+ * __useBoostedHomeListingsQuery__
+ *
+ * To run a query within a React component, call `useBoostedHomeListingsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useBoostedHomeListingsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useBoostedHomeListingsQuery({
+ *   variables: {
+ *      limit: // value for 'limit'
+ *   },
+ * });
+ */
+export function useBoostedHomeListingsQuery(baseOptions?: Apollo.QueryHookOptions<BoostedHomeListingsQuery, BoostedHomeListingsQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<BoostedHomeListingsQuery, BoostedHomeListingsQueryVariables>(BoostedHomeListingsDocument, options);
+      }
+export function useBoostedHomeListingsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<BoostedHomeListingsQuery, BoostedHomeListingsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<BoostedHomeListingsQuery, BoostedHomeListingsQueryVariables>(BoostedHomeListingsDocument, options);
+        }
+export function useBoostedHomeListingsSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<BoostedHomeListingsQuery, BoostedHomeListingsQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<BoostedHomeListingsQuery, BoostedHomeListingsQueryVariables>(BoostedHomeListingsDocument, options);
+        }
+export type BoostedHomeListingsQueryHookResult = ReturnType<typeof useBoostedHomeListingsQuery>;
+export type BoostedHomeListingsLazyQueryHookResult = ReturnType<typeof useBoostedHomeListingsLazyQuery>;
+export type BoostedHomeListingsSuspenseQueryHookResult = ReturnType<typeof useBoostedHomeListingsSuspenseQuery>;
+export type BoostedHomeListingsQueryResult = Apollo.QueryResult<BoostedHomeListingsQuery, BoostedHomeListingsQueryVariables>;
+export const ListingBoostPriceZarDocument = gql`
+    query ListingBoostPriceZar($durationDays: Int!) {
+  listingBoostPriceZar(durationDays: $durationDays)
+}
+    `;
+
+/**
+ * __useListingBoostPriceZarQuery__
+ *
+ * To run a query within a React component, call `useListingBoostPriceZarQuery` and pass it any options that fit your needs.
+ * When your component renders, `useListingBoostPriceZarQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useListingBoostPriceZarQuery({
+ *   variables: {
+ *      durationDays: // value for 'durationDays'
+ *   },
+ * });
+ */
+export function useListingBoostPriceZarQuery(baseOptions: Apollo.QueryHookOptions<ListingBoostPriceZarQuery, ListingBoostPriceZarQueryVariables> & ({ variables: ListingBoostPriceZarQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<ListingBoostPriceZarQuery, ListingBoostPriceZarQueryVariables>(ListingBoostPriceZarDocument, options);
+      }
+export function useListingBoostPriceZarLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<ListingBoostPriceZarQuery, ListingBoostPriceZarQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<ListingBoostPriceZarQuery, ListingBoostPriceZarQueryVariables>(ListingBoostPriceZarDocument, options);
+        }
+export function useListingBoostPriceZarSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<ListingBoostPriceZarQuery, ListingBoostPriceZarQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<ListingBoostPriceZarQuery, ListingBoostPriceZarQueryVariables>(ListingBoostPriceZarDocument, options);
+        }
+export type ListingBoostPriceZarQueryHookResult = ReturnType<typeof useListingBoostPriceZarQuery>;
+export type ListingBoostPriceZarLazyQueryHookResult = ReturnType<typeof useListingBoostPriceZarLazyQuery>;
+export type ListingBoostPriceZarSuspenseQueryHookResult = ReturnType<typeof useListingBoostPriceZarSuspenseQuery>;
+export type ListingBoostPriceZarQueryResult = Apollo.QueryResult<ListingBoostPriceZarQuery, ListingBoostPriceZarQueryVariables>;
 export const GetBusinessByIdDocument = gql`
     query GetBusinessById($id: ID!) {
   business(id: $id) {

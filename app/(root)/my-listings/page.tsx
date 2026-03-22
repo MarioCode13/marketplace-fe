@@ -11,7 +11,11 @@ import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { MY_LISTINGS } from '@/lib/graphql/queries/myListings'
 import { GET_LISTINGS } from '@/lib/graphql/queries/getListings'
 import { GET_MY_BUSINESS } from '@/lib/graphql/queries/getMyBusiness'
-import { DELETE_LISTING } from '@/lib/graphql/mutations/listingMutations'
+import {
+  DELETE_LISTING,
+  LISTING_BOOST_CHECKOUT_URL,
+} from '@/lib/graphql/mutations/listingMutations'
+import { LISTING_BOOST_PRICE_ZAR } from '@/lib/graphql/queries/boostedHomeListings'
 import ListingCard from '@/components/cards/ListingCard'
 import MarkAsSoldModal from '@/components/modals/MarkAsSoldModal'
 import { Listing as TrustListing, Condition } from '@/lib/graphql/types/trust'
@@ -37,6 +41,8 @@ export default function MyListingsPage() {
   const [selectedListingForSale, setSelectedListingForSale] = useState<
     string | null
   >(null)
+  const [boostListingId, setBoostListingId] = useState<string | null>(null)
+  const [boostDurationDays, setBoostDurationDays] = useState<7 | 14 | 30>(30)
 
   const router = useRouter()
   const userContext = useSelector((state: RootState) => state.userContext)
@@ -57,6 +63,14 @@ export default function MyListingsPage() {
   )
 
   const [deleteListing] = useMutation(DELETE_LISTING)
+  const [listingBoostCheckout, { loading: boostCheckoutLoading }] = useMutation(
+    LISTING_BOOST_CHECKOUT_URL,
+  )
+
+  const { data: boostPriceData } = useQuery(LISTING_BOOST_PRICE_ZAR, {
+    variables: { durationDays: boostDurationDays },
+    skip: !boostListingId,
+  })
 
   const allListings: TrustListing[] = isBusinessUser
     ? data?.getListings?.listings || []
@@ -109,6 +123,28 @@ export default function MyListingsPage() {
     setListingToDelete(null)
   }
 
+  const handleBoostConfirm = async () => {
+    if (!boostListingId) return
+    try {
+      const { data: boostData } = await listingBoostCheckout({
+        variables: {
+          listingId: boostListingId,
+          durationDays: boostDurationDays,
+        },
+      })
+      const url = boostData?.listingBoostCheckoutUrl
+      if (url) {
+        window.location.href = url
+        return
+      }
+      toast.error('Could not start payment. Please try again.')
+    } catch (e) {
+      toast.error(
+        (e as Error).message || 'Could not start boost checkout.',
+      )
+    }
+  }
+
   return (
     <div className='w-full flex justify-center'>
       <div className='flex flex-col py-12 px-6 w-full max-w-7xl'>
@@ -156,6 +192,10 @@ export default function MyListingsPage() {
                     onMarkAsSold={() => {
                       setSelectedListingForSale(listing.id)
                       setMarkAsSoldOpen(true)
+                    }}
+                    onBoost={() => {
+                      setBoostDurationDays(30)
+                      setBoostListingId(listing.id)
                     }}
                   />
                 ))}
@@ -215,6 +255,63 @@ export default function MyListingsPage() {
       </div>
 
       {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={!!boostListingId}
+        onOpenChange={(open) => {
+          if (!open) setBoostListingId(null)
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Boost your listing</DialogTitle>
+            <DialogDescription>
+              Pay once to feature this listing on the home page for the period
+              you choose. You will be redirected to PayFast to complete payment.
+            </DialogDescription>
+          </DialogHeader>
+          <div className='space-y-4 py-2'>
+            <label className='block text-sm font-medium text-gray-700 dark:text-gray-300'>
+              Duration
+              <select
+                className='mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm'
+                value={boostDurationDays}
+                onChange={(e) =>
+                  setBoostDurationDays(
+                    Number(e.target.value) as 7 | 14 | 30,
+                  )
+                }
+              >
+                <option value={7}>7 days</option>
+                <option value={14}>14 days</option>
+                <option value={30}>30 days</option>
+              </select>
+            </label>
+            {boostPriceData != null && (
+              <p className='text-lg font-semibold text-gray-900 dark:text-white'>
+                Total: R
+                {Number(boostPriceData.listingBoostPriceZar).toFixed(2)}
+              </p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button
+              variant='outlined'
+              color='primary'
+              onClick={() => setBoostListingId(null)}
+              disabled={boostCheckoutLoading}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => void handleBoostConfirm()}
+              disabled={boostCheckoutLoading}
+            >
+              {boostCheckoutLoading ? 'Redirecting…' : 'Pay with PayFast'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <Dialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}

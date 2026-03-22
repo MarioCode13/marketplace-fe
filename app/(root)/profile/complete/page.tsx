@@ -104,8 +104,9 @@ export default function CompleteProfilePage() {
   if (loading) return <p>Loading...</p>
   if (error) return <p>Error loading profile</p>
 
-  const isProfileComplete = Boolean(user?.profileCompletion?.complete)
-
+  const isProfileComplete = Boolean(
+    user?.profileCompletion?.completionPercentage === 100,
+  )
   const hasLocation =
     (typeof formState.city === 'string' && formState.city.trim() !== '') ||
     (typeof formState.city === 'number' && formState.city !== 0) ||

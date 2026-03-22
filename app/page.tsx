@@ -12,6 +12,7 @@ import {
   Heart,
   Zap,
 } from 'lucide-react'
+import HomeBoostCarousel from '@/components/carousel/HomeBoostCarousel'
 
 export default function Home() {
   const router = useRouter()
@@ -173,7 +174,9 @@ export default function Home() {
           </motion.div>
         </div>
       </section>
-
+      <section className='relative z-20 w-full bg-gradient-to-b from-white to-blue-50/40 dark:from-gray-900 dark:to-gray-950 border-y border-blue-100/80 dark:border-gray-800 py-10'>
+        <HomeBoostCarousel />
+      </section>
       {/* Features Section */}
       <section className='relative w-full z-20 bg-white dark:bg-gray-900 py-20'>
         <div className='max-w-6xl mx-auto px-6'>

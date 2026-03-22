@@ -38,6 +38,8 @@
     "cmdk": "^1.0.0",
     "date-fns": "^4.1.0",
     "dayjs": "^1.11.13",
+    "embla-carousel-autoplay": "^8.6.0",
+    "embla-carousel-react": "^8.6.0",
     "framer-motion": "^12.23.12",
     "graphql": "^16.10.0",
     "jwt-decode": "^4.0.0",

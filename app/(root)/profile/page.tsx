@@ -20,6 +20,10 @@ import {
   Shield,
   Star,
   ShieldCheck,
+  Settings,
+  Building,
+  CreditCard,
+  LogOut,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Spinner } from '@/components/ui/spinner'
@@ -49,7 +53,6 @@ export default function Profile() {
     }
   }, [userId, router])
 
-  const profileComplete = user?.profileCompletion?.complete || false
   const businessId = userContext.businessId || business?.id
 
   const { data: businessTrustData, loading: businessTrustLoading } =
@@ -70,6 +73,9 @@ export default function Profile() {
   const canEditBusinessProfile = userContext.isBusinessOwner
   const canUpgrade = user?.planType !== 'PRO_STORE'
   const reseller = user?.planType === 'RESELLER'
+
+  const profileComplete =
+    meData?.me?.profileCompletion?.completionPercentage === 100 || false
 
   const handleLogout = () => {
     dispatch(logoutUser())
@@ -151,35 +157,35 @@ export default function Profile() {
       <div className='w-full flex justify-center'>
         <div className='w-full max-w-4xl py-16 px-6'>
           <div className='w-full max-w-md mx-auto rounded-lg p-6 shadow-lg bg-componentBackground'>
-            <div className='w-full flex justify-between items-center'>
-              <h2 className='mb-4 text-2xl font-bold text-foreground'>
-                Profile
-              </h2>
-              {profileComplete && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <CheckCircle className='text-success w-5 h-5 ml-2 cursor-pointer hover:scale-110' />
-                    </TooltipTrigger>
-                    <TooltipContent side='top'>
-                      <p>Profile complete</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
+            <div className='w-full flex justify-between items-center mb-2'>
+              <h2 className=' text-2xl font-bold text-foreground'>Profile</h2>
+              <div className='flex gap-2'>
+                {profileComplete && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <CheckCircle className='text-success w-5 h-5  cursor-pointer hover:scale-110' />
+                      </TooltipTrigger>
+                      <TooltipContent side='top'>
+                        <p>Profile complete</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
 
-              {meData?.me?.trustRating?.verifiedId && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <ShieldCheck className='text-success w-5 h-5 ml-2 cursor-pointer hover:scale-110' />
-                    </TooltipTrigger>
-                    <TooltipContent side='top'>
-                      <p>ID Verified</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
+                {meData?.me?.trustRating?.verifiedId && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <ShieldCheck className='text-success w-5 h-5 cursor-pointer hover:scale-110' />
+                      </TooltipTrigger>
+                      <TooltipContent side='top'>
+                        <p>ID Verified</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+              </div>
             </div>{' '}
             <div className='relative flex justify-center items-center w-full mb-3'>
               <label className='relative w-[140px] h-[140px] cursor-pointer'>
@@ -243,7 +249,8 @@ export default function Profile() {
                 className='w-full mt-3'
                 onClick={() => router.push('/profile/complete')}
               >
-                {profileComplete ? 'Edit Profile' : 'Complete Your Profile'}
+                {profileComplete ? 'Edit Profile' : 'Complete Your Profile'}{' '}
+                <Pencil size={18} />
               </Button>
 
               <Button
@@ -252,7 +259,7 @@ export default function Profile() {
                 className='w-full mt-3'
                 onClick={() => router.push('/profile/preferences')}
               >
-                Account Preferences
+                Account Preferences <Settings size={18} />
               </Button>
             </div>
             {/* Trust Rating Section */}
@@ -360,7 +367,6 @@ export default function Profile() {
                 Upgrade {reseller ? 'Store' : 'Profile'} <Star size={18} />
               </Button>
             )}
-            {/* Configure Business CTA */}
             {isBusinessUser && (
               <Button
                 className='w-full mt-3'
@@ -368,7 +374,7 @@ export default function Profile() {
                 variant={'contained'}
                 onClick={() => router.push('/business/edit')}
               >
-                Configure Business
+                Configure Business <Building size={18} />
               </Button>
             )}
             {/* Manage Subscriptions CTA */}
@@ -379,7 +385,7 @@ export default function Profile() {
                 variant={'contained'}
                 onClick={() => router.push('/profile/subscriptions')}
               >
-                Manage Subscription
+                Manage Subscription <CreditCard size={18} />
               </Button>
             )}
             <Button
@@ -388,7 +394,7 @@ export default function Profile() {
               className='w-full mt-6'
               onClick={handleLogout}
             >
-              Logout
+              Logout <LogOut size={18} />
             </Button>
           </div>
         </div>

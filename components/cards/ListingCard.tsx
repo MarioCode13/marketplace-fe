@@ -53,6 +53,7 @@ interface ListingCardProps {
   onEdit?: () => void
   onDelete?: () => void
   onMarkAsSold?: () => void
+  onBoost?: () => void
 }
 
 export default function ListingCard({
@@ -64,6 +65,7 @@ export default function ListingCard({
   cardTextColor,
   store,
   onMarkAsSold,
+  onBoost,
 }: ListingCardProps) {
   const [menuOpen, setMenuOpen] = useState(false)
   // Only apply custom colors if in store context and colors are provided
@@ -223,7 +225,7 @@ export default function ListingCard({
             <MoreVertical size={20} />
           </button>
           {menuOpen && (
-            <div className='absolute right-0 mt-2 w-32 bg-white dark:bg-gray-800 shadow-lg rounded-md z-10'>
+            <div className='absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 shadow-lg rounded-md z-10'>
               <button
                 className='block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700'
                 onClick={() => {
@@ -233,6 +235,17 @@ export default function ListingCard({
               >
                 Edit
               </button>
+              {onBoost && (
+                <button
+                  className='block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700'
+                  onClick={() => {
+                    setMenuOpen(false)
+                    onBoost()
+                  }}
+                >
+                  Boost listing
+                </button>
+              )}
               <button
                 className='block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700'
                 onClick={() => {

@@ -6,6 +6,12 @@ export const DELETE_LISTING = gql`
 }
 `
 
+export const LISTING_BOOST_CHECKOUT_URL = gql`
+  mutation ListingBoostCheckoutUrl($listingId: ID!, $durationDays: Int!) {
+    listingBoostCheckoutUrl(listingId: $listingId, durationDays: $durationDays)
+  }
+`
+
 export const UPDATE_LISTING = gql`
   mutation UpdateListing($input: UpdateListingInput!) {
     updateListing(input: $input) {

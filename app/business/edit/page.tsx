@@ -1,13 +1,10 @@
 'use client'
 import { useDispatch } from 'react-redux'
 import { setUserContext } from '@/store/userContextSlice'
-import { useLazyQuery } from '@apollo/client'
-
-import { useMutation } from '@apollo/client'
+import { useLazyQuery, useMutation, useQuery } from '@apollo/client'
 import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
-import { RootState } from '@/store/store'
-import { useQuery } from '@apollo/client'
+import { RootState, AppDispatch } from '@/store/store'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { toast } from 'sonner'
@@ -33,6 +30,7 @@ import Link from 'next/link'
 import AddTeamMember from './AddTeamMember'
 import OmnicheckTermsModal from '@/components/modals/OmnicheckTermsModal'
 import { checkImageContent } from '@/lib/utils/contentModeration'
+import CreateView from './CreateView'
 
 export default function BusinessEditPage() {
   const router = useRouter()
@@ -51,7 +49,7 @@ export default function BusinessEditPage() {
     fetchPolicy: 'network-only',
   })
   const business = businessData?.business
-  const dispatch = useDispatch()
+  const dispatch = useDispatch<AppDispatch>()
   const userId = user?.userId
   // Determine plan type from the business record first, then fall back to
   // the Redux userContext business plan, then to the owner's plan type.
@@ -482,18 +480,16 @@ export default function BusinessEditPage() {
       </div>
     )
   }
+  // Create mode: user has no business yet
+  if (!businessId) {
+    return <CreateView />
+  }
+
   if (!business) {
     return (
       <div className='max-w-5xl mx-auto p-6'>
         <h1 className='text-2xl font-bold mb-4'>Business Settings</h1>
-        <div className='text-center py-8'>
-          <p className='text-lg text-gray-600 mb-4'>
-            No business found. Create one to get started.
-          </p>
-          <Button onClick={() => router.push('/business/create')}>
-            Create Business
-          </Button>
-        </div>
+        <p className='text-gray-600'>Loading business details...</p>
       </div>
     )
   }

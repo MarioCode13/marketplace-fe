@@ -13,6 +13,7 @@ import {
   slugify,
 } from '@/lib/utils'
 import { useGetCategoriesQuery } from '@/lib/graphql/generated'
+import HomeBoostCarousel from '@/components/carousel/HomeBoostCarousel'
 
 interface Listing {
   id: string
@@ -520,6 +521,9 @@ const Listings: React.FC<ListingsProps> = ({
             </Button>
           </div>
         )}
+        <div className='py-6 mt-6 vw-full'>
+          <HomeBoostCarousel />
+        </div>
       </div>
     </div>
   )

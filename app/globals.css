@@ -97,3 +97,15 @@ button, input, textarea {
     @apply bg-background text-foreground;
   }
 }
+
+/* Embla Carousel Styles */
+.embla {
+  overflow: hidden;
+}
+.embla__container {
+  display: flex;
+}
+.embla__slide {
+  flex: 0 0 auto;
+  min-width: 0;
+}
