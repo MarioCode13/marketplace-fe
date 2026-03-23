@@ -15,7 +15,11 @@ import {
   DELETE_LISTING,
   LISTING_BOOST_CHECKOUT_URL,
 } from '@/lib/graphql/mutations/listingMutations'
-import { LISTING_BOOST_PRICE_ZAR } from '@/lib/graphql/queries/boostedHomeListings'
+import {
+  BOOSTED_HOME_LISTINGS,
+  LISTING_BOOST_PRICE_ZAR,
+} from '@/lib/graphql/queries/boostedHomeListings'
+import useListingBoost from '@/lib/hooks/useListingBoost'
 import ListingCard from '@/components/cards/ListingCard'
 import MarkAsSoldModal from '@/components/modals/MarkAsSoldModal'
 import { Listing as TrustListing, Condition } from '@/lib/graphql/types/trust'
@@ -66,6 +70,21 @@ export default function MyListingsPage() {
   const [listingBoostCheckout, { loading: boostCheckoutLoading }] = useMutation(
     LISTING_BOOST_CHECKOUT_URL,
   )
+  const {
+    activateBoost,
+    loading: boostActivateLoading,
+    error: boostActivateError,
+  } = useListingBoost()
+
+  const { data: boostedHomeData } = useQuery(BOOSTED_HOME_LISTINGS, {
+    variables: { limit: 100 },
+  })
+
+  const boostedListingIds = new Set(
+    boostedHomeData?.boostedHomeListings?.map(
+      (item: { id: string }) => item.id,
+    ) || [],
+  )
 
   const { data: boostPriceData } = useQuery(LISTING_BOOST_PRICE_ZAR, {
     variables: { durationDays: boostDurationDays },
@@ -75,6 +94,8 @@ export default function MyListingsPage() {
   const allListings: TrustListing[] = isBusinessUser
     ? data?.getListings?.listings || []
     : data?.myListings?.listings || []
+
+  const isBoostLoading = boostActivateLoading || boostCheckoutLoading
 
   // Filter out sold listings
   const listings = allListings.filter((listing) => !listing.sold)
@@ -125,23 +146,43 @@ export default function MyListingsPage() {
 
   const handleBoostConfirm = async () => {
     if (!boostListingId) return
+
     try {
+      const result = await activateBoost(boostListingId, boostDurationDays)
+
+      const redirectUrl = result.url || result.redirectUrl
+      if (redirectUrl) {
+        window.location.href = redirectUrl
+        return
+      }
+
+      if (result.success) {
+        toast.success(result.message || 'Listing boost activated successfully')
+        setBoostListingId(null)
+        await refetch()
+        return
+      }
+
+      // Fallback to GraphQL checkout URL if REST activation didn't return redirect
       const { data: boostData } = await listingBoostCheckout({
         variables: {
           listingId: boostListingId,
           durationDays: boostDurationDays,
         },
       })
+
       const url = boostData?.listingBoostCheckoutUrl
       if (url) {
         window.location.href = url
         return
       }
-      toast.error('Could not start payment. Please try again.')
-    } catch (e) {
+
       toast.error(
-        (e as Error).message || 'Could not start boost checkout.',
+        result.message || 'Could not start payment. Please try again.',
       )
+    } catch (e) {
+      const message = (e as Error).message || 'Could not start boost checkout.'
+      toast.error(message)
     }
   }
 
@@ -186,6 +227,7 @@ export default function MyListingsPage() {
                       price: String(listing.price),
                       user: listing.user ?? undefined,
                     }}
+                    isBoosted={boostedListingIds.has(listing.id)}
                     showMenu
                     onEdit={() => router.push(`/edit-listing/${listing.id}`)}
                     onDelete={() => handleDeleteClick(listing.id)}
@@ -276,9 +318,7 @@ export default function MyListingsPage() {
                 className='mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 px-3 py-2 text-sm'
                 value={boostDurationDays}
                 onChange={(e) =>
-                  setBoostDurationDays(
-                    Number(e.target.value) as 7 | 14 | 30,
-                  )
+                  setBoostDurationDays(Number(e.target.value) as 7 | 14 | 30)
                 }
               >
                 <option value={7}>7 days</option>
@@ -288,9 +328,11 @@ export default function MyListingsPage() {
             </label>
             {boostPriceData != null && (
               <p className='text-lg font-semibold text-gray-900 dark:text-white'>
-                Total: R
-                {Number(boostPriceData.listingBoostPriceZar).toFixed(2)}
+                Total: R{Number(boostPriceData.listingBoostPriceZar).toFixed(2)}
               </p>
+            )}
+            {boostActivateError && (
+              <p className='text-sm text-red-500 mt-2'>{boostActivateError}</p>
             )}
           </div>
           <DialogFooter>
@@ -298,15 +340,16 @@ export default function MyListingsPage() {
               variant='outlined'
               color='primary'
               onClick={() => setBoostListingId(null)}
-              disabled={boostCheckoutLoading}
+              disabled={isBoostLoading}
             >
               Cancel
             </Button>
             <Button
+              variant={'contained'}
               onClick={() => void handleBoostConfirm()}
-              disabled={boostCheckoutLoading}
+              disabled={isBoostLoading}
             >
-              {boostCheckoutLoading ? 'Redirecting…' : 'Pay with PayFast'}
+              {isBoostLoading ? 'Processing…' : 'Pay with PayFast'}
             </Button>
           </DialogFooter>
         </DialogContent>

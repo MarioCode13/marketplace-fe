@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import dayjs from 'dayjs'
-import { MoreVertical, ShieldCheck, Star } from 'lucide-react'
+import { MoreVertical, ShieldCheck, Star, StarIcon } from 'lucide-react'
 import { useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { generateImageUrl } from '@/lib/utils'
@@ -54,6 +54,7 @@ interface ListingCardProps {
   onDelete?: () => void
   onMarkAsSold?: () => void
   onBoost?: () => void
+  isBoosted?: boolean
 }
 
 export default function ListingCard({
@@ -66,6 +67,7 @@ export default function ListingCard({
   store,
   onMarkAsSold,
   onBoost,
+  isBoosted = false,
 }: ListingCardProps) {
   const [menuOpen, setMenuOpen] = useState(false)
   // Only apply custom colors if in store context and colors are provided
@@ -89,8 +91,15 @@ export default function ListingCard({
           } ${!primaryColor ? 'bg-componentBackground' : ''}`}
           style={cardStyle}
         >
+          {isBoosted && (
+            <div className='absolute top-2 left-2 z-20'>
+              <Badge className='bg-yellow-400 text-black gap-1'>
+                <StarIcon size={16} /> Boosted
+              </Badge>
+            </div>
+          )}
           {listing.sold && (
-            <div className='absolute top-2 left-2 z-10'>
+            <div className='absolute top-2 right-2 z-10'>
               <Badge className='bg-red-500 text-white'>SOLD</Badge>
             </div>
           )}
