@@ -124,7 +124,8 @@ export async function checkImageContent(
             classification.neutral < 0.1 // Very low neutral (minimal clothing)
         const isExplicitNudity =
             classification.sexy > 0.95 && // Very high sexiness
-            classification.neutral < 0.05 // Almost completely no clothing detected
+            classification.neutral < 0.05 && // Almost completely no clothing detected
+            classification.porn > 0.05 // Some pornographic content detected
         const isNonSuggestiveNude =
             classification.neutral > 0.4 && // Person/body detected
             classification.porn < 0.15 && // Not pornographic
@@ -242,6 +243,9 @@ export async function checkImageForApproval(
         // Run classification
         const predictions = await model.classify(img)
 
+        // Log predictions for debugging
+        console.log('NSFWJS Predictions:', predictions)
+
         // Clean up
         URL.revokeObjectURL(img.src)
 
@@ -261,11 +265,11 @@ export async function checkImageForApproval(
 
         // Flag for approval if any adult content indicators are present
         // Much more lenient than the explicit content detection
-        // Flags: porn > 2%, hentai > 2%, OR (sexy > 15% AND neutral < 80%)
+        // Flags: porn > 2%, hentai > 2%, OR (sexy > 15% AND neutral < 80% AND (porn > 3% OR hentai > 3%))
         const hasPornContent = classification.porn > 0.02
         const hasHentaiContent = classification.hentai > 0.02
         const hasSuggestiveContent =
-            classification.sexy > 0.15 && classification.neutral < 0.8
+            classification.sexy > 0.15 && classification.neutral < 0.8 && (classification.porn > 0.03 || classification.hentai > 0.03)
         const isFlagged = hasPornContent || hasHentaiContent || hasSuggestiveContent
 
         let message: string | undefined

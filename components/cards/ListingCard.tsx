@@ -2,7 +2,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import dayjs from 'dayjs'
 import { MoreVertical, ShieldCheck, Star, StarIcon } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { generateImageUrl } from '@/lib/utils'
 import {
@@ -70,6 +70,24 @@ export default function ListingCard({
   isBoosted = false,
 }: ListingCardProps) {
   const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setMenuOpen(false)
+      }
+    }
+
+    if (menuOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [menuOpen])
+
   // Only apply custom colors if in store context and colors are provided
   const cardStyle =
     store && primaryColor
@@ -223,7 +241,10 @@ export default function ListingCard({
       </Link>
       {/* Actions Menu */}
       {showMenu && (
-        <div className='absolute top-2 right-2'>
+        <div
+          ref={menuRef}
+          className='absolute top-2 right-2'
+        >
           <button
             className='p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition'
             onClick={(e) => {

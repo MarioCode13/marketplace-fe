@@ -22,7 +22,10 @@ import {
 import useListingBoost from '@/lib/hooks/useListingBoost'
 import ListingCard from '@/components/cards/ListingCard'
 import MarkAsSoldModal from '@/components/modals/MarkAsSoldModal'
-import { Listing as TrustListing, Condition } from '@/lib/graphql/types/trust'
+import {
+  Listing as TrustListing,
+  Condition as TrustCondition,
+} from '@/lib/graphql/types/trust'
 import {
   Dialog,
   DialogContent,
@@ -32,6 +35,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { toast } from 'sonner'
+import { Listing } from '@/lib/graphql/generated'
 
 // Using generated TrustListing type from lib/graphql/types/trust
 
@@ -91,7 +95,7 @@ export default function MyListingsPage() {
     skip: !boostListingId,
   })
 
-  const allListings: TrustListing[] = isBusinessUser
+  const allListings: Listing[] = isBusinessUser
     ? data?.getListings?.listings || []
     : data?.myListings?.listings || []
 
@@ -223,9 +227,16 @@ export default function MyListingsPage() {
                   <ListingCard
                     key={listing.id}
                     listing={{
-                      ...listing,
+                      id: listing.id,
+                      title: listing.title,
+                      description: listing.description,
                       price: String(listing.price),
+                      images: listing.images,
+                      createdAt: listing.createdAt,
+                      sold: listing.sold,
+                      nsfwApprovalStatus: listing.nsfwApprovalStatus,
                       user: listing.user ?? undefined,
+                      business: listing.business || undefined,
                     }}
                     isBoosted={boostedListingIds.has(listing.id)}
                     showMenu
@@ -235,10 +246,16 @@ export default function MyListingsPage() {
                       setSelectedListingForSale(listing.id)
                       setMarkAsSoldOpen(true)
                     }}
-                    onBoost={() => {
-                      setBoostDurationDays(30)
-                      setBoostListingId(listing.id)
-                    }}
+                    onBoost={
+                      !boostedListingIds.has(listing.id) &&
+                      (!listing.nsfwApprovalStatus ||
+                        listing.nsfwApprovalStatus === 'APPROVED')
+                        ? () => {
+                            setBoostDurationDays(30)
+                            setBoostListingId(listing.id)
+                          }
+                        : undefined
+                    }
                   />
                 ))}
               </div>
@@ -392,7 +409,7 @@ export default function MyListingsPage() {
           const base = listings.find((l) => l.id === selectedListingForSale)
           if (!base) return null
 
-          // Map the minimal listing shape to the full Listing type expected by the modal
+          // Map the generated listing to the trust listing type expected by the modal
           const modalListing: TrustListing = {
             id: base.id,
             title: base.title || '',
@@ -404,14 +421,25 @@ export default function MyListingsPage() {
             expiresAt: new Date(
               Date.now() + 7 * 24 * 60 * 60 * 1000,
             ).toISOString(),
-            condition: Condition.GOOD,
+            condition: TrustCondition.GOOD,
+            category: base.category
+              ? { id: base.category.id, name: base.category.name }
+              : undefined,
+            city: base.city
+              ? {
+                  id: base.city.id,
+                  name: base.city.name,
+                  region: { name: '', country: { name: '' } },
+                }
+              : undefined,
+            customCity: base.customCity || undefined,
             user: base.user
               ? {
                   id: base.user.id,
                   username: base.user.username,
                   email: base.user.email || '',
-                  role: '',
-                  createdAt: new Date().toISOString(),
+                  role: base.user.email ? 'user' : '',
+                  createdAt: base.user.createdAt || new Date().toISOString(),
                 }
               : {
                   id: userId || '',

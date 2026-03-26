@@ -4,7 +4,7 @@ import { useQuery } from '@apollo/client'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion, useInView } from 'framer-motion'
-import { useRef } from 'react'
+import { useRef, useMemo } from 'react'
 import { BOOSTED_HOME_LISTINGS } from '@/lib/graphql/queries/boostedHomeListings'
 import { generateImageUrl } from '@/lib/utils'
 
@@ -29,10 +29,23 @@ export default function HomeBoostCarousel() {
     skip: !isInView, // Lazy load: only fetch when in view
   })
 
-  const listings: BoostedListing[] = data?.boostedHomeListings ?? []
+  const listings: BoostedListing[] = useMemo(
+    () => data?.boostedHomeListings ?? [],
+    [data],
+  )
 
-  // Duplicate listings for infinite loop
-  const duplicatedListings = [...listings, ...listings]
+  // Shuffle listings for random order
+  const shuffledListings = useMemo(() => {
+    const shuffled = [...listings]
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+    }
+    return shuffled
+  }, [listings])
+
+  // Duplicate shuffled listings for infinite loop
+  const duplicatedListings = [...shuffledListings, ...shuffledListings]
 
   if (loading && listings.length === 0) {
     return (
@@ -79,13 +92,13 @@ export default function HomeBoostCarousel() {
             <motion.div
               className='flex gap-4'
               animate={{
-                x: [0, -264 * listings.length], // 260px width + 4px gap
+                x: [0, -264 * shuffledListings.length], // 260px width + 4px gap
               }}
               transition={{
                 x: {
                   repeat: Infinity,
                   repeatType: 'loop',
-                  duration: listings.length * 5, // Constant speed: 5 seconds per full set
+                  duration: shuffledListings.length * 5, // Constant speed: 5 seconds per full set
                   ease: 'linear',
                 },
               }}
