@@ -10,6 +10,12 @@ export const UPDATE_STORE_BRANDING = gql`
     themeColor
     primaryColor
     secondaryColor
+    linearGradientDirection
+	radialGradientShape
+	backgroundColor
+	backgroundColorEnd
+	backgroundCss
+	backgroundType
     lightOrDark
     about
     storeName
@@ -40,6 +46,12 @@ export const CREATE_BUSINESS = gql`
 				themeColor
 				primaryColor
 				secondaryColor
+        linearGradientDirection
+				radialGradientShape
+				backgroundColor
+				backgroundColorEnd
+				backgroundCss
+				backgroundType
 				lightOrDark
 				about
 				storeName

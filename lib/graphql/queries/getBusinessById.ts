@@ -43,6 +43,11 @@ export const GET_BUSINESS_BY_ID = gql`
         textColor
         cardTextColor
         backgroundColor
+        backgroundColorEnd
+        backgroundType
+        linearGradientDirection
+        radialGradientShape
+        backgroundCss
         about
         storeName
       }

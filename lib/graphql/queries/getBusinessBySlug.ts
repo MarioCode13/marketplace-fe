@@ -35,6 +35,11 @@ export const GET_BUSINESS_BY_SLUG = gql`
         about
         storeName
         backgroundColor
+        backgroundColorEnd
+        backgroundType
+        linearGradientDirection
+        radialGradientShape
+        backgroundCss
         textColor
         cardTextColor
       }

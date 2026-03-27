@@ -34,6 +34,11 @@ export const GET_MY_BUSINESS = gql`
         textColor
         cardTextColor
         backgroundColor
+        backgroundColorEnd
+        backgroundType
+        linearGradientDirection
+        radialGradientShape
+        backgroundCss
       }
       businessUsers {
         id

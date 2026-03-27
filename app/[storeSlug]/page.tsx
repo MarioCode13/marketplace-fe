@@ -55,6 +55,7 @@ export default function ProStoreRoute() {
   const { data, loading, error } = useGetBusinessBySlugQuery({
     variables: { slug },
     skip: !slug,
+    fetchPolicy: 'cache-and-network',
   })
   const business = data?.getBusinessBySlug
   const isProStore =
@@ -75,7 +76,9 @@ export default function ProStoreRoute() {
   console.log('Business Users:', business?.businessUsers)
   // Get business data if the current user is the store owner
   // (to show business details like address, contact info)
-  const { data: businessData } = useGetMyBusinessQuery()
+  const { data: businessData } = useGetMyBusinessQuery({
+    fetchPolicy: 'cache-and-network',
+  })
 
   interface Filters {
     categoryId?: string
@@ -152,13 +155,50 @@ export default function ProStoreRoute() {
   if (loading) return <div className='p-8 text-center'>Loading store...</div>
   if (error || !business || !isProStore) return notFound()
 
+  const getBackgroundStyle = () => {
+    const backgroundColor = branding?.backgroundColor || '#f8f9fa'
+    const endColor = branding?.backgroundColorEnd || '#ffffff'
+    const backgroundType = branding?.backgroundType || 'SOLID'
+
+    if (backgroundType === 'LINEAR_GRADIENT') {
+      let direction = 'to bottom'
+      switch (branding?.linearGradientDirection) {
+        case 'TOP_TO_BOTTOM':
+          direction = 'to bottom'
+          break
+        case 'LEFT_TO_RIGHT':
+          direction = 'to right'
+          break
+        case 'DIAGONAL_TL_BR':
+          direction = 'to bottom right'
+          break
+        case 'DIAGONAL_TR_BL':
+          direction = 'to bottom left'
+          break
+      }
+      return {
+        background: `linear-gradient(${direction}, ${backgroundColor}, ${endColor})`,
+      }
+    }
+
+    if (backgroundType === 'RADIAL_GRADIENT') {
+      const shape =
+        branding?.radialGradientShape === 'ellipse' ? 'ellipse' : 'circle'
+      return {
+        background: `radial-gradient(${shape}, ${backgroundColor}, ${endColor})`,
+      }
+    }
+
+    return { backgroundColor }
+  }
+
   // Branding colors
-  const backgroundColor = branding?.backgroundColor || '#f8f9fa'
   const primaryColor = branding?.primaryColor || '#fff'
   const cardTextColor = branding?.cardTextColor || '#222'
   const textColor = branding?.textColor || '#222'
   const secondaryColor = branding?.secondaryColor || '#1f1b30'
   const themeColor = branding?.themeColor || '#1f1b30'
+  const contactTextColor = getTextColor(themeColor)
 
   // Business details
   const bannerUrl = branding?.bannerUrl
@@ -206,7 +246,7 @@ export default function ProStoreRoute() {
   }
 
   return (
-    <div style={{ background: backgroundColor, color: textColor }}>
+    <div style={{ ...getBackgroundStyle(), color: textColor }}>
       {bannerUrl && (
         <div className='h-72  w-[100vw] max-w-[100%] overflow-hidden mb-6'>
           <Image
@@ -279,7 +319,7 @@ export default function ProStoreRoute() {
                     Add Listing
                   </Button>
                   <Button
-                    variant={'text'}
+                    variant={'contained'}
                     size={'icon'}
                     color={'gradient'}
                     className='rounded-full'
@@ -453,10 +493,14 @@ export default function ProStoreRoute() {
               </div>
               {hasActiveFilters() && (
                 <Button
-                  color='secondary'
+                  variant={'contained'}
                   size='sm'
                   onClick={clearAllFilters}
-                  className='text-sm mt-4'
+                  className='mt-2'
+                  style={{
+                    backgroundColor: themeColor,
+                    color: getTextColor(themeColor),
+                  }}
                 >
                   Clear Filters
                 </Button>
@@ -510,9 +554,13 @@ export default function ProStoreRoute() {
               </p>
               {hasActiveFilters() && (
                 <Button
-                  color='secondary'
+                  variant={'contained'}
                   onClick={clearAllFilters}
-                  className='mt-2 '
+                  className='mt-2'
+                  style={{
+                    backgroundColor: themeColor,
+                    color: getTextColor(themeColor),
+                  }}
                 >
                   Clear Filters
                 </Button>
@@ -565,8 +613,8 @@ export default function ProStoreRoute() {
             className='my-14 p-4 rounded-lg border'
             style={{
               borderColor: themeColor + '50',
-              backgroundColor: backgroundColor,
-              color: textColor,
+              backgroundColor: themeColor,
+              color: contactTextColor,
             }}
           >
             <div className='grid grid-cols-1 md:grid-cols-2 gap-4 text-sm'>
@@ -574,13 +622,13 @@ export default function ProStoreRoute() {
                 <div>
                   <span
                     className='font-medium'
-                    style={{ color: textColor }}
+                    style={{ color: contactTextColor }}
                   >
                     Email:
                   </span>
                   <span
                     className='ml-2'
-                    style={{ color: textColor }}
+                    style={{ color: contactTextColor }}
                   >
                     {businessData.myBusiness.email}
                   </span>
@@ -590,13 +638,13 @@ export default function ProStoreRoute() {
                 <div>
                   <span
                     className='font-medium'
-                    style={{ color: textColor }}
+                    style={{ color: contactTextColor }}
                   >
                     Phone:
                   </span>
                   <span
                     className='ml-2'
-                    style={{ color: textColor }}
+                    style={{ color: contactTextColor }}
                   >
                     {businessData.myBusiness.contactNumber}
                   </span>
@@ -607,13 +655,13 @@ export default function ProStoreRoute() {
                 <div className='md:col-span-2'>
                   <span
                     className='font-medium'
-                    style={{ color: textColor }}
+                    style={{ color: contactTextColor }}
                   >
                     Address:
                   </span>
                   <div
                     className='ml-2'
-                    style={{ color: textColor }}
+                    style={{ color: contactTextColor }}
                   >
                     {businessData.myBusiness.addressLine1 && (
                       <div>{businessData.myBusiness.addressLine1}</div>

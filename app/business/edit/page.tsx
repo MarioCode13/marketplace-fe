@@ -11,21 +11,22 @@ import { toast } from 'sonner'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { FileInput } from '@/components/ui/fileInput'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+
 import { Loader2, Users, Eye, ShieldCheck } from 'lucide-react'
 import { UPDATE_STORE_BRANDING } from '@/lib/graphql/mutations/businessMutations'
 import { UPDATE_BUSINESS } from '@/lib/graphql/mutations/updateBusiness'
 import { GET_BUSINESS_BY_ID } from '@/lib/graphql/queries/getBusinessById'
+import { GET_MY_BUSINESS } from '@/lib/graphql/queries/getMyBusiness'
+import { GET_BUSINESS_BY_SLUG } from '@/lib/graphql/queries/getBusinessBySlug'
 import { VALIDATE_SLUG } from '@/lib/graphql/queries/validateSlug'
 
-import { BusinessUser, UpdateStoreBrandingInput } from '@/lib/graphql/generated'
-import PreviewModal from '@/components/modals/PreviewModal'
+import {
+  BusinessUser,
+  UpdateStoreBrandingInput,
+  BackgroundType,
+  LinearGradientDirection,
+} from '@/lib/graphql/generated'
+import DynamicPreviewModal from '@/components/modals/DynamicPreviewModal'
 import Link from 'next/link'
 import AddTeamMember from './AddTeamMember'
 import OmnicheckTermsModal from '@/components/modals/OmnicheckTermsModal'
@@ -123,13 +124,33 @@ export default function BusinessEditPage() {
   })
 
   // Branding form state
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<{
+    storeName: string
+    about: string
+    themeColor: string
+    primaryColor: string
+    secondaryColor: string
+    backgroundColor: string
+    backgroundColorEnd: string
+    backgroundType: string
+    linearGradientDirection: string
+    radialGradientShape: string
+    textColor: string
+    cardTextColor: string
+    lightOrDark: 'light' | 'dark'
+    logoUrl: string
+    bannerUrl: string
+  }>({
     storeName: '',
     about: '',
     themeColor: '#000000',
     primaryColor: '#000000',
     secondaryColor: '#ffffff',
     backgroundColor: '#f8f9fa',
+    backgroundColorEnd: '#ffffff',
+    backgroundType: 'SOLID',
+    linearGradientDirection: 'TOP_TO_BOTTOM',
+    radialGradientShape: 'circle',
     textColor: '#000000',
     cardTextColor: '#000000',
     lightOrDark: 'dark',
@@ -164,6 +185,11 @@ export default function BusinessEditPage() {
         primaryColor: branding.primaryColor || '#000000',
         secondaryColor: branding.secondaryColor || '#ffffff',
         backgroundColor: branding.backgroundColor || '#f8f9fa',
+        backgroundColorEnd: branding.backgroundColorEnd || '#ffffff',
+        backgroundType: branding.backgroundType || 'SOLID',
+        linearGradientDirection:
+          branding.linearGradientDirection || 'TOP_TO_BOTTOM',
+        radialGradientShape: branding.radialGradientShape || 'circle',
         textColor: branding.textColor || '#000000',
         cardTextColor: branding.cardTextColor || '#000000',
         lightOrDark: branding.lightOrDark || 'light',
@@ -199,14 +225,6 @@ export default function BusinessEditPage() {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     setForm({ ...form, [e.target.name]: e.target.value })
-  }
-
-  const handleColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, themeColor: e.target.value })
-  }
-
-  const handleSelectChange = (value: string) => {
-    setForm((prev) => ({ ...prev, lightOrDark: value }))
   }
 
   const handleBusinessChange = (
@@ -433,6 +451,11 @@ export default function BusinessEditPage() {
         primaryColor: form.primaryColor,
         secondaryColor: form.secondaryColor,
         backgroundColor: form.backgroundColor,
+        backgroundColorEnd: form.backgroundColorEnd,
+        backgroundType: form.backgroundType as BackgroundType,
+        linearGradientDirection:
+          form.linearGradientDirection as LinearGradientDirection,
+        radialGradientShape: form.radialGradientShape,
         textColor: form.textColor,
         cardTextColor: form.cardTextColor,
         lightOrDark: form.lightOrDark,
@@ -444,6 +467,24 @@ export default function BusinessEditPage() {
           businessId: String(business.id),
           input: brandingInput,
         },
+        awaitRefetchQueries: true,
+        refetchQueries: [
+          {
+            query: GET_BUSINESS_BY_ID,
+            variables: { id: business.id },
+          },
+          {
+            query: GET_MY_BUSINESS,
+          },
+          ...(updatedBusiness?.slug
+            ? [
+                {
+                  query: GET_BUSINESS_BY_SLUG,
+                  variables: { slug: updatedBusiness.slug },
+                },
+              ]
+            : []),
+        ],
       })
       if (brandingUpdated?.updateStoreBranding) {
         updatedBusiness = {
@@ -739,99 +780,34 @@ export default function BusinessEditPage() {
                 className='w-full p-2 flex rounded-sm border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors focus-visible:outline-none'
               />
             </div>
-            <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
-              <div>
-                <label className='block font-medium mb-1'>
-                  Background Color
-                </label>
-                <input
-                  type='color'
-                  name='backgroundColor'
-                  value={form.backgroundColor}
-                  onChange={handleChange}
-                  className='w-full h-10 rounded border border-input'
+            <div className='space-y-4'>
+              <div className='flex items-center gap-2 flex-wrap'>
+                <span
+                  className='w-7 h-7 rounded-full border'
+                  style={{ backgroundColor: form.backgroundColor }}
+                />
+                <span
+                  className='w-7 h-7 rounded-full border'
+                  style={{ backgroundColor: form.primaryColor }}
+                />
+                <span
+                  className='w-7 h-7 rounded-full border'
+                  style={{ backgroundColor: form.secondaryColor }}
+                />
+                <span
+                  className='w-7 h-7 rounded-full border'
+                  style={{ backgroundColor: form.themeColor }}
                 />
               </div>
-              <div>
-                <label className='block font-medium mb-1'>Primary Color</label>
-                <input
-                  type='color'
-                  name='primaryColor'
-                  value={form.primaryColor}
-                  onChange={handleChange}
-                  className='w-full h-10 rounded border border-input'
-                />
-              </div>
-              <div>
-                <label className='block font-medium mb-1'>Text Color</label>
-                <input
-                  type='color'
-                  name='textColor'
-                  value={form.textColor}
-                  onChange={handleChange}
-                  className='w-full h-10 rounded border border-input'
-                />
-              </div>
-              <div>
-                <label className='block font-medium mb-1'>
-                  Card Text Color
-                </label>
-                <input
-                  type='color'
-                  name='cardTextColor'
-                  value={form.cardTextColor}
-                  onChange={handleChange}
-                  className='w-full h-10 rounded border border-input'
-                />
-              </div>
-              {isProStore && (
-                <div>
-                  <label className='block font-medium mb-1'>Theme Color</label>
-                  <input
-                    type='color'
-                    name='themeColor'
-                    value={form.themeColor}
-                    onChange={handleColorChange}
-                    className='w-full h-10 rounded border border-input'
-                  />
-                </div>
-              )}
-              {isProStore && (
-                <div>
-                  <label className='block font-medium mb-1'>
-                    Secondary Color
-                  </label>
-                  <input
-                    type='color'
-                    name='secondaryColor'
-                    value={form.secondaryColor}
-                    onChange={handleChange}
-                    className='w-full h-10 rounded border border-input'
-                  />
-                </div>
-              )}
+              <Button
+                type='button'
+                color={'gradient'}
+                variant='outlined'
+                onClick={() => setShowPreview(true)}
+              >
+                Colour Options
+              </Button>
             </div>
-            {isProStore && (
-              <div>
-                <label className='block font-medium mb-1'>
-                  Light or Dark Theme
-                </label>
-                <Select
-                  key={form.lightOrDark}
-                  name='lightOrDark'
-                  value={form.lightOrDark}
-                  onValueChange={handleSelectChange}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder='Select theme' />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value='light'>Light</SelectItem>
-                    <SelectItem value='dark'>Dark</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
             <div>
               <label className='block font-medium mb-1'>Logo</label>
               <FileInput
@@ -1006,10 +982,31 @@ export default function BusinessEditPage() {
       </div>
 
       {showPreview && (
-        <PreviewModal
+        <DynamicPreviewModal
           form={{
             ...form,
             bannerUrl: isProStore ? form.bannerUrl : '',
+          }}
+          businessDetails={{
+            email: businessForm.email,
+            contactNumber: businessForm.contactNumber,
+            addressLine1: businessForm.addressLine1,
+            addressLine2: businessForm.addressLine2,
+            postalCode: businessForm.postalCode,
+            cityName: business?.city?.name ?? undefined,
+            regionName: business?.city?.region?.name ?? undefined,
+            countryName: business?.city?.region?.country?.name ?? undefined,
+          }}
+          onFormChange={(field, value) =>
+            setForm((prev) => ({
+              ...prev,
+              [field]: value,
+            }))
+          }
+          onSave={async () => {
+            await handleSubmit({
+              preventDefault: () => {},
+            } as React.FormEvent)
           }}
           setShowPreview={setShowPreview}
         />

@@ -163,6 +163,36 @@
       },
       {
         "kind": "ENUM",
+        "name": "BackgroundType",
+        "description": null,
+        "isOneOf": null,
+        "fields": null,
+        "inputFields": null,
+        "interfaces": null,
+        "enumValues": [
+          {
+            "name": "LINEAR_GRADIENT",
+            "description": "Linear gradient with directional support (horizontal, vertical, diagonal)",
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "RADIAL_GRADIENT",
+            "description": "Radial gradient (circular or elliptical)",
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "SOLID",
+            "description": "Solid single color background",
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "possibleTypes": null
+      },
+      {
+        "kind": "ENUM",
         "name": "BillingCycle",
         "description": null,
         "isOneOf": null,
@@ -1272,6 +1302,30 @@
             "deprecationReason": null
           },
           {
+            "name": "backgroundColorEnd",
+            "description": "Secondary color for gradients",
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "backgroundType",
+            "description": "Type of background: SOLID, LINEAR_GRADIENT, or RADIAL_GRADIENT",
+            "type": {
+              "kind": "ENUM",
+              "name": "BackgroundType",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "bannerUrl",
             "description": null,
             "type": {
@@ -1308,6 +1362,18 @@
             "deprecationReason": null
           },
           {
+            "name": "linearGradientDirection",
+            "description": "Direction for linear gradients",
+            "type": {
+              "kind": "ENUM",
+              "name": "LinearGradientDirection",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "logoUrl",
             "description": null,
             "type": {
@@ -1322,6 +1388,18 @@
           {
             "name": "primaryColor",
             "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "radialGradientShape",
+            "description": "Shape for radial gradients: 'circle' or 'ellipse'",
             "type": {
               "kind": "SCALAR",
               "name": "String",
@@ -1997,6 +2075,42 @@
         "inputFields": null,
         "interfaces": [],
         "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "ENUM",
+        "name": "LinearGradientDirection",
+        "description": null,
+        "isOneOf": null,
+        "fields": null,
+        "inputFields": null,
+        "interfaces": null,
+        "enumValues": [
+          {
+            "name": "DIAGONAL_TL_BR",
+            "description": "Diagonal gradient: top-left to bottom-right (135 degrees)",
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "DIAGONAL_TR_BL",
+            "description": "Diagonal gradient: top-right to bottom-left (45 degrees)",
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "LEFT_TO_RIGHT",
+            "description": "Left to right horizontal gradient",
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "TOP_TO_BOTTOM",
+            "description": "Top to bottom vertical gradient",
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
         "possibleTypes": null
       },
       {
@@ -7939,6 +8053,46 @@
             "deprecationReason": null
           },
           {
+            "name": "backgroundColorEnd",
+            "description": "Secondary background color for gradients",
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "backgroundCss",
+            "description": "Computed CSS background string",
+            "args": [],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "backgroundType",
+            "description": "Background type: SOLID, LINEAR_GRADIENT, or RADIAL_GRADIENT",
+            "args": [],
+            "type": {
+              "kind": "ENUM",
+              "name": "BackgroundType",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "bannerUrl",
             "description": null,
             "args": [],
@@ -7975,6 +8129,18 @@
             "deprecationReason": null
           },
           {
+            "name": "linearGradientDirection",
+            "description": "Direction for linear gradients",
+            "args": [],
+            "type": {
+              "kind": "ENUM",
+              "name": "LinearGradientDirection",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "logoUrl",
             "description": null,
             "args": [],
@@ -7989,6 +8155,18 @@
           {
             "name": "primaryColor",
             "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "radialGradientShape",
+            "description": "Shape for radial gradients: 'circle' or 'ellipse'",
             "args": [],
             "type": {
               "kind": "SCALAR",
@@ -9201,6 +9379,30 @@
             "deprecationReason": null
           },
           {
+            "name": "backgroundColorEnd",
+            "description": "Secondary color for gradients",
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "backgroundType",
+            "description": "Type of background: SOLID, LINEAR_GRADIENT, or RADIAL_GRADIENT",
+            "type": {
+              "kind": "ENUM",
+              "name": "BackgroundType",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "bannerUrl",
             "description": null,
             "type": {
@@ -9237,6 +9439,18 @@
             "deprecationReason": null
           },
           {
+            "name": "linearGradientDirection",
+            "description": "Direction for linear gradients",
+            "type": {
+              "kind": "ENUM",
+              "name": "LinearGradientDirection",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "logoUrl",
             "description": null,
             "type": {
@@ -9251,6 +9465,18 @@
           {
             "name": "primaryColor",
             "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "radialGradientShape",
+            "description": "Shape for radial gradients: 'circle' or 'ellipse'",
             "type": {
               "kind": "SCALAR",
               "name": "String",

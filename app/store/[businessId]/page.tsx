@@ -43,6 +43,7 @@ export default function StorePage() {
   } = useGetBusinessByIdQuery({
     variables: { id: businessId },
     skip: !businessId,
+    fetchPolicy: 'cache-and-network',
   })
 
   const {
@@ -90,8 +91,40 @@ export default function StorePage() {
   )
   const isOwner = isBusinessMember
 
-  const bgColor = branding?.lightOrDark === 'light' ? '#dde2e8' : '#121212'
-  const textColor = getTextColor(bgColor)
+  const getBackgroundStyle = () => {
+    const backgroundColor = branding?.backgroundColor || '#f8f9fa'
+    const endColor = branding?.backgroundColorEnd || '#ffffff'
+    const backgroundType = branding?.backgroundType || 'SOLID'
+
+    if (backgroundType === 'LINEAR_GRADIENT') {
+      let direction = 'to bottom'
+      switch (branding?.linearGradientDirection) {
+        case 'TOP_TO_BOTTOM':
+          direction = 'to bottom'
+          break
+        case 'LEFT_TO_RIGHT':
+          direction = 'to right'
+          break
+        case 'DIAGONAL_TL_BR':
+          direction = 'to bottom right'
+          break
+        case 'DIAGONAL_TR_BL':
+          direction = 'to bottom left'
+          break
+      }
+      return { background: `linear-gradient(${direction}, ${backgroundColor}, ${endColor})` }
+    }
+
+    if (backgroundType === 'RADIAL_GRADIENT') {
+      const shape = branding?.radialGradientShape === 'ellipse' ? 'ellipse' : 'circle'
+      return { background: `radial-gradient(${shape}, ${backgroundColor}, ${endColor})` }
+    }
+
+    return { backgroundColor }
+  }
+
+  // Choose text color against the "base" backgroundColor.
+  const textColor = getTextColor(branding?.backgroundColor || '#f8f9fa')
 
   const handleNext = () => {
     if (offset + limit < totalCount) setOffset(offset + limit)
@@ -102,7 +135,7 @@ export default function StorePage() {
   }
 
   return (
-    <div style={{ background: bgColor }}>
+    <div style={getBackgroundStyle()}>
       <div className='max-w-5xl mx-auto p-4 pb-12'>
         {/* Store Header */}
         <div className='flex items-center gap-4 mb-4 pt-4'>

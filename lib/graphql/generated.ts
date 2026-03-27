@@ -33,6 +33,15 @@ export type AuthResponse = {
   userId: Scalars['ID']['output'];
 };
 
+export enum BackgroundType {
+  /** Linear gradient with directional support (horizontal, vertical, diagonal) */
+  LinearGradient = 'LINEAR_GRADIENT',
+  /** Radial gradient (circular or elliptical) */
+  RadialGradient = 'RADIAL_GRADIENT',
+  /** Solid single color background */
+  Solid = 'SOLID'
+}
+
 export enum BillingCycle {
   Monthly = 'MONTHLY',
   Yearly = 'YEARLY'
@@ -168,11 +177,19 @@ export type CreateBusinessInput = {
 export type CreateStoreBrandingInput = {
   about?: InputMaybe<Scalars['String']['input']>;
   backgroundColor?: InputMaybe<Scalars['String']['input']>;
+  /** Secondary color for gradients */
+  backgroundColorEnd?: InputMaybe<Scalars['String']['input']>;
+  /** Type of background: SOLID, LINEAR_GRADIENT, or RADIAL_GRADIENT */
+  backgroundType?: InputMaybe<BackgroundType>;
   bannerUrl?: InputMaybe<Scalars['String']['input']>;
   cardTextColor?: InputMaybe<Scalars['String']['input']>;
   lightOrDark?: InputMaybe<Scalars['String']['input']>;
+  /** Direction for linear gradients */
+  linearGradientDirection?: InputMaybe<LinearGradientDirection>;
   logoUrl?: InputMaybe<Scalars['String']['input']>;
   primaryColor?: InputMaybe<Scalars['String']['input']>;
+  /** Shape for radial gradients: 'circle' or 'ellipse' */
+  radialGradientShape?: InputMaybe<Scalars['String']['input']>;
   secondaryColor?: InputMaybe<Scalars['String']['input']>;
   storeName?: InputMaybe<Scalars['String']['input']>;
   textColor?: InputMaybe<Scalars['String']['input']>;
@@ -243,6 +260,17 @@ export type Invitation = {
   status: Scalars['String']['output'];
   updatedAt: Scalars['String']['output'];
 };
+
+export enum LinearGradientDirection {
+  /** Diagonal gradient: top-left to bottom-right (135 degrees) */
+  DiagonalTlBr = 'DIAGONAL_TL_BR',
+  /** Diagonal gradient: top-right to bottom-left (45 degrees) */
+  DiagonalTrBl = 'DIAGONAL_TR_BL',
+  /** Left to right horizontal gradient */
+  LeftToRight = 'LEFT_TO_RIGHT',
+  /** Top to bottom vertical gradient */
+  TopToBottom = 'TOP_TO_BOTTOM'
+}
 
 export type Listing = {
   __typename?: 'Listing';
@@ -1060,11 +1088,21 @@ export type StoreBranding = {
   __typename?: 'StoreBranding';
   about?: Maybe<Scalars['String']['output']>;
   backgroundColor?: Maybe<Scalars['String']['output']>;
+  /** Secondary background color for gradients */
+  backgroundColorEnd?: Maybe<Scalars['String']['output']>;
+  /** Computed CSS background string */
+  backgroundCss: Scalars['String']['output'];
+  /** Background type: SOLID, LINEAR_GRADIENT, or RADIAL_GRADIENT */
+  backgroundType?: Maybe<BackgroundType>;
   bannerUrl?: Maybe<Scalars['String']['output']>;
   cardTextColor?: Maybe<Scalars['String']['output']>;
   lightOrDark?: Maybe<Scalars['String']['output']>;
+  /** Direction for linear gradients */
+  linearGradientDirection?: Maybe<LinearGradientDirection>;
   logoUrl?: Maybe<Scalars['String']['output']>;
   primaryColor?: Maybe<Scalars['String']['output']>;
+  /** Shape for radial gradients: 'circle' or 'ellipse' */
+  radialGradientShape?: Maybe<Scalars['String']['output']>;
   secondaryColor?: Maybe<Scalars['String']['output']>;
   storeName?: Maybe<Scalars['String']['output']>;
   textColor?: Maybe<Scalars['String']['output']>;
@@ -1179,11 +1217,19 @@ export type UpdateListingInput = {
 export type UpdateStoreBrandingInput = {
   about?: InputMaybe<Scalars['String']['input']>;
   backgroundColor?: InputMaybe<Scalars['String']['input']>;
+  /** Secondary color for gradients */
+  backgroundColorEnd?: InputMaybe<Scalars['String']['input']>;
+  /** Type of background: SOLID, LINEAR_GRADIENT, or RADIAL_GRADIENT */
+  backgroundType?: InputMaybe<BackgroundType>;
   bannerUrl?: InputMaybe<Scalars['String']['input']>;
   cardTextColor?: InputMaybe<Scalars['String']['input']>;
   lightOrDark?: InputMaybe<Scalars['String']['input']>;
+  /** Direction for linear gradients */
+  linearGradientDirection?: InputMaybe<LinearGradientDirection>;
   logoUrl?: InputMaybe<Scalars['String']['input']>;
   primaryColor?: InputMaybe<Scalars['String']['input']>;
+  /** Shape for radial gradients: 'circle' or 'ellipse' */
+  radialGradientShape?: InputMaybe<Scalars['String']['input']>;
   secondaryColor?: InputMaybe<Scalars['String']['input']>;
   storeName?: InputMaybe<Scalars['String']['input']>;
   textColor?: InputMaybe<Scalars['String']['input']>;
@@ -1357,14 +1403,14 @@ export type UpdateStoreBrandingMutationVariables = Exact<{
 }>;
 
 
-export type UpdateStoreBrandingMutation = { __typename?: 'Mutation', updateStoreBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, primaryColor?: string | null, secondaryColor?: string | null, lightOrDark?: string | null, about?: string | null, storeName?: string | null, textColor?: string | null, cardTextColor?: string | null } | null };
+export type UpdateStoreBrandingMutation = { __typename?: 'Mutation', updateStoreBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, primaryColor?: string | null, secondaryColor?: string | null, linearGradientDirection?: LinearGradientDirection | null, radialGradientShape?: string | null, backgroundColor?: string | null, backgroundColorEnd?: string | null, backgroundCss: string, backgroundType?: BackgroundType | null, lightOrDark?: string | null, about?: string | null, storeName?: string | null, textColor?: string | null, cardTextColor?: string | null } | null };
 
 export type CreateBusinessMutationVariables = Exact<{
   input: CreateBusinessInput;
 }>;
 
 
-export type CreateBusinessMutation = { __typename?: 'Mutation', createBusiness: { __typename?: 'Business', id: string, name: string, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, postalCode?: string | null, slug?: string | null, city?: { __typename?: 'City', id: string, name: string } | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, primaryColor?: string | null, secondaryColor?: string | null, lightOrDark?: string | null, about?: string | null, storeName?: string | null, textColor?: string | null, cardTextColor?: string | null } | null } };
+export type CreateBusinessMutation = { __typename?: 'Mutation', createBusiness: { __typename?: 'Business', id: string, name: string, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, postalCode?: string | null, slug?: string | null, city?: { __typename?: 'City', id: string, name: string } | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, primaryColor?: string | null, secondaryColor?: string | null, linearGradientDirection?: LinearGradientDirection | null, radialGradientShape?: string | null, backgroundColor?: string | null, backgroundColorEnd?: string | null, backgroundCss: string, backgroundType?: BackgroundType | null, lightOrDark?: string | null, about?: string | null, storeName?: string | null, textColor?: string | null, cardTextColor?: string | null } | null } };
 
 export type LinkUserToBusinessMutationVariables = Exact<{
   businessId: Scalars['ID']['input'];
@@ -1513,14 +1559,14 @@ export type GetBusinessByIdQueryVariables = Exact<{
 }>;
 
 
-export type GetBusinessByIdQuery = { __typename?: 'Query', business?: { __typename?: 'Business', id: string, name: string, slug?: string | null, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, postalCode?: string | null, cipcRegistrationNo?: string | null, cipcBusinessName?: string | null, planType?: PlanType | null, trustRating?: { __typename?: 'BusinessTrustRating', verifiedWithThirdParty: boolean, averageRating: number, reviewCount: number } | null, owner: { __typename?: 'User', id: string, planType?: PlanType | null }, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, lightOrDark?: string | null, primaryColor?: string | null, secondaryColor?: string | null, textColor?: string | null, cardTextColor?: string | null, backgroundColor?: string | null, about?: string | null, storeName?: string | null } | null, businessUsers: Array<{ __typename?: 'BusinessUser', id: string, role: BusinessUserRole, user: { __typename?: 'User', id: string, username: string, email?: string | null, profileImageUrl?: string | null, planType?: PlanType | null, trustRating?: { __typename?: 'TrustRating', starRating: number, trustLevel: string, overallScore: number, totalReviews: number, totalTransactions: number, successfulTransactions: number } | null } }> } | null };
+export type GetBusinessByIdQuery = { __typename?: 'Query', business?: { __typename?: 'Business', id: string, name: string, slug?: string | null, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, postalCode?: string | null, cipcRegistrationNo?: string | null, cipcBusinessName?: string | null, planType?: PlanType | null, trustRating?: { __typename?: 'BusinessTrustRating', verifiedWithThirdParty: boolean, averageRating: number, reviewCount: number } | null, owner: { __typename?: 'User', id: string, planType?: PlanType | null }, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, lightOrDark?: string | null, primaryColor?: string | null, secondaryColor?: string | null, textColor?: string | null, cardTextColor?: string | null, backgroundColor?: string | null, backgroundColorEnd?: string | null, backgroundType?: BackgroundType | null, linearGradientDirection?: LinearGradientDirection | null, radialGradientShape?: string | null, backgroundCss: string, about?: string | null, storeName?: string | null } | null, businessUsers: Array<{ __typename?: 'BusinessUser', id: string, role: BusinessUserRole, user: { __typename?: 'User', id: string, username: string, email?: string | null, profileImageUrl?: string | null, planType?: PlanType | null, trustRating?: { __typename?: 'TrustRating', starRating: number, trustLevel: string, overallScore: number, totalReviews: number, totalTransactions: number, successfulTransactions: number } | null } }> } | null };
 
 export type GetBusinessBySlugQueryVariables = Exact<{
   slug: Scalars['String']['input'];
 }>;
 
 
-export type GetBusinessBySlugQuery = { __typename?: 'Query', getBusinessBySlug?: { __typename?: 'Business', id: string, name: string, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, postalCode?: string | null, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, trustRating?: { __typename?: 'BusinessTrustRating', verifiedWithThirdParty: boolean, averageRating: number, reviewCount: number } | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, lightOrDark?: string | null, primaryColor?: string | null, secondaryColor?: string | null, about?: string | null, storeName?: string | null, backgroundColor?: string | null, textColor?: string | null, cardTextColor?: string | null } | null, businessUsers: Array<{ __typename?: 'BusinessUser', id: string, role: BusinessUserRole, user: { __typename?: 'User', id: string, username: string, email?: string | null, profileImageUrl?: string | null, planType?: PlanType | null, trustRating?: { __typename?: 'TrustRating', starRating: number, trustLevel: string, overallScore: number, totalReviews: number, totalTransactions: number, successfulTransactions: number } | null } }> } | null };
+export type GetBusinessBySlugQuery = { __typename?: 'Query', getBusinessBySlug?: { __typename?: 'Business', id: string, name: string, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, postalCode?: string | null, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, trustRating?: { __typename?: 'BusinessTrustRating', verifiedWithThirdParty: boolean, averageRating: number, reviewCount: number } | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, lightOrDark?: string | null, primaryColor?: string | null, secondaryColor?: string | null, about?: string | null, storeName?: string | null, backgroundColor?: string | null, backgroundColorEnd?: string | null, backgroundType?: BackgroundType | null, linearGradientDirection?: LinearGradientDirection | null, radialGradientShape?: string | null, backgroundCss: string, textColor?: string | null, cardTextColor?: string | null } | null, businessUsers: Array<{ __typename?: 'BusinessUser', id: string, role: BusinessUserRole, user: { __typename?: 'User', id: string, username: string, email?: string | null, profileImageUrl?: string | null, planType?: PlanType | null, trustRating?: { __typename?: 'TrustRating', starRating: number, trustLevel: string, overallScore: number, totalReviews: number, totalTransactions: number, successfulTransactions: number } | null } }> } | null };
 
 export type BusinessTrustRatingQueryVariables = Exact<{
   businessId: Scalars['ID']['input'];
@@ -1571,7 +1617,7 @@ export type MeQuery = { __typename?: 'Query', me?: { __typename?: 'User', id: st
 export type GetMyBusinessQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetMyBusinessQuery = { __typename?: 'Query', myBusiness?: { __typename?: 'Business', id: string, slug?: string | null, name: string, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, planType?: PlanType | null, postalCode?: string | null, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, primaryColor?: string | null, secondaryColor?: string | null, lightOrDark?: string | null, about?: string | null, storeName?: string | null, textColor?: string | null, cardTextColor?: string | null, backgroundColor?: string | null } | null, businessUsers: Array<{ __typename?: 'BusinessUser', id: string, role: BusinessUserRole, user: { __typename?: 'User', id: string, planType?: PlanType | null, username: string, email?: string | null, profileImageUrl?: string | null } }> } | null };
+export type GetMyBusinessQuery = { __typename?: 'Query', myBusiness?: { __typename?: 'Business', id: string, slug?: string | null, name: string, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, planType?: PlanType | null, postalCode?: string | null, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, storeBranding?: { __typename?: 'StoreBranding', logoUrl?: string | null, bannerUrl?: string | null, themeColor?: string | null, primaryColor?: string | null, secondaryColor?: string | null, lightOrDark?: string | null, about?: string | null, storeName?: string | null, textColor?: string | null, cardTextColor?: string | null, backgroundColor?: string | null, backgroundColorEnd?: string | null, backgroundType?: BackgroundType | null, linearGradientDirection?: LinearGradientDirection | null, radialGradientShape?: string | null, backgroundCss: string } | null, businessUsers: Array<{ __typename?: 'BusinessUser', id: string, role: BusinessUserRole, user: { __typename?: 'User', id: string, planType?: PlanType | null, username: string, email?: string | null, profileImageUrl?: string | null } }> } | null };
 
 export type GetNotificationsQueryVariables = Exact<{
   userId: Scalars['ID']['input'];
@@ -2201,6 +2247,12 @@ export const UpdateStoreBrandingDocument = gql`
     themeColor
     primaryColor
     secondaryColor
+    linearGradientDirection
+    radialGradientShape
+    backgroundColor
+    backgroundColorEnd
+    backgroundCss
+    backgroundType
     lightOrDark
     about
     storeName
@@ -2257,6 +2309,12 @@ export const CreateBusinessDocument = gql`
       themeColor
       primaryColor
       secondaryColor
+      linearGradientDirection
+      radialGradientShape
+      backgroundColor
+      backgroundColorEnd
+      backgroundCss
+      backgroundType
       lightOrDark
       about
       storeName
@@ -3105,6 +3163,11 @@ export const GetBusinessByIdDocument = gql`
       textColor
       cardTextColor
       backgroundColor
+      backgroundColorEnd
+      backgroundType
+      linearGradientDirection
+      radialGradientShape
+      backgroundCss
       about
       storeName
     }
@@ -3198,6 +3261,11 @@ export const GetBusinessBySlugDocument = gql`
       about
       storeName
       backgroundColor
+      backgroundColorEnd
+      backgroundType
+      linearGradientDirection
+      radialGradientShape
+      backgroundCss
       textColor
       cardTextColor
     }
@@ -3653,6 +3721,11 @@ export const GetMyBusinessDocument = gql`
       textColor
       cardTextColor
       backgroundColor
+      backgroundColorEnd
+      backgroundType
+      linearGradientDirection
+      radialGradientShape
+      backgroundCss
     }
     businessUsers {
       id
