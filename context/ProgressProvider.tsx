@@ -5,7 +5,6 @@ import { usePathname, useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
 import NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
-import LoadingShip from '@/components/LoadingShip'
 
 // Configure NProgress
 NProgress.configure({
@@ -50,9 +49,8 @@ export default function ProgressProvider({
   return (
     <>
       <Suspense fallback={null}>
-        <ProgressTracker />
+        <ProgressTracker />\
       </Suspense>
-      <LoadingShip />
       {children}
     </>
   )
