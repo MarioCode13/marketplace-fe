@@ -49,7 +49,7 @@ export default function ProgressProvider({
   return (
     <>
       <Suspense fallback={null}>
-        <ProgressTracker />\
+        <ProgressTracker />
       </Suspense>
       {children}
     </>
