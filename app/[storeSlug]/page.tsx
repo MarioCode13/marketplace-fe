@@ -253,6 +253,7 @@ export default function ProStoreRoute() {
             width={2000}
             height={1500}
             src={bannerUrl}
+            priority
             alt='Store banner'
             className='w-full h-full object-cover'
           />

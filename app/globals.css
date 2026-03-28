@@ -98,6 +98,42 @@ button, input, textarea {
   }
 }
 
+/* Loading Ship Animation */
+@keyframes sail {
+  0%, 100% {
+    transform: translateX(-20px);
+  }
+  50% {
+    transform: translateX(20px);
+  }
+}
+
+@keyframes bob {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.animate-sail {
+  animation: sail 1.5s ease-in-out infinite, bob 1s ease-in-out infinite;
+}
+
+.animate-fade-out {
+  animation: fadeOut 0.3s ease-out forwards 0.2s;
+}
+
 /* Embla Carousel Styles */
 .embla {
   overflow: hidden;

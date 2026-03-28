@@ -6,6 +6,7 @@ import ApolloProviderWrapper from '@/lib/apollo/client'
 import { ThemeProvider } from './ThemeContext'
 import { Toaster } from 'sonner'
 import AppInitializer from '@/context/AppInitializer'
+import ProgressProvider from './ProgressProvider'
 
 export default function Providers({
   children,
@@ -21,9 +22,11 @@ export default function Providers({
     <Provider store={store}>
       <ApolloProviderWrapper initialState={initialApolloState}>
         <ThemeProvider>
-          <Toaster position='bottom-right' />
-          {!skipInitializer && <AppInitializer />}
-          {children}
+          <ProgressProvider>
+            <Toaster position='bottom-right' />
+            {!skipInitializer && <AppInitializer />}
+            {children}
+          </ProgressProvider>
         </ThemeProvider>
       </ApolloProviderWrapper>
     </Provider>
