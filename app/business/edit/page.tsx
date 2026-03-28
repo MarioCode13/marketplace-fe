@@ -331,17 +331,11 @@ export default function BusinessEditPage() {
     }
   }
 
-  // Trigger business verification via server-side OmniCheck business API
+  // Trigger business verification via server-side OmniCheck CIPC API
+  // (registration number + registered name must match CIPC records on the server.)
   const handleVerifyBusiness = async () => {
     if (!business?.id) {
       toast.error('Business ID not found. Please refresh the page.')
-      return
-    }
-
-    if (!business?.name || business.name.trim() === '') {
-      toast.error(
-        'Business name is required for verification. Please update your business name first.',
-      )
       return
     }
 
@@ -357,31 +351,74 @@ export default function BusinessEditPage() {
     }
 
     setVerifyingBusiness(true)
+
+    let businessToVerify = business
     try {
+      // If user updated CIPC fields but didn’t save, persist them first
+      const cipcChanged =
+        businessForm.cipcRegistrationNo !==
+          (business.cipcRegistrationNo || '') ||
+        businessForm.cipcBusinessName !== (business.cipcBusinessName || '')
+
+      if (cipcChanged) {
+        const { data: updated } = await updateBusiness({
+          variables: {
+            input: {
+              businessId: business.id,
+              cipcRegistrationNo: businessForm.cipcRegistrationNo,
+              cipcBusinessName: businessForm.cipcBusinessName,
+            },
+          },
+        })
+
+        if (!updated?.updateBusiness) {
+          throw new Error('Failed to save CIPC details before verification.')
+        }
+
+        businessToVerify = updated.updateBusiness
+        // keep local interface in sync
+        setBusinessForm((prev) => ({
+          ...prev,
+          cipcRegistrationNo: businessToVerify.cipcRegistrationNo || '',
+          cipcBusinessName: businessToVerify.cipcBusinessName || '',
+        }))
+      }
+
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE}/api/verify-business`,
         {
           method: 'POST',
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ businessId: business.id }),
+          body: JSON.stringify({ businessId: businessToVerify.id }),
         },
       )
 
-      const data = await res.json()
+      const data = (await res.json()) as {
+        success?: boolean
+        verified?: boolean
+        error?: string
+        reason?: string
+      }
+
+      const detailMessage = [data.error, data.reason].filter(Boolean).join(' ')
 
       if (!res.ok) {
-        throw new Error(data.error || 'Verification failed')
+        throw new Error(detailMessage || 'Verification failed')
       }
 
       if (data.success && data.verified) {
         toast.success('Business verified successfully with OmniCheck!')
-        // Refetch business to pick up verification status
         if (typeof refetchBusiness === 'function') await refetchBusiness()
+      } else if (data.success && !data.verified) {
+        toast.error(
+          detailMessage ||
+            'CIPC did not confirm your registration number and registered business name. Check that they match your CIPC certificate exactly, then try again.',
+        )
       } else {
         toast.error(
-          data.error ||
-            'Business verification failed. Please check your business name and try again.',
+          detailMessage ||
+            'Business verification failed. Please try again or contact support.',
         )
       }
     } catch (err) {
@@ -699,7 +736,7 @@ export default function BusinessEditPage() {
               </div>
               <div>
                 <label className='block font-medium mb-1'>
-                  Registered Business Name (CIPC)
+                  Registered Business Name
                 </label>
                 <Input
                   name='cipcBusinessName'
@@ -736,7 +773,9 @@ export default function BusinessEditPage() {
                       )}
                     </Button>
                     <p className='text-xs text-muted-foreground mt-2'>
-                      By verifying your ID, you agree to our use of
+                      Verification checks your CIPC registration number and
+                      registered name against the CIPC database. By verifying,
+                      you agree to our use of
                       <button
                         type='button'
                         className='text-blue-600 underline ml-1'
