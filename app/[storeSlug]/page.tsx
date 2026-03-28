@@ -25,7 +25,7 @@ import { useState } from 'react'
 import StoreReviewsModal from '@/components/modals/StoreReviewsModal'
 import { Button } from '@/components/ui/button'
 import { notFound } from 'next/navigation'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/store/store'
 import {
@@ -42,15 +42,14 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import Link from 'next/link'
 
 export default function ProStoreRoute() {
   const params = useParams()
-  const router = useRouter()
   const slug = params?.storeSlug as string
 
   const userContext = useSelector((state: RootState) => state.userContext)
   const currentUserId = userContext.userId
-  console.log('Redux user object:', userContext)
 
   const { data, loading, error } = useGetBusinessBySlugQuery({
     variables: { slug },
@@ -71,9 +70,6 @@ export default function ProStoreRoute() {
       }
       return match
     })
-  // Debug logs for user association
-  console.log('Current User ID:', currentUserId)
-  console.log('Business Users:', business?.businessUsers)
   // Get business data if the current user is the store owner
   // (to show business details like address, contact info)
   const { data: businessData } = useGetMyBusinessQuery({
@@ -309,26 +305,28 @@ export default function ProStoreRoute() {
 
               {isStoreUser && (
                 <div className='flex items-center gap-2'>
-                  <Button
-                    variant={'contained'}
-                    size={'sm'}
-                    color={'gradient'}
-                    className='gap-2'
-                    onClick={() => router.push('/sell')}
-                  >
-                    <Plus size={16} />
-                    Add Listing
-                  </Button>
-                  <Button
-                    variant={'contained'}
-                    size={'icon'}
-                    color={'gradient'}
-                    className='rounded-full'
-                    title='Store Settings'
-                    onClick={() => router.push('/business/edit')}
-                  >
-                    <Settings size={20} />
-                  </Button>
+                  <Link href='/sell'>
+                    <Button
+                      variant={'contained'}
+                      size={'sm'}
+                      color={'gradient'}
+                      className='gap-2'
+                    >
+                      <Plus size={16} />
+                      Add Listing
+                    </Button>
+                  </Link>
+                  <Link href='/business/edit'>
+                    <Button
+                      variant={'contained'}
+                      size={'icon'}
+                      color={'gradient'}
+                      className='rounded-full'
+                      title='Store Settings'
+                    >
+                      <Settings size={20} />
+                    </Button>
+                  </Link>
                 </div>
               )}
             </div>

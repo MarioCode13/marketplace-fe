@@ -34,12 +34,12 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { TrustRatingDisplay } from '@/components/TrustRatingDisplay'
-import { generateImageUrl } from '@/lib/utils'
+import { formatEnum, generateImageUrl } from '@/lib/utils'
 import { checkImageContent } from '@/lib/utils/contentModeration'
+import Link from 'next/link'
 
 export default function Profile() {
   const router = useRouter()
-
   const [hovered, setHovered] = useState(false)
   const [profileImageLoading, setProfileImageLoading] = useState(false)
   const dispatch = useDispatch<AppDispatch>()
@@ -232,6 +232,12 @@ export default function Profile() {
             <div className='mt-6'>
               {user ? (
                 <>
+                  <p className='mb-2'>
+                    <strong>Plan type:</strong>{' '}
+                    <Link href='/subscriptions'>
+                      {formatEnum(user.planType ?? '')}
+                    </Link>
+                  </p>
                   <p>
                     <strong>Username:</strong> {user.username}
                   </p>
@@ -243,15 +249,16 @@ export default function Profile() {
                 <p className='text-sm text-gray-500'>Loading user data...</p>
               )}
 
-              <Button
-                variant={'contained'}
-                color={'primary'}
-                className='w-full mt-3'
-                onClick={() => router.push('/profile/complete')}
-              >
-                {profileComplete ? 'Edit Profile' : 'Complete Your Profile'}{' '}
-                <Pencil size={18} />
-              </Button>
+              <Link href='/profile/complete'>
+                <Button
+                  variant={'contained'}
+                  color={'primary'}
+                  className='w-full mt-3'
+                >
+                  {profileComplete ? 'Edit Profile' : 'Complete Your Profile'}{' '}
+                  <Pencil size={18} />
+                </Button>
+              </Link>
 
               <Button
                 variant={'outlined'}
@@ -372,7 +379,12 @@ export default function Profile() {
                 className='w-full mt-3'
                 color={'secondary'}
                 variant={'contained'}
-                onClick={() => router.push('/business/edit')}
+                onClick={() => {
+                  if (typeof window !== 'undefined') {
+                    ;(window as Window & typeof globalThis).__NProgress?.start()
+                  }
+                  router.push('/business/edit')
+                }}
               >
                 Configure Business <Building size={18} />
               </Button>

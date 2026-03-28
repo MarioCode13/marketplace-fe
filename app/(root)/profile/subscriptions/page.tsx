@@ -5,6 +5,7 @@ import { GET_ME } from '@/lib/graphql/queries/getMe'
 import { GET_MY_BUSINESS } from '@/lib/graphql/queries/getMyBusiness'
 import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
+import { formatEnum } from '@/lib/utils'
 
 export default function ProfileSubscriptionsPage() {
   const { data, loading, error } = useQuery(GET_ME)
@@ -30,7 +31,7 @@ export default function ProfileSubscriptionsPage() {
     }
 
     const businessUser = (business as Business).businessUsers.find(
-      (bu: BusinessUser) => bu.user.id === userId
+      (bu: BusinessUser) => bu.user.id === userId,
     )
     if (
       businessUser &&
@@ -64,10 +65,10 @@ export default function ProfileSubscriptionsPage() {
       <h2 className='text-2xl font-bold mb-2'>Subscription Details</h2>
       <div className='mb-4'>
         <div>
-          <strong>Plan:</strong> {subscription.planType}
+          <strong>Plan:</strong> {formatEnum(subscription.planType ?? '')}
         </div>
         <div>
-          <strong>Status:</strong> {subscription.status}
+          <strong>Status:</strong> {formatEnum(subscription.status ?? '')}
         </div>
         {/* Add more details like valid until, renewal, etc. if available */}
       </div>

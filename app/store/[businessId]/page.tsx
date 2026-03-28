@@ -27,7 +27,7 @@ export default function StorePage() {
   const navigate = useRouter()
   const businessId = params?.businessId as string
   const currentUserId = useSelector(
-    (state: RootState) => state.userContext.userId
+    (state: RootState) => state.userContext.userId,
   )
 
   // State for pagination only (no filters for resellers)
@@ -87,7 +87,7 @@ export default function StorePage() {
   const isBusinessMember = business.businessUsers?.some(
     (businessUser) =>
       businessUser.user.id.toString() === currentUserId?.toString() &&
-      ['OWNER', 'ADMIN'].includes(businessUser.role as string)
+      ['OWNER', 'ADMIN'].includes(businessUser.role as string),
   )
   const isOwner = isBusinessMember
 
@@ -112,12 +112,17 @@ export default function StorePage() {
           direction = 'to bottom left'
           break
       }
-      return { background: `linear-gradient(${direction}, ${backgroundColor}, ${endColor})` }
+      return {
+        background: `linear-gradient(${direction}, ${backgroundColor}, ${endColor})`,
+      }
     }
 
     if (backgroundType === 'RADIAL_GRADIENT') {
-      const shape = branding?.radialGradientShape === 'ellipse' ? 'ellipse' : 'circle'
-      return { background: `radial-gradient(${shape}, ${backgroundColor}, ${endColor})` }
+      const shape =
+        branding?.radialGradientShape === 'ellipse' ? 'ellipse' : 'circle'
+      return {
+        background: `radial-gradient(${shape}, ${backgroundColor}, ${endColor})`,
+      }
     }
 
     return { backgroundColor }
@@ -177,7 +182,14 @@ export default function StorePage() {
                     size={'icon'}
                     className='rounded-full'
                     title='Store Settings'
-                    onClick={() => navigate.push('/business/edit')}
+                    onClick={() => {
+                      if (typeof window !== 'undefined') {
+                        ;(
+                          window as Window & typeof globalThis
+                        ).__NProgress?.start()
+                      }
+                      navigate.push('/business/edit')
+                    }}
                   >
                     <Settings
                       size={24}

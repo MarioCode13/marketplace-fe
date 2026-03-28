@@ -77,21 +77,6 @@ export default async function Page({
     sortOrder,
   }
 
-  // Debug: log date conversion
-  process.stderr.write(
-    `\n[DEBUG SSR /listings] minDate param: ${minDate} → converted: ${variables.minDate}\n`,
-  )
-  process.stderr.write(
-    `[DEBUG SSR /listings] maxDate param: ${maxDate} → converted: ${variables.maxDate}\n`,
-  )
-  process.stderr.write(
-    `[DEBUG SSR /listings] GraphQL variables: ${JSON.stringify(
-      variables,
-      null,
-      2,
-    )}\n`,
-  )
-
   // Ensure fresh data
   const { data } = await client.query({
     query: GET_LISTINGS,
