@@ -3,7 +3,6 @@
 import { useEffect } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
 import NProgress from 'nprogress'
-// @ts-expect-error - nprogress CSS import types not available
 import 'nprogress/nprogress.css'
 import LoadingShip from '@/components/LoadingShip'
 
