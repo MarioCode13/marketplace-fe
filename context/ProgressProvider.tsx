@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
+import { Suspense } from 'react'
 import NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
 import LoadingShip from '@/components/LoadingShip'
@@ -18,19 +19,13 @@ NProgress.configure({
 // Expose NProgress to window for debugging
 if (typeof window !== 'undefined') {
   ;(window as Window & typeof globalThis).__NProgress = NProgress
-  console.log('NProgress initialized:', NProgress)
 }
 
-export default function ProgressProvider({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+function ProgressTracker() {
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
   useEffect(() => {
-    console.log('Route changed to:', pathname)
     NProgress.start()
 
     // Complete the progress when route changes (page loaded)
@@ -44,8 +39,19 @@ export default function ProgressProvider({
     }
   }, [pathname, searchParams])
 
+  return null
+}
+
+export default function ProgressProvider({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   return (
     <>
+      <Suspense fallback={null}>
+        <ProgressTracker />
+      </Suspense>
       <LoadingShip />
       {children}
     </>
