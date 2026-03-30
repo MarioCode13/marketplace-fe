@@ -13,6 +13,7 @@ import {
   Zap,
 } from 'lucide-react'
 import HomeBoostCarousel from '@/components/carousel/HomeBoostCarousel'
+import Image from 'next/image'
 
 export default function Home() {
   const router = useRouter()
@@ -107,6 +108,34 @@ export default function Home() {
             transition={{ duration: 0.8 }}
             className='mb-8'
           >
+            {/* <motion.div
+              className='inline-flex items-center justify-center  rounded-full mb-6'
+              initial={{ x: 200, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ duration: 1.2, delay: 0.3, ease: 'easeOut' }}
+            >
+              <motion.div
+                animate={{
+                  y: [0, -12, 0],
+                  x: [0, 4, 0],
+                }}
+                transition={{
+                  duration: 4,
+                  repeat: Infinity,
+                  ease: 'easeInOut',
+                }}
+              >
+                <Image
+                  src='/ship.png'
+                  alt='Sailing to success'
+                  width={150}
+                  height={150}
+                  className='w-80 h-80 brightness-0 saturate-100 invert hue-rotate-[270deg]'
+                />
+              </motion.div>
+            </motion.div> */}
+
+            {/* Shopping bag icon - commented out to revert if needed
             <motion.div
               className='inline-flex items-center justify-center w-24 h-24 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full mb-6 shadow-2xl'
               whileHover={{ scale: 1.1 }}
@@ -122,19 +151,47 @@ export default function Home() {
             >
               <ShoppingBag className='w-12 h-12 text-white' />
             </motion.div>
+            */}
           </motion.div>
 
-          <motion.h1
+          <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className='text-4xl sm:text-6xl lg:text-7xl font-bold text-gray-900 dark:text-white mb-6'
+            className='mb-6 flex flex-col items-center gap-3'
           >
-            Welcome to{' '}
-            <span className='bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent'>
-              Dealio
-            </span>
-          </motion.h1>
+            <p className='text-4xl sm:text-4xl text-gray-600 dark:text-gray-300 font-medium'>
+              Welcome to
+            </p>
+            <motion.div
+              animate={{
+                y: [0, -8, 0],
+                scale: [1, 1.02, 1],
+              }}
+              transition={{
+                duration: 1.2,
+                ease: 'easeInOut',
+              }}
+              className='relative'
+            >
+              <motion.div
+                className='absolute inset-0 bg-gradient-to-r   rounded-xl opacity-0 blur-lg'
+                animate={{ opacity: [0.2, 0.4, 0.2] }}
+                transition={{
+                  duration: 1.2,
+                  ease: 'easeInOut',
+                }}
+              />
+              <Image
+                src={'/DealioFont.png'}
+                alt='Dealio'
+                width={280}
+                height={70}
+                priority
+                className='relative h-auto w-48 sm:w-64 lg:w-80 object-contain '
+              />
+            </motion.div>
+          </motion.div>
 
           <motion.p
             initial={{ opacity: 0, y: 30 }}

@@ -36,7 +36,7 @@ export default function Navbar() {
   // const profileImageUrl = data?.me?.profileImageUrl
   // example Navbar.tsx
   const profileImageUrl = useSelector(
-    (state: RootState) => state.userContext.profileImageUrl
+    (state: RootState) => state.userContext.profileImageUrl,
   )
 
   // const user = data?.me
@@ -61,13 +61,20 @@ export default function Navbar() {
             <Image
               src={'/logo.png'}
               alt='Dealio'
-              width={30}
+              width={40}
+              height={40}
+              priority
+            />
+            <Image
+              src={'/DealioFont.png'}
+              alt='Dealio'
+              width={120}
               height={30}
               priority
             />
-            <span className='text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent italic'>
+            {/* <span className='text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent italic'>
               Dealio
-            </span>
+            </span> */}
           </div>
         </Link>
 
