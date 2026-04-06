@@ -1,6 +1,5 @@
 'use client'
 
-import { ApolloError, gql, useMutation, useLazyQuery } from '@apollo/client'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -13,26 +12,15 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { toast } from 'sonner'
 import Link from 'next/link'
 import { registrationSchema, type RegistrationFormData } from '@/lib/validation'
-import { CHECK_USERNAME_AVAILABLE } from '@/lib/graphql/mutations/authMutations'
 
-const REGISTER_MUTATION = gql`
-  mutation Register($username: String!, $email: String!, $password: String!) {
-    register(username: $username, email: $email, password: $password) {
-      token
-      email
-      role
-      userId
-    }
-  }
-`
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_BASE || 'https://api.dealio.org.za'
 
 export default function Register() {
   const router = useRouter()
   const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [usernameCheckLoading, setUsernameCheckLoading] = useState(false)
-  const [register, { loading: registerLoading }] =
-    useMutation(REGISTER_MUTATION)
-  const [checkUsernameAvailable] = useLazyQuery(CHECK_USERNAME_AVAILABLE)
+  const [registerLoading, setRegisterLoading] = useState(false)
 
   const {
     register: registerField,
@@ -46,7 +34,6 @@ export default function Register() {
   const loading = registerLoading || isSubmitting
   const password = watch('password')
 
-  // Password strength indicator
   const getPasswordStrength = () => {
     if (!password) return { strength: 0, color: 'bg-gray-200', text: '' }
 
@@ -81,22 +68,23 @@ export default function Register() {
 
     setUsernameCheckLoading(true)
     try {
-      const { data } = await checkUsernameAvailable({
-        variables: { username },
-      })
-      const isAvailable = data.checkUsernameAvailable
-
-      if (!isAvailable) {
+      const params = new URLSearchParams({ username })
+      const res = await fetch(
+        `${API_BASE}/api/auth/check-username?${params.toString()}`,
+        { credentials: 'include' },
+      )
+      if (!res.ok) {
+        toast.error('Failed to check username availability')
+        return
+      }
+      const data = (await res.json()) as { available?: boolean }
+      if (!data.available) {
         toast.error('Username is not available')
       } else {
         toast.success('Username is available')
       }
-    } catch (err) {
-      const errorMsg =
-        err instanceof ApolloError && err.graphQLErrors.length > 0
-          ? err.graphQLErrors[0].message
-          : 'Failed to check username availability'
-      toast.error(errorMsg)
+    } catch {
+      toast.error('Failed to check username availability')
     } finally {
       setUsernameCheckLoading(false)
     }
@@ -110,46 +98,49 @@ export default function Register() {
       return
     }
 
+    setRegisterLoading(true)
     try {
-      await register({ variables: data })
-      toast.success(
-        'Registration successful! Check your email for verification instructions.',
-      )
-      router.push('/login')
-    } catch (err) {
-      if (err instanceof ApolloError) {
-        if (err.graphQLErrors.length > 0) {
-          const graphQLError = err.graphQLErrors[0]
-          const errorCode = graphQLError.extensions?.code
+      const res = await fetch(`${API_BASE}/api/auth/register`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: data.username,
+          email: data.email,
+          password: data.password,
+        }),
+      })
 
-          switch (errorCode) {
-            case 'USER_ALREADY_EXISTS':
-              toast.error(
-                graphQLError.message ||
-                  'An account with this email or username already exists',
-              )
-              break
-            case 'VALIDATION_ERROR':
-              toast.error(
-                graphQLError.message || 'Please check your input and try again',
-              )
-              break
-            case 'AUTH_ERROR':
-              toast.error(
-                graphQLError.message || 'Registration failed. Please try again',
-              )
-              break
-            default:
-              toast.error(
-                graphQLError.message || 'Registration failed. Please try again',
-              )
-          }
-        } else {
-          toast.error('Registration failed. Please try again')
-        }
-      } else {
-        toast.error('An unexpected error occurred: ' + (err as Error).message)
+      const body = (await res.json()) as {
+        success?: boolean
+        message?: string
+        error?: string
       }
+
+      if (!res.ok) {
+        const msg =
+          body.message ||
+          (typeof body.error === 'string' ? body.error : null) ||
+          'Registration failed'
+        toast.error(msg)
+        return
+      }
+
+      if (body.success) {
+        toast.success(
+          'Registration successful! Check your email for verification instructions.',
+        )
+        router.push('/login')
+      } else {
+        toast.error(body.message || 'Registration failed. Please try again.')
+      }
+    } catch (err) {
+      toast.error(
+        'An unexpected error occurred: ' +
+          (err instanceof Error ? err.message : String(err)),
+      )
+    } finally {
+      setRegisterLoading(false)
     }
   }
 
@@ -161,7 +152,6 @@ export default function Register() {
           onSubmit={handleSubmit(onSubmit)}
           className='flex flex-col gap-4'
         >
-          {/* Username Field */}
           <div className='flex flex-col'>
             <Label
               htmlFor='username'
@@ -184,7 +174,6 @@ export default function Register() {
             )}
           </div>
 
-          {/* Email Field */}
           <div className='flex flex-col'>
             <Label
               htmlFor='email'
@@ -206,7 +195,6 @@ export default function Register() {
             )}
           </div>
 
-          {/* Password Field */}
           <div className='flex flex-col mb-4'>
             <Label
               htmlFor='password'
@@ -226,7 +214,6 @@ export default function Register() {
               </p>
             )}
 
-            {/* Password Strength Indicator */}
             {password && (
               <div className='mt-3 space-y-2'>
                 <div className='flex items-center justify-between text-xs'>
@@ -278,7 +265,6 @@ export default function Register() {
             )}
           </div>
 
-          {/* Terms Acceptance */}
           <div className='flex items-start space-x-2 mb-4'>
             <Checkbox
               id='terms'

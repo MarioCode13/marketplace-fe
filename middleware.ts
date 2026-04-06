@@ -7,9 +7,14 @@ export function middleware(request: NextRequest) {
         return NextResponse.next()
     }
 
-    // Skip CSRF check for login and refresh token endpoints
-    if (request.nextUrl.pathname === '/api/auth/login' ||
-        request.nextUrl.pathname === '/api/auth/refresh') {
+    // Skip CSRF for unauthenticated auth flows (no XSRF cookie yet)
+    const csrfExemptPaths = new Set([
+        '/api/auth/login',
+        '/api/auth/refresh',
+        '/api/auth/resend-verification-email',
+        '/api/auth/verify-email',
+    ])
+    if (csrfExemptPaths.has(request.nextUrl.pathname)) {
         return NextResponse.next()
     }
 

@@ -287,9 +287,13 @@ export type Listing = {
   expiresAt: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   images: Array<Scalars['String']['output']>;
+  /**  Added */
+  inactive: Scalars['Boolean']['output'];
+  /**  Added - indicates listing passed renewal window (7+ days expired) */
+  inactiveAt?: Maybe<Scalars['String']['output']>;
   nsfwApprovalStatus?: Maybe<ContentApprovalStatus>;
   /**
-   *  Added
+   *  Added - timestamp when marked as inactive
    *  NSFW Content Fields
    */
   nsfwFlagged: Scalars['Boolean']['output'];
@@ -340,6 +344,10 @@ export type Mutation = {
   reactivateSubscription: Subscription;
   register: AuthResponse;
   rejectFlaggedSlug: FlaggedSlug;
+  /** Renew all eligible listings for the current user (expiring within 7 days). Requires paid subscription for personal users. */
+  renewAllListings: Array<Listing>;
+  /** Renew a listing that is expiring within 7 days. */
+  renewListing: Listing;
   sendInvitation: Invitation;
   transferBusinessOwnership: Scalars['Boolean']['output'];
   unlinkUserFromBusiness: Scalars['Boolean']['output'];
@@ -517,6 +525,11 @@ export type MutationRegisterArgs = {
 export type MutationRejectFlaggedSlugArgs = {
   flaggedSlugId: Scalars['ID']['input'];
   rejectionReason: Scalars['String']['input'];
+};
+
+
+export type MutationRenewListingArgs = {
+  listingId: Scalars['ID']['input'];
 };
 
 
@@ -1336,15 +1349,6 @@ export type UpdateUserPreferencesMutationVariables = Exact<{
 
 export type UpdateUserPreferencesMutation = { __typename?: 'Mutation', updateUserPreferences: { __typename?: 'User', id: string, eligibleForExplicitContent: boolean, preferences?: { __typename?: 'UserPreferences', allowsExplicitContent: boolean, emailMarketingOptIn?: boolean | null } | null } };
 
-export type RegisterMutationVariables = Exact<{
-  username: Scalars['String']['input'];
-  email: Scalars['String']['input'];
-  password: Scalars['String']['input'];
-}>;
-
-
-export type RegisterMutation = { __typename?: 'Mutation', register: { __typename?: 'AuthResponse', token: string, email: string, role?: string | null, userId: string } };
-
 export type CreateListingMutationVariables = Exact<{
   title: Scalars['String']['input'];
   description: Scalars['String']['input'];
@@ -1389,13 +1393,6 @@ export type DeclineListingMutationVariables = Exact<{
 
 
 export type DeclineListingMutation = { __typename?: 'Mutation', declineListing: { __typename?: 'ContentApprovalQueueItem', id: string, status: ContentApprovalStatus, approvalNotes?: string | null, listing: { __typename?: 'Listing', id: string, nsfwApprovalStatus?: ContentApprovalStatus | null } } };
-
-export type CheckUsernameAvailableQueryVariables = Exact<{
-  username: Scalars['String']['input'];
-}>;
-
-
-export type CheckUsernameAvailableQuery = { __typename?: 'Query', checkUsernameAvailable: boolean };
 
 export type UpdateStoreBrandingMutationVariables = Exact<{
   businessId: Scalars['ID']['input'];
@@ -1936,44 +1933,6 @@ export function useUpdateUserPreferencesMutation(baseOptions?: Apollo.MutationHo
 export type UpdateUserPreferencesMutationHookResult = ReturnType<typeof useUpdateUserPreferencesMutation>;
 export type UpdateUserPreferencesMutationResult = Apollo.MutationResult<UpdateUserPreferencesMutation>;
 export type UpdateUserPreferencesMutationOptions = Apollo.BaseMutationOptions<UpdateUserPreferencesMutation, UpdateUserPreferencesMutationVariables>;
-export const RegisterDocument = gql`
-    mutation Register($username: String!, $email: String!, $password: String!) {
-  register(username: $username, email: $email, password: $password) {
-    token
-    email
-    role
-    userId
-  }
-}
-    `;
-export type RegisterMutationFn = Apollo.MutationFunction<RegisterMutation, RegisterMutationVariables>;
-
-/**
- * __useRegisterMutation__
- *
- * To run a mutation, you first call `useRegisterMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useRegisterMutation` returns a tuple that includes:
- * - A mutate function that you can call at any time to execute the mutation
- * - An object with fields that represent the current status of the mutation's execution
- *
- * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
- *
- * @example
- * const [registerMutation, { data, loading, error }] = useRegisterMutation({
- *   variables: {
- *      username: // value for 'username'
- *      email: // value for 'email'
- *      password: // value for 'password'
- *   },
- * });
- */
-export function useRegisterMutation(baseOptions?: Apollo.MutationHookOptions<RegisterMutation, RegisterMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<RegisterMutation, RegisterMutationVariables>(RegisterDocument, options);
-      }
-export type RegisterMutationHookResult = ReturnType<typeof useRegisterMutation>;
-export type RegisterMutationResult = Apollo.MutationResult<RegisterMutation>;
-export type RegisterMutationOptions = Apollo.BaseMutationOptions<RegisterMutation, RegisterMutationVariables>;
 export const CreateListingDocument = gql`
     mutation CreateListing($title: String!, $description: String!, $images: [String!]!, $categoryId: ID!, $price: Float!, $quantity: Int, $customCity: String, $cityId: ID, $condition: Condition!, $userId: ID!, $businessId: ID, $nsfwFlagged: Boolean, $sellerMarked18Plus: Boolean) {
   createListing(
@@ -2201,44 +2160,6 @@ export function useDeclineListingMutation(baseOptions?: Apollo.MutationHookOptio
 export type DeclineListingMutationHookResult = ReturnType<typeof useDeclineListingMutation>;
 export type DeclineListingMutationResult = Apollo.MutationResult<DeclineListingMutation>;
 export type DeclineListingMutationOptions = Apollo.BaseMutationOptions<DeclineListingMutation, DeclineListingMutationVariables>;
-export const CheckUsernameAvailableDocument = gql`
-    query CheckUsernameAvailable($username: String!) {
-  checkUsernameAvailable(username: $username)
-}
-    `;
-
-/**
- * __useCheckUsernameAvailableQuery__
- *
- * To run a query within a React component, call `useCheckUsernameAvailableQuery` and pass it any options that fit your needs.
- * When your component renders, `useCheckUsernameAvailableQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useCheckUsernameAvailableQuery({
- *   variables: {
- *      username: // value for 'username'
- *   },
- * });
- */
-export function useCheckUsernameAvailableQuery(baseOptions: Apollo.QueryHookOptions<CheckUsernameAvailableQuery, CheckUsernameAvailableQueryVariables> & ({ variables: CheckUsernameAvailableQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<CheckUsernameAvailableQuery, CheckUsernameAvailableQueryVariables>(CheckUsernameAvailableDocument, options);
-      }
-export function useCheckUsernameAvailableLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<CheckUsernameAvailableQuery, CheckUsernameAvailableQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<CheckUsernameAvailableQuery, CheckUsernameAvailableQueryVariables>(CheckUsernameAvailableDocument, options);
-        }
-export function useCheckUsernameAvailableSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<CheckUsernameAvailableQuery, CheckUsernameAvailableQueryVariables>) {
-          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
-          return Apollo.useSuspenseQuery<CheckUsernameAvailableQuery, CheckUsernameAvailableQueryVariables>(CheckUsernameAvailableDocument, options);
-        }
-export type CheckUsernameAvailableQueryHookResult = ReturnType<typeof useCheckUsernameAvailableQuery>;
-export type CheckUsernameAvailableLazyQueryHookResult = ReturnType<typeof useCheckUsernameAvailableLazyQuery>;
-export type CheckUsernameAvailableSuspenseQueryHookResult = ReturnType<typeof useCheckUsernameAvailableSuspenseQuery>;
-export type CheckUsernameAvailableQueryResult = Apollo.QueryResult<CheckUsernameAvailableQuery, CheckUsernameAvailableQueryVariables>;
 export const UpdateStoreBrandingDocument = gql`
     mutation UpdateStoreBranding($businessId: ID!, $input: UpdateStoreBrandingInput!) {
   updateStoreBranding(businessId: $businessId, input: $input) {
