@@ -133,10 +133,12 @@ export function buildCategoryPath(
   return path
 }
 
-export function formatEnum(value: string) {
+export function formatEnum(value: string | null | undefined) {
+  if (!value) return ''
   return value
-    .toLowerCase()              // new, like_new, excellent
-    .split('_')                 // ["like", "new"]
-    .map(word => word[0].toUpperCase() + word.slice(1)) // ["Like", "New"]
-    .join(' ')                  // "Like New"
+    .toLowerCase()
+    .split('_')
+    .filter(word => word.length > 0)
+    .map(word => word[0].toUpperCase() + word.slice(1))
+    .join(' ')
 }
