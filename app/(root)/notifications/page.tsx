@@ -14,10 +14,14 @@ import { GET_ME } from '@/lib/graphql/queries/getMe'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Container } from '@/components/ui/Container'
 import { Bell, Check, CheckCircle, XCircle, Clock, Users } from 'lucide-react'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
-import { refetchUserProfile, refetchBusinessContext } from '@/store/userContextSlice'
+import {
+  refetchUserProfile,
+  refetchBusinessContext,
+} from '@/store/userContextSlice'
 
 interface Notification {
   id: string
@@ -90,19 +94,19 @@ export default function NotificationsPage() {
 
   const handleMarkAllAsRead = async () => {
     const unreadNotifications = notifications.filter(
-      (n: Notification) => !n.read
+      (n: Notification) => !n.read,
     )
 
     try {
       await Promise.all(
         unreadNotifications.map((notification: Notification) =>
-          markAsRead({ variables: { notificationId: notification.id } })
-        )
+          markAsRead({ variables: { notificationId: notification.id } }),
+        ),
       )
       toast.success('All notifications marked as read')
     } catch (error) {
       toast.error(
-        'Failed to mark all notifications as read: ' + (error as Error).message
+        'Failed to mark all notifications as read: ' + (error as Error).message,
       )
     }
   }
@@ -152,8 +156,8 @@ export default function NotificationsPage() {
   const isBusinessInvitation = (type: string) => type === 'BUSINESS_INVITE'
 
   return (
-    <div className='min-h-screen bg-gray-50 dark:bg-gray-900 py-8'>
-      <div className='max-w-4xl mx-auto px-4'>
+    <div className='min-h-screen bg-background py-8'>
+      <Container className='py-8'>
         {/* Header */}
         <div className='flex items-center justify-between mb-8'>
           <div className='flex items-center gap-3'>
@@ -311,7 +315,7 @@ export default function NotificationsPage() {
             ))}
           </div>
         )}
-      </div>
+      </Container>
     </div>
   )
 }

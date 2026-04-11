@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { Container } from '@/components/ui/Container'
 import {
   Heart,
   Shield,
@@ -12,8 +13,8 @@ import {
 
 export default function Footer() {
   return (
-    <footer className='bg-componentBackground border-t pt-8'>
-      <div className='max-w-7xl mx-auto px-4 sm:px-6 md:px-10 lg:px-16 xl:px-20 py-8'>
+    <footer className='bg-componentBackground border-t'>
+      <Container className='py-8'>
         <div className='grid grid-cols-1 md:grid-cols-4 gap-8'>
           {/* Company Info */}
           <div className='space-y-4'>
@@ -186,7 +187,7 @@ export default function Footer() {
             </div>
           </div>
         </div>
-      </div>
+      </Container>
     </footer>
   )
 }

@@ -1,7 +1,7 @@
 import React from 'react'
 
-export default function Layout({
+export default function NotificationsLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  return <main>{children}</main>
+  return <>{children}</>
 }

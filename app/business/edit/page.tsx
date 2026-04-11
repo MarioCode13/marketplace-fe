@@ -8,6 +8,7 @@ import { RootState, AppDispatch } from '@/store/store'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { toast } from 'sonner'
+import { Container } from '@/components/ui/Container'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { FileInput } from '@/components/ui/fileInput'
@@ -547,15 +548,11 @@ export default function BusinessEditPage() {
   }
 
   if (businessLoading) {
-    return (
-      <div className='max-w-5xl mx-auto p-6'>Loading business details...</div>
-    )
+    return <Container className='p-6'>Loading business details...</Container>
   }
   if (businessError) {
     return (
-      <div className='max-w-5xl mx-auto p-6'>
-        Error loading business details.
-      </div>
+      <Container className='p-6'>Error loading business details.</Container>
     )
   }
   // Create mode: user has no business yet
@@ -565,15 +562,15 @@ export default function BusinessEditPage() {
 
   if (!business) {
     return (
-      <div className='max-w-5xl mx-auto p-6'>
+      <Container className='py-6'>
         <h1 className='text-2xl font-bold mb-4'>Business Settings</h1>
         <p className='text-gray-600'>Loading business details...</p>
-      </div>
+      </Container>
     )
   }
 
   return (
-    <div className='max-w-5xl mx-auto p-6'>
+    <div className='py-6'>
       <h1 className='text-2xl font-bold mb-2'>Business Settings</h1>
       <p className='text-gray-600 mb-6'>
         Manage your business details and store branding.

@@ -1,6 +1,7 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
+import { Container } from '@/components/ui/Container'
 import { ArrowLeft, Shield, AlertTriangle, CheckCircle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
@@ -9,7 +10,7 @@ export default function VerificationDisclosurePage() {
 
   return (
     <div className='min-h-screen bg-background'>
-      <div className='max-w-4xl mx-auto p-6'>
+      <Container className='py-8'>
         {/* Header */}
         <div className='flex items-center gap-4 mb-8'>
           <Button
@@ -309,7 +310,7 @@ export default function VerificationDisclosurePage() {
             </p>
           </div>
         </div>
-      </div>
+      </Container>
     </div>
   )
 }

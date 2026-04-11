@@ -1,5 +1,6 @@
 'use client'
 import { Button } from '@/components/ui/button'
+import { Container } from '@/components/ui/Container'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import {
@@ -70,7 +71,7 @@ export default function Home() {
   return (
     <>
       {/* Hero Section */}
-      <section className='relative w-full min-h-screen flex flex-col items-center justify-center overflow-hidden bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-950 dark:to-gray-900'>
+      <section className='relative w-full h-[calc(100vh-80px)] flex flex-col items-center justify-center overflow-hidden bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-950 dark:to-gray-900'>
         {/* Background Circles */}
         <div className='absolute inset-0 overflow-hidden'>
           <motion.div
@@ -98,10 +99,10 @@ export default function Home() {
           />
         </div>
 
-        <div className='absolute h-[100vh] inset-0 bg-gradient-to-br from-blue-100/30 to-purple-100/30 dark:from-blue-900/20 dark:to-purple-900/20' />
+        <div className='absolute h-[calc(100vh-80px)] inset-0 bg-gradient-to-br from-blue-100/30 to-purple-100/30 dark:from-blue-900/20 dark:to-purple-900/20' />
 
         {/* Hero Content */}
-        <div className='relative z-10 text-center px-6 max-w-6xl mx-auto'>
+        <Container className='relative z-10 text-center'>
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -229,14 +230,14 @@ export default function Home() {
               <TrendingUp className='mr-2 w-5 h-5' /> Sell an Item
             </Button>
           </motion.div>
-        </div>
+        </Container>
       </section>
       <section className='relative z-20 w-full bg-gradient-to-b from-white to-blue-50/40 dark:from-gray-900 dark:to-gray-950 border-y border-blue-100/80 dark:border-gray-800 py-10'>
         <HomeBoostCarousel />
       </section>
       {/* Features Section */}
       <section className='relative w-full z-20 bg-white dark:bg-gray-900 py-20'>
-        <div className='max-w-6xl mx-auto px-6'>
+        <Container>
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -283,12 +284,15 @@ export default function Home() {
               )
             })}
           </motion.div>
-        </div>
+        </Container>
       </section>
 
       {/* CTA Section */}
       <section className='relative py-20 bg-gradient-to-r from-slate-800 to-purple-800'>
-        <div className='max-w-4xl mx-auto text-center px-6'>
+        <Container
+          size='4xl'
+          className='text-center'
+        >
           <h2 className='text-3xl sm:text-4xl font-bold text-white mb-6'>
             Ready to Unlock Your Potential?
           </h2>
@@ -316,7 +320,7 @@ export default function Home() {
               <ShoppingBag className='mr-2 w-5 h-5' /> Browse Marketplace
             </Button>
           </div>
-        </div>
+        </Container>
       </section>
     </>
   )

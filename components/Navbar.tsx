@@ -11,6 +11,7 @@ import Drawer from './drawers/Drawer'
 import NotificationDropdown from './NotificationDropdown'
 import { useState } from 'react'
 import { Button } from './ui/button'
+import { Container } from '@/components/ui/Container'
 import { generateImageUrl } from '@/lib/utils'
 import {
   DropdownMenu,
@@ -53,8 +54,8 @@ export default function Navbar() {
   }
 
   return (
-    <nav className='bg-componentBackground text-foreground p-4 shadow-sm transition-colors duration-300 sticky top-0 z-30'>
-      <div className='container mx-auto flex justify-between items-center'>
+    <nav className='bg-componentBackground text-foreground shadow-sm transition-colors duration-300 sticky top-0 z-30'>
+      <Container className='flex justify-between items-center py-4'>
         {/* Logo */}
         <Link href='/'>
           <div className='flex items-center gap-2'>
@@ -225,7 +226,7 @@ export default function Navbar() {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-      </div>
+      </Container>
 
       {/* Mobile Drawer Menu */}
       <Drawer

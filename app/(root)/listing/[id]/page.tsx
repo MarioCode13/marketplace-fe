@@ -32,6 +32,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import { Container } from '@/components/ui/Container'
 
 const Page = () => {
   const params = useParams()
@@ -130,9 +131,9 @@ const Page = () => {
   }
 
   return (
-    <div className='w-full flex justify-center'>
-      <div className='w-full max-w-5xl py-16 px-6'>
-        <div className='flex flex-col md:flex-row gap-6'>
+    <Container>
+      <div className='w-full  py-16 '>
+        <div className='flex flex-col md:flex-row gap-20'>
           <div className='md:w-1/2 relative'>
             <div className='relative w-full h-[460px] rounded-lg shadow-lg overflow-hidden'>
               <Image
@@ -316,7 +317,7 @@ const Page = () => {
                   </div>
 
                   {isOwner ? (
-                    <div className='flex gap-2'>
+                    <div className='flex gap-2 flex-wrap'>
                       <Button
                         onClick={() =>
                           router.push(`/edit-listing/${listing.id}`)
@@ -521,7 +522,7 @@ const Page = () => {
           }}
         />
       </div>
-    </div>
+    </Container>
   )
 }
 
