@@ -76,6 +76,7 @@ const parseResponse = async (res: Response): Promise<ListingBoostResponse> => {
 const postBoostActivate = async (
     listingId: string,
     durationDays: number,
+    couponCode?: string | null,
 ): Promise<ListingBoostResponse> => {
     const apiBase =
         process.env.NEXT_PUBLIC_API_URL ||
@@ -115,7 +116,13 @@ const postBoostActivate = async (
             method: 'POST',
             credentials: 'include',
             headers,
-            body: JSON.stringify({ listingId, durationDays }),
+            body: JSON.stringify({
+                listingId,
+                durationDays,
+                ...(couponCode?.trim()
+                    ? { couponCode: couponCode.trim() }
+                    : {}),
+            }),
         })
 
         if (res.status === 404) {
@@ -140,7 +147,13 @@ const postBoostActivate = async (
         method: 'POST',
         credentials: 'include',
         headers,
-        body: JSON.stringify({ listingId, durationDays }),
+        body: JSON.stringify({
+            listingId,
+            durationDays,
+            ...(couponCode?.trim()
+                ? { couponCode: couponCode.trim() }
+                : {}),
+        }),
     })
 
     if (res.status === 404) {
@@ -160,12 +173,20 @@ export default function useListingBoost() {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
-    const activateBoost = async (listingId: string, durationDays = 30) => {
+    const activateBoost = async (
+        listingId: string,
+        durationDays = 30,
+        couponCode?: string | null,
+    ) => {
         setLoading(true)
         setError(null)
 
         try {
-            const data = await postBoostActivate(listingId, durationDays)
+            const data = await postBoostActivate(
+                listingId,
+                durationDays,
+                couponCode,
+            )
 
             if (!data.success) {
                 throw new Error(data.message || 'Failed to activate boost')

@@ -7,6 +7,8 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import SkeletonListingCard from '@/components/cards/SkeletonListingCard'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { MY_LISTINGS } from '@/lib/graphql/queries/myListings'
 import { GET_LISTINGS } from '@/lib/graphql/queries/getListings'
@@ -19,7 +21,9 @@ import {
   BOOSTED_HOME_LISTINGS,
   LISTING_BOOST_PRICE_ZAR,
 } from '@/lib/graphql/queries/boostedHomeListings'
+import { GET_ME } from '@/lib/graphql/queries/getMe'
 import useListingBoost from '@/lib/hooks/useListingBoost'
+import { LISTING_BOOST_GRAPHQL_INLINE_ACTIVATION } from '@/lib/constants/listingBoostCheckout'
 import ListingCard from '@/components/cards/ListingCard'
 import MarkAsSoldModal from '@/components/modals/MarkAsSoldModal'
 import {
@@ -35,7 +39,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { toast } from 'sonner'
-import { Listing } from '@/lib/graphql/generated'
+import { Listing, PlanType } from '@/lib/graphql/generated'
 
 // Using generated TrustListing type from lib/graphql/types/trust
 
@@ -51,6 +55,7 @@ export default function MyListingsPage() {
   >(null)
   const [boostListingId, setBoostListingId] = useState<string | null>(null)
   const [boostDurationDays, setBoostDurationDays] = useState<7 | 14 | 30>(30)
+  const [boostCouponCode, setBoostCouponCode] = useState('')
 
   const router = useRouter()
   const userContext = useSelector((state: RootState) => state.userContext)
@@ -94,6 +99,13 @@ export default function MyListingsPage() {
     variables: { durationDays: boostDurationDays },
     skip: !boostListingId,
   })
+
+  const { data: meData, refetch: refetchMe } = useQuery(GET_ME, { skip: !userId })
+  const proBoostsLeft = meData?.me?.proStoreSevenDayBoostsRemainingThisMonth
+  const proQuotaApplies =
+    boostDurationDays === 7 &&
+    typeof proBoostsLeft === 'number' &&
+    proBoostsLeft > 0
 
   const allListings: Listing[] = isBusinessUser
     ? data?.getListings?.listings || []
@@ -152,7 +164,12 @@ export default function MyListingsPage() {
     if (!boostListingId) return
 
     try {
-      const result = await activateBoost(boostListingId, boostDurationDays)
+      const trimmedBoostCoupon = boostCouponCode.trim()
+      const result = await activateBoost(
+        boostListingId,
+        boostDurationDays,
+        trimmedBoostCoupon || undefined,
+      )
 
       const redirectUrl = result.url || result.redirectUrl
       if (redirectUrl) {
@@ -163,7 +180,9 @@ export default function MyListingsPage() {
       if (result.success) {
         toast.success(result.message || 'Listing boost activated successfully')
         setBoostListingId(null)
+        setBoostCouponCode('')
         await refetch()
+        await refetchMe()
         return
       }
 
@@ -172,10 +191,21 @@ export default function MyListingsPage() {
         variables: {
           listingId: boostListingId,
           durationDays: boostDurationDays,
+          ...(trimmedBoostCoupon
+            ? { couponCode: trimmedBoostCoupon }
+            : {}),
         },
       })
 
       const url = boostData?.listingBoostCheckoutUrl
+      if (url === LISTING_BOOST_GRAPHQL_INLINE_ACTIVATION) {
+        toast.success('Listing boost activated successfully')
+        setBoostListingId(null)
+        setBoostCouponCode('')
+        await refetch()
+        await refetchMe()
+        return
+      }
       if (url) {
         window.location.href = url
         return
@@ -317,15 +347,30 @@ export default function MyListingsPage() {
       <Dialog
         open={!!boostListingId}
         onOpenChange={(open) => {
-          if (!open) setBoostListingId(null)
+          if (!open) {
+            setBoostListingId(null)
+            setBoostCouponCode('')
+          }
         }}
       >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Boost your listing</DialogTitle>
             <DialogDescription>
-              Pay once to feature this listing on the home page for the period
-              you choose. You will be redirected to PayFast to complete payment.
+              Feature this listing on the home page for the period you choose.
+              {proQuotaApplies ? (
+                <>
+                  {' '}
+                  Your Pro Store plan includes up to five 7-day boosts per
+                  calendar month (you have {proBoostsLeft} left this month).
+                </>
+              ) : (
+                <>
+                  {' '}
+                  You will be redirected to PayFast to complete payment unless a
+                  promo covers the full amount.
+                </>
+              )}
             </DialogDescription>
           </DialogHeader>
           <div className='space-y-4 py-2'>
@@ -345,9 +390,43 @@ export default function MyListingsPage() {
             </label>
             {boostPriceData != null && (
               <p className='text-lg font-semibold text-gray-900 dark:text-white'>
-                Total: R{Number(boostPriceData.listingBoostPriceZar).toFixed(2)}
+                {proQuotaApplies ? (
+                  <>
+                    Total: R0.00{' '}
+                    <span className='text-sm font-normal text-gray-600 dark:text-gray-400'>
+                      (Pro Store — {proBoostsLeft} of 5 slots left this month)
+                    </span>
+                  </>
+                ) : (
+                  <>Total: R{Number(boostPriceData.listingBoostPriceZar).toFixed(2)}</>
+                )}
               </p>
             )}
+            {boostDurationDays === 7 &&
+              meData?.me?.planType === PlanType.ProStore &&
+              typeof proBoostsLeft === 'number' &&
+              proBoostsLeft === 0 && (
+                <p className='text-sm text-amber-700 dark:text-amber-300'>
+                  You have used all five included 7-day boosts this month. Pay
+                  the standard rate or pick 14 or 30 days.
+                </p>
+              )}
+            <div className='space-y-2'>
+              <Label
+                htmlFor='boost-coupon'
+                className='text-sm font-medium text-gray-700 dark:text-gray-300'
+              >
+                Promo code (optional)
+              </Label>
+              <Input
+                id='boost-coupon'
+                value={boostCouponCode}
+                onChange={(e) => setBoostCouponCode(e.target.value)}
+                placeholder='Enter code if you have one'
+                className='bg-white dark:bg-gray-900'
+                autoComplete='off'
+              />
+            </div>
             {boostActivateError && (
               <p className='text-sm text-red-500 mt-2'>{boostActivateError}</p>
             )}
@@ -366,7 +445,11 @@ export default function MyListingsPage() {
               onClick={() => void handleBoostConfirm()}
               disabled={isBoostLoading}
             >
-              {isBoostLoading ? 'Processing…' : 'Pay with PayFast'}
+              {isBoostLoading
+                ? 'Processing…'
+                : proQuotaApplies
+                  ? 'Use included boost'
+                  : 'Pay with PayFast'}
             </Button>
           </DialogFooter>
         </DialogContent>

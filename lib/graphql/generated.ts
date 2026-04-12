@@ -17,6 +17,58 @@ export type Scalars = {
   Float: { input: number; output: number; }
 };
 
+export type AdminListingBoostPromoCoupon = {
+  __typename?: 'AdminListingBoostPromoCoupon';
+  active: Scalars['Boolean']['output'];
+  amountOff?: Maybe<Scalars['Float']['output']>;
+  applicableDurationDays?: Maybe<Scalars['String']['output']>;
+  code: Scalars['String']['output'];
+  createdAt: Scalars['String']['output'];
+  discountType: Scalars['String']['output'];
+  expiresAt?: Maybe<Scalars['String']['output']>;
+  id: Scalars['ID']['output'];
+  maxRedemptions?: Maybe<Scalars['Int']['output']>;
+  percentOff?: Maybe<Scalars['Float']['output']>;
+};
+
+export type AdminListingBoostPromoCouponInput = {
+  active: Scalars['Boolean']['input'];
+  amountOff?: InputMaybe<Scalars['Float']['input']>;
+  applicableDurationDays?: InputMaybe<Scalars['String']['input']>;
+  code: Scalars['String']['input'];
+  discountType: Scalars['String']['input'];
+  expiresAt?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['ID']['input']>;
+  maxRedemptions?: InputMaybe<Scalars['Int']['input']>;
+  percentOff?: InputMaybe<Scalars['Float']['input']>;
+};
+
+export type AdminSubscriptionPromoCoupon = {
+  __typename?: 'AdminSubscriptionPromoCoupon';
+  active: Scalars['Boolean']['output'];
+  amountOff?: Maybe<Scalars['Float']['output']>;
+  applicablePlanTypes?: Maybe<Scalars['String']['output']>;
+  code: Scalars['String']['output'];
+  createdAt: Scalars['String']['output'];
+  discountType: Scalars['String']['output'];
+  expiresAt?: Maybe<Scalars['String']['output']>;
+  id: Scalars['ID']['output'];
+  maxRedemptions?: Maybe<Scalars['Int']['output']>;
+  percentOff?: Maybe<Scalars['Float']['output']>;
+};
+
+export type AdminSubscriptionPromoCouponInput = {
+  active: Scalars['Boolean']['input'];
+  amountOff?: InputMaybe<Scalars['Float']['input']>;
+  applicablePlanTypes?: InputMaybe<Scalars['String']['input']>;
+  code: Scalars['String']['input'];
+  discountType: Scalars['String']['input'];
+  expiresAt?: InputMaybe<Scalars['String']['input']>;
+  id?: InputMaybe<Scalars['ID']['input']>;
+  maxRedemptions?: InputMaybe<Scalars['Int']['input']>;
+  percentOff?: InputMaybe<Scalars['Float']['input']>;
+};
+
 export type ApprovalDashboardStats = {
   __typename?: 'ApprovalDashboardStats';
   pendingFlaggedSlugs: Scalars['Int']['output'];
@@ -317,6 +369,10 @@ export type Mutation = {
   __typename?: 'Mutation';
   acceptBusinessInvitation: Scalars['Boolean']['output'];
   acceptInvitation: Invitation;
+  adminDeleteListingBoostPromoCoupon: Scalars['Boolean']['output'];
+  adminDeleteSubscriptionPromoCoupon: Scalars['Boolean']['output'];
+  adminSaveListingBoostPromoCoupon: AdminListingBoostPromoCoupon;
+  adminSaveSubscriptionPromoCoupon: AdminSubscriptionPromoCoupon;
   approveFlaggedSlug: FlaggedSlug;
   /**  Admin NSFW Content Approval Mutations */
   approveListing: ContentApprovalQueueItem;
@@ -336,7 +392,7 @@ export type Mutation = {
   deleteListing: Scalars['Boolean']['output'];
   deleteReview: Scalars['Boolean']['output'];
   linkUserToBusiness: BusinessUser;
-  /** PayFast redirect URL to pay for a listing boost (seller must own the listing). */
+  /** PayFast redirect URL to pay for a listing boost (seller must own the listing). When a 100% promo applies, returns a non-URL marker constant (see frontend). */
   listingBoostCheckoutUrl: Scalars['String']['output'];
   login: AuthResponse;
   markListingAsSold: Listing;
@@ -378,6 +434,26 @@ export type MutationAcceptBusinessInvitationArgs = {
 
 export type MutationAcceptInvitationArgs = {
   invitationId: Scalars['ID']['input'];
+};
+
+
+export type MutationAdminDeleteListingBoostPromoCouponArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationAdminDeleteSubscriptionPromoCouponArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type MutationAdminSaveListingBoostPromoCouponArgs = {
+  input: AdminListingBoostPromoCouponInput;
+};
+
+
+export type MutationAdminSaveSubscriptionPromoCouponArgs = {
+  input: AdminSubscriptionPromoCouponInput;
 };
 
 
@@ -494,6 +570,7 @@ export type MutationLinkUserToBusinessArgs = {
 
 
 export type MutationListingBoostCheckoutUrlArgs = {
+  couponCode?: InputMaybe<Scalars['String']['input']>;
   durationDays: Scalars['Int']['input'];
   listingId: Scalars['ID']['input'];
 };
@@ -681,6 +758,8 @@ export type ProfileCompletion = {
 
 export type Query = {
   __typename?: 'Query';
+  adminListingBoostPromoCoupons: Array<AdminListingBoostPromoCoupon>;
+  adminSubscriptionPromoCoupons: Array<AdminSubscriptionPromoCoupon>;
   /** Active boosted listings for the home carousel (NSFW-filtered for the viewer). */
   boostedHomeListings: Array<Listing>;
   business?: Maybe<Business>;
@@ -1282,6 +1361,11 @@ export type User = {
    * Account-scoped settings (explicit content, email opt-ins). Only populated for the authenticated user viewing their own profile.
    */
   preferences?: Maybe<UserPreferences>;
+  /**
+   * 
+   * Pro Store only: 7-day home-page boosts left this calendar month (Africa/Johannesburg) from the included quota. Null if not on Pro Store.
+   */
+  proStoreSevenDayBoostsRemainingThisMonth?: Maybe<Scalars['Int']['output']>;
   profileCompletion?: Maybe<ProfileCompletion>;
   profileImageUrl?: Maybe<Scalars['String']['output']>;
   role: Scalars['String']['output'];
@@ -1394,6 +1478,34 @@ export type DeclineListingMutationVariables = Exact<{
 
 export type DeclineListingMutation = { __typename?: 'Mutation', declineListing: { __typename?: 'ContentApprovalQueueItem', id: string, status: ContentApprovalStatus, approvalNotes?: string | null, listing: { __typename?: 'Listing', id: string, nsfwApprovalStatus?: ContentApprovalStatus | null } } };
 
+export type AdminSaveSubscriptionPromoCouponMutationVariables = Exact<{
+  input: AdminSubscriptionPromoCouponInput;
+}>;
+
+
+export type AdminSaveSubscriptionPromoCouponMutation = { __typename?: 'Mutation', adminSaveSubscriptionPromoCoupon: { __typename?: 'AdminSubscriptionPromoCoupon', id: string, code: string, discountType: string, percentOff?: number | null, amountOff?: number | null, maxRedemptions?: number | null, expiresAt?: string | null, active: boolean, applicablePlanTypes?: string | null, createdAt: string } };
+
+export type AdminDeleteSubscriptionPromoCouponMutationVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type AdminDeleteSubscriptionPromoCouponMutation = { __typename?: 'Mutation', adminDeleteSubscriptionPromoCoupon: boolean };
+
+export type AdminSaveListingBoostPromoCouponMutationVariables = Exact<{
+  input: AdminListingBoostPromoCouponInput;
+}>;
+
+
+export type AdminSaveListingBoostPromoCouponMutation = { __typename?: 'Mutation', adminSaveListingBoostPromoCoupon: { __typename?: 'AdminListingBoostPromoCoupon', id: string, code: string, discountType: string, percentOff?: number | null, amountOff?: number | null, maxRedemptions?: number | null, expiresAt?: string | null, active: boolean, applicableDurationDays?: string | null, createdAt: string } };
+
+export type AdminDeleteListingBoostPromoCouponMutationVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type AdminDeleteListingBoostPromoCouponMutation = { __typename?: 'Mutation', adminDeleteListingBoostPromoCoupon: boolean };
+
 export type UpdateStoreBrandingMutationVariables = Exact<{
   businessId: Scalars['ID']['input'];
   input: UpdateStoreBrandingInput;
@@ -1445,6 +1557,7 @@ export type DeleteListingMutation = { __typename?: 'Mutation', deleteListing: bo
 export type ListingBoostCheckoutUrlMutationVariables = Exact<{
   listingId: Scalars['ID']['input'];
   durationDays: Scalars['Int']['input'];
+  couponCode?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 
@@ -1537,6 +1650,16 @@ export type UpdateBusinessMutationVariables = Exact<{
 
 export type UpdateBusinessMutation = { __typename?: 'Mutation', updateBusiness?: { __typename?: 'Business', id: string, name: string, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, postalCode?: string | null, cipcRegistrationNo?: string | null, cipcBusinessName?: string | null } | null };
 
+export type AdminSubscriptionPromoCouponsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type AdminSubscriptionPromoCouponsQuery = { __typename?: 'Query', adminSubscriptionPromoCoupons: Array<{ __typename?: 'AdminSubscriptionPromoCoupon', id: string, code: string, discountType: string, percentOff?: number | null, amountOff?: number | null, maxRedemptions?: number | null, expiresAt?: string | null, active: boolean, applicablePlanTypes?: string | null, createdAt: string }> };
+
+export type AdminListingBoostPromoCouponsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type AdminListingBoostPromoCouponsQuery = { __typename?: 'Query', adminListingBoostPromoCoupons: Array<{ __typename?: 'AdminListingBoostPromoCoupon', id: string, code: string, discountType: string, percentOff?: number | null, amountOff?: number | null, maxRedemptions?: number | null, expiresAt?: string | null, active: boolean, applicableDurationDays?: string | null, createdAt: string }> };
+
 export type BoostedHomeListingsQueryVariables = Exact<{
   limit?: InputMaybe<Scalars['Int']['input']>;
 }>;
@@ -1609,7 +1732,7 @@ export type GetListingsQuery = { __typename?: 'Query', getListings: { __typename
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type MeQuery = { __typename?: 'Query', me?: { __typename?: 'User', id: string, username: string, email?: string | null, firstName?: string | null, lastName?: string | null, bio?: string | null, profileImageUrl?: string | null, planType?: PlanType | null, role: string, customCity?: string | null, contactNumber?: string | null, idNumber?: string | null, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, subscription?: { __typename?: 'Subscription', status: SubscriptionStatus, planType: PlanType } | null, trustRating?: { __typename?: 'TrustRating', verifiedId: boolean } | null, profileCompletion?: { __typename?: 'ProfileCompletion', completionPercentage: number } | null } | null };
+export type MeQuery = { __typename?: 'Query', me?: { __typename?: 'User', id: string, username: string, email?: string | null, firstName?: string | null, lastName?: string | null, bio?: string | null, profileImageUrl?: string | null, planType?: PlanType | null, proStoreSevenDayBoostsRemainingThisMonth?: number | null, role: string, customCity?: string | null, contactNumber?: string | null, idNumber?: string | null, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, subscription?: { __typename?: 'Subscription', status: SubscriptionStatus, planType: PlanType } | null, trustRating?: { __typename?: 'TrustRating', verifiedId: boolean } | null, profileCompletion?: { __typename?: 'ProfileCompletion', completionPercentage: number } | null } | null };
 
 export type GetMyBusinessQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -2160,6 +2283,152 @@ export function useDeclineListingMutation(baseOptions?: Apollo.MutationHookOptio
 export type DeclineListingMutationHookResult = ReturnType<typeof useDeclineListingMutation>;
 export type DeclineListingMutationResult = Apollo.MutationResult<DeclineListingMutation>;
 export type DeclineListingMutationOptions = Apollo.BaseMutationOptions<DeclineListingMutation, DeclineListingMutationVariables>;
+export const AdminSaveSubscriptionPromoCouponDocument = gql`
+    mutation AdminSaveSubscriptionPromoCoupon($input: AdminSubscriptionPromoCouponInput!) {
+  adminSaveSubscriptionPromoCoupon(input: $input) {
+    id
+    code
+    discountType
+    percentOff
+    amountOff
+    maxRedemptions
+    expiresAt
+    active
+    applicablePlanTypes
+    createdAt
+  }
+}
+    `;
+export type AdminSaveSubscriptionPromoCouponMutationFn = Apollo.MutationFunction<AdminSaveSubscriptionPromoCouponMutation, AdminSaveSubscriptionPromoCouponMutationVariables>;
+
+/**
+ * __useAdminSaveSubscriptionPromoCouponMutation__
+ *
+ * To run a mutation, you first call `useAdminSaveSubscriptionPromoCouponMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useAdminSaveSubscriptionPromoCouponMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [adminSaveSubscriptionPromoCouponMutation, { data, loading, error }] = useAdminSaveSubscriptionPromoCouponMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useAdminSaveSubscriptionPromoCouponMutation(baseOptions?: Apollo.MutationHookOptions<AdminSaveSubscriptionPromoCouponMutation, AdminSaveSubscriptionPromoCouponMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<AdminSaveSubscriptionPromoCouponMutation, AdminSaveSubscriptionPromoCouponMutationVariables>(AdminSaveSubscriptionPromoCouponDocument, options);
+      }
+export type AdminSaveSubscriptionPromoCouponMutationHookResult = ReturnType<typeof useAdminSaveSubscriptionPromoCouponMutation>;
+export type AdminSaveSubscriptionPromoCouponMutationResult = Apollo.MutationResult<AdminSaveSubscriptionPromoCouponMutation>;
+export type AdminSaveSubscriptionPromoCouponMutationOptions = Apollo.BaseMutationOptions<AdminSaveSubscriptionPromoCouponMutation, AdminSaveSubscriptionPromoCouponMutationVariables>;
+export const AdminDeleteSubscriptionPromoCouponDocument = gql`
+    mutation AdminDeleteSubscriptionPromoCoupon($id: ID!) {
+  adminDeleteSubscriptionPromoCoupon(id: $id)
+}
+    `;
+export type AdminDeleteSubscriptionPromoCouponMutationFn = Apollo.MutationFunction<AdminDeleteSubscriptionPromoCouponMutation, AdminDeleteSubscriptionPromoCouponMutationVariables>;
+
+/**
+ * __useAdminDeleteSubscriptionPromoCouponMutation__
+ *
+ * To run a mutation, you first call `useAdminDeleteSubscriptionPromoCouponMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useAdminDeleteSubscriptionPromoCouponMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [adminDeleteSubscriptionPromoCouponMutation, { data, loading, error }] = useAdminDeleteSubscriptionPromoCouponMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useAdminDeleteSubscriptionPromoCouponMutation(baseOptions?: Apollo.MutationHookOptions<AdminDeleteSubscriptionPromoCouponMutation, AdminDeleteSubscriptionPromoCouponMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<AdminDeleteSubscriptionPromoCouponMutation, AdminDeleteSubscriptionPromoCouponMutationVariables>(AdminDeleteSubscriptionPromoCouponDocument, options);
+      }
+export type AdminDeleteSubscriptionPromoCouponMutationHookResult = ReturnType<typeof useAdminDeleteSubscriptionPromoCouponMutation>;
+export type AdminDeleteSubscriptionPromoCouponMutationResult = Apollo.MutationResult<AdminDeleteSubscriptionPromoCouponMutation>;
+export type AdminDeleteSubscriptionPromoCouponMutationOptions = Apollo.BaseMutationOptions<AdminDeleteSubscriptionPromoCouponMutation, AdminDeleteSubscriptionPromoCouponMutationVariables>;
+export const AdminSaveListingBoostPromoCouponDocument = gql`
+    mutation AdminSaveListingBoostPromoCoupon($input: AdminListingBoostPromoCouponInput!) {
+  adminSaveListingBoostPromoCoupon(input: $input) {
+    id
+    code
+    discountType
+    percentOff
+    amountOff
+    maxRedemptions
+    expiresAt
+    active
+    applicableDurationDays
+    createdAt
+  }
+}
+    `;
+export type AdminSaveListingBoostPromoCouponMutationFn = Apollo.MutationFunction<AdminSaveListingBoostPromoCouponMutation, AdminSaveListingBoostPromoCouponMutationVariables>;
+
+/**
+ * __useAdminSaveListingBoostPromoCouponMutation__
+ *
+ * To run a mutation, you first call `useAdminSaveListingBoostPromoCouponMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useAdminSaveListingBoostPromoCouponMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [adminSaveListingBoostPromoCouponMutation, { data, loading, error }] = useAdminSaveListingBoostPromoCouponMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useAdminSaveListingBoostPromoCouponMutation(baseOptions?: Apollo.MutationHookOptions<AdminSaveListingBoostPromoCouponMutation, AdminSaveListingBoostPromoCouponMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<AdminSaveListingBoostPromoCouponMutation, AdminSaveListingBoostPromoCouponMutationVariables>(AdminSaveListingBoostPromoCouponDocument, options);
+      }
+export type AdminSaveListingBoostPromoCouponMutationHookResult = ReturnType<typeof useAdminSaveListingBoostPromoCouponMutation>;
+export type AdminSaveListingBoostPromoCouponMutationResult = Apollo.MutationResult<AdminSaveListingBoostPromoCouponMutation>;
+export type AdminSaveListingBoostPromoCouponMutationOptions = Apollo.BaseMutationOptions<AdminSaveListingBoostPromoCouponMutation, AdminSaveListingBoostPromoCouponMutationVariables>;
+export const AdminDeleteListingBoostPromoCouponDocument = gql`
+    mutation AdminDeleteListingBoostPromoCoupon($id: ID!) {
+  adminDeleteListingBoostPromoCoupon(id: $id)
+}
+    `;
+export type AdminDeleteListingBoostPromoCouponMutationFn = Apollo.MutationFunction<AdminDeleteListingBoostPromoCouponMutation, AdminDeleteListingBoostPromoCouponMutationVariables>;
+
+/**
+ * __useAdminDeleteListingBoostPromoCouponMutation__
+ *
+ * To run a mutation, you first call `useAdminDeleteListingBoostPromoCouponMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useAdminDeleteListingBoostPromoCouponMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [adminDeleteListingBoostPromoCouponMutation, { data, loading, error }] = useAdminDeleteListingBoostPromoCouponMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useAdminDeleteListingBoostPromoCouponMutation(baseOptions?: Apollo.MutationHookOptions<AdminDeleteListingBoostPromoCouponMutation, AdminDeleteListingBoostPromoCouponMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<AdminDeleteListingBoostPromoCouponMutation, AdminDeleteListingBoostPromoCouponMutationVariables>(AdminDeleteListingBoostPromoCouponDocument, options);
+      }
+export type AdminDeleteListingBoostPromoCouponMutationHookResult = ReturnType<typeof useAdminDeleteListingBoostPromoCouponMutation>;
+export type AdminDeleteListingBoostPromoCouponMutationResult = Apollo.MutationResult<AdminDeleteListingBoostPromoCouponMutation>;
+export type AdminDeleteListingBoostPromoCouponMutationOptions = Apollo.BaseMutationOptions<AdminDeleteListingBoostPromoCouponMutation, AdminDeleteListingBoostPromoCouponMutationVariables>;
 export const UpdateStoreBrandingDocument = gql`
     mutation UpdateStoreBranding($businessId: ID!, $input: UpdateStoreBrandingInput!) {
   updateStoreBranding(businessId: $businessId, input: $input) {
@@ -2419,8 +2688,12 @@ export type DeleteListingMutationHookResult = ReturnType<typeof useDeleteListing
 export type DeleteListingMutationResult = Apollo.MutationResult<DeleteListingMutation>;
 export type DeleteListingMutationOptions = Apollo.BaseMutationOptions<DeleteListingMutation, DeleteListingMutationVariables>;
 export const ListingBoostCheckoutUrlDocument = gql`
-    mutation ListingBoostCheckoutUrl($listingId: ID!, $durationDays: Int!) {
-  listingBoostCheckoutUrl(listingId: $listingId, durationDays: $durationDays)
+    mutation ListingBoostCheckoutUrl($listingId: ID!, $durationDays: Int!, $couponCode: String) {
+  listingBoostCheckoutUrl(
+    listingId: $listingId
+    durationDays: $durationDays
+    couponCode: $couponCode
+  )
 }
     `;
 export type ListingBoostCheckoutUrlMutationFn = Apollo.MutationFunction<ListingBoostCheckoutUrlMutation, ListingBoostCheckoutUrlMutationVariables>;
@@ -2440,6 +2713,7 @@ export type ListingBoostCheckoutUrlMutationFn = Apollo.MutationFunction<ListingB
  *   variables: {
  *      listingId: // value for 'listingId'
  *      durationDays: // value for 'durationDays'
+ *      couponCode: // value for 'couponCode'
  *   },
  * });
  */
@@ -2944,6 +3218,102 @@ export function useUpdateBusinessMutation(baseOptions?: Apollo.MutationHookOptio
 export type UpdateBusinessMutationHookResult = ReturnType<typeof useUpdateBusinessMutation>;
 export type UpdateBusinessMutationResult = Apollo.MutationResult<UpdateBusinessMutation>;
 export type UpdateBusinessMutationOptions = Apollo.BaseMutationOptions<UpdateBusinessMutation, UpdateBusinessMutationVariables>;
+export const AdminSubscriptionPromoCouponsDocument = gql`
+    query AdminSubscriptionPromoCoupons {
+  adminSubscriptionPromoCoupons {
+    id
+    code
+    discountType
+    percentOff
+    amountOff
+    maxRedemptions
+    expiresAt
+    active
+    applicablePlanTypes
+    createdAt
+  }
+}
+    `;
+
+/**
+ * __useAdminSubscriptionPromoCouponsQuery__
+ *
+ * To run a query within a React component, call `useAdminSubscriptionPromoCouponsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useAdminSubscriptionPromoCouponsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useAdminSubscriptionPromoCouponsQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useAdminSubscriptionPromoCouponsQuery(baseOptions?: Apollo.QueryHookOptions<AdminSubscriptionPromoCouponsQuery, AdminSubscriptionPromoCouponsQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<AdminSubscriptionPromoCouponsQuery, AdminSubscriptionPromoCouponsQueryVariables>(AdminSubscriptionPromoCouponsDocument, options);
+      }
+export function useAdminSubscriptionPromoCouponsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<AdminSubscriptionPromoCouponsQuery, AdminSubscriptionPromoCouponsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<AdminSubscriptionPromoCouponsQuery, AdminSubscriptionPromoCouponsQueryVariables>(AdminSubscriptionPromoCouponsDocument, options);
+        }
+export function useAdminSubscriptionPromoCouponsSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<AdminSubscriptionPromoCouponsQuery, AdminSubscriptionPromoCouponsQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<AdminSubscriptionPromoCouponsQuery, AdminSubscriptionPromoCouponsQueryVariables>(AdminSubscriptionPromoCouponsDocument, options);
+        }
+export type AdminSubscriptionPromoCouponsQueryHookResult = ReturnType<typeof useAdminSubscriptionPromoCouponsQuery>;
+export type AdminSubscriptionPromoCouponsLazyQueryHookResult = ReturnType<typeof useAdminSubscriptionPromoCouponsLazyQuery>;
+export type AdminSubscriptionPromoCouponsSuspenseQueryHookResult = ReturnType<typeof useAdminSubscriptionPromoCouponsSuspenseQuery>;
+export type AdminSubscriptionPromoCouponsQueryResult = Apollo.QueryResult<AdminSubscriptionPromoCouponsQuery, AdminSubscriptionPromoCouponsQueryVariables>;
+export const AdminListingBoostPromoCouponsDocument = gql`
+    query AdminListingBoostPromoCoupons {
+  adminListingBoostPromoCoupons {
+    id
+    code
+    discountType
+    percentOff
+    amountOff
+    maxRedemptions
+    expiresAt
+    active
+    applicableDurationDays
+    createdAt
+  }
+}
+    `;
+
+/**
+ * __useAdminListingBoostPromoCouponsQuery__
+ *
+ * To run a query within a React component, call `useAdminListingBoostPromoCouponsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useAdminListingBoostPromoCouponsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useAdminListingBoostPromoCouponsQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useAdminListingBoostPromoCouponsQuery(baseOptions?: Apollo.QueryHookOptions<AdminListingBoostPromoCouponsQuery, AdminListingBoostPromoCouponsQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<AdminListingBoostPromoCouponsQuery, AdminListingBoostPromoCouponsQueryVariables>(AdminListingBoostPromoCouponsDocument, options);
+      }
+export function useAdminListingBoostPromoCouponsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<AdminListingBoostPromoCouponsQuery, AdminListingBoostPromoCouponsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<AdminListingBoostPromoCouponsQuery, AdminListingBoostPromoCouponsQueryVariables>(AdminListingBoostPromoCouponsDocument, options);
+        }
+export function useAdminListingBoostPromoCouponsSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<AdminListingBoostPromoCouponsQuery, AdminListingBoostPromoCouponsQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<AdminListingBoostPromoCouponsQuery, AdminListingBoostPromoCouponsQueryVariables>(AdminListingBoostPromoCouponsDocument, options);
+        }
+export type AdminListingBoostPromoCouponsQueryHookResult = ReturnType<typeof useAdminListingBoostPromoCouponsQuery>;
+export type AdminListingBoostPromoCouponsLazyQueryHookResult = ReturnType<typeof useAdminListingBoostPromoCouponsLazyQuery>;
+export type AdminListingBoostPromoCouponsSuspenseQueryHookResult = ReturnType<typeof useAdminListingBoostPromoCouponsSuspenseQuery>;
+export type AdminListingBoostPromoCouponsQueryResult = Apollo.QueryResult<AdminListingBoostPromoCouponsQuery, AdminListingBoostPromoCouponsQueryVariables>;
 export const BoostedHomeListingsDocument = gql`
     query BoostedHomeListings($limit: Int) {
   boostedHomeListings(limit: $limit) {
@@ -3549,6 +3919,7 @@ export const MeDocument = gql`
     bio
     profileImageUrl
     planType
+    proStoreSevenDayBoostsRemainingThisMonth
     role
     city {
       id

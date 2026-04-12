@@ -12,7 +12,7 @@ import NotificationDropdown from './NotificationDropdown'
 import { useState } from 'react'
 import { Button } from './ui/button'
 import { Container } from '@/components/ui/Container'
-import { generateImageUrl } from '@/lib/utils'
+import { generateImageUrl, cn } from '@/lib/utils'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useGetMyBusinessQuery } from '@/lib/graphql/generated'
 import { toast } from 'sonner'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 
 export default function Navbar() {
   const dispatch = useDispatch<AppDispatch>()
@@ -45,6 +45,18 @@ export default function Navbar() {
     user?.planType === 'RESELLER' || user?.planType === 'PRO_STORE'
   const [drawerOpen, setDrawerOpen] = useState(false)
   const isAdmin = user?.role === 'ADMIN'
+  const pathname = usePathname()
+
+  const isActiveLink = (href: string) =>
+    pathname === href || pathname.startsWith(`${href}/`)
+
+  const getNavLinkClass = (href: string) =>
+    cn(
+      'transition',
+      isActiveLink(href)
+        ? 'text-primary font-semibold'
+        : 'hover:text-primary text-foreground/80',
+    )
 
   const handleLogout = async () => {
     console.log('Dispatching logoutUser')
@@ -84,7 +96,7 @@ export default function Navbar() {
           <li>
             <Link
               href='/listings'
-              className='hover:text-primary transition'
+              className={getNavLinkClass('/listings')}
             >
               Browse
             </Link>
@@ -92,8 +104,8 @@ export default function Navbar() {
           {isLoggedIn && isAdmin && (
             <li>
               <Link
-                href='/admin/approvals'
-                className='hover:text-primary transition'
+                href='/admin'
+                className={getNavLinkClass('/admin')}
               >
                 Admin
               </Link>
@@ -107,7 +119,11 @@ export default function Navbar() {
                     ? `/${businessData.myBusiness.slug}`
                     : `/store/${businessData.myBusiness.id}`
                 }
-                className='hover:text-primary transition'
+                className={getNavLinkClass(
+                  businessData.myBusiness.slug
+                    ? `/${businessData.myBusiness.slug}`
+                    : `/store/${businessData.myBusiness.id}`,
+                )}
               >
                 My Store
               </Link>
@@ -116,7 +132,7 @@ export default function Navbar() {
             <li>
               <Link
                 href={'/business/edit'}
-                className='hover:text-primary transition'
+                className={getNavLinkClass('/business/edit')}
               >
                 Set Up Store
               </Link>
@@ -128,7 +144,7 @@ export default function Navbar() {
               <li>
                 <Link
                   href='/my-listings'
-                  className='hover:text-primary transition'
+                  className={getNavLinkClass('/my-listings')}
                 >
                   My Listings
                 </Link>
@@ -136,7 +152,7 @@ export default function Navbar() {
               <li>
                 <Link
                   href='/transactions'
-                  className='hover:text-primary transition'
+                  className={getNavLinkClass('/transactions')}
                 >
                   Transactions
                 </Link>
@@ -263,6 +279,7 @@ export default function Navbar() {
               <Link
                 href='/listings'
                 onClick={() => setDrawerOpen(false)}
+                className={getNavLinkClass('/listings')}
               >
                 Browse
               </Link>
@@ -270,9 +287,9 @@ export default function Navbar() {
             {isLoggedIn && isAdmin && (
               <li>
                 <Link
-                  href='/admin/approvals'
+                  href='/admin'
                   onClick={() => setDrawerOpen(false)}
-                  className='hover:text-primary transition'
+                  className={getNavLinkClass('/admin')}
                 >
                   Admin
                 </Link>
@@ -287,7 +304,11 @@ export default function Navbar() {
                       : `/store/${businessData?.myBusiness?.id}`
                   }
                   onClick={() => setDrawerOpen(false)}
-                  className='hover:text-primary transition'
+                  className={getNavLinkClass(
+                    user.planType === 'PRO_STORE'
+                      ? `/${businessData?.myBusiness?.slug}`
+                      : `/store/${businessData?.myBusiness?.id}`,
+                  )}
                 >
                   My Store
                 </Link>
@@ -299,6 +320,7 @@ export default function Navbar() {
                   <Link
                     href='/my-listings'
                     onClick={() => setDrawerOpen(false)}
+                    className={getNavLinkClass('/my-listings')}
                   >
                     My Listings
                   </Link>
@@ -307,6 +329,7 @@ export default function Navbar() {
                   <Link
                     href='/transactions'
                     onClick={() => setDrawerOpen(false)}
+                    className={getNavLinkClass('/transactions')}
                   >
                     Transactions
                   </Link>

@@ -1,6 +1,8 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import {
   Tooltip,
   TooltipContent,
@@ -104,6 +106,7 @@ const tiers = [
 
 export default function SubscriptionsPage() {
   const [loadingTier, setLoadingTier] = useState<string | null>(null)
+  const [couponCode, setCouponCode] = useState('')
   const userContext = useSelector((state: RootState) => state.userContext)
   const router = useRouter()
   const userEmail = userContext.email || ''
@@ -202,6 +205,9 @@ export default function SubscriptionsPage() {
               planType,
               itemName: tier.name + ' Subscription',
               amount: recurringAmount,
+              ...(couponCode.trim()
+                ? { couponCode: couponCode.trim() }
+                : {}),
             }),
           },
         )
@@ -329,6 +335,10 @@ export default function SubscriptionsPage() {
         planType,
         userEmail,
       })
+      const trimmedCoupon = couponCode.trim()
+      if (trimmedCoupon) {
+        params.set('couponCode', trimmedCoupon)
+      }
 
       const res = await fetch(
         `${apiBase}/api/payments/payfast/subscription-url?${params.toString()}`,
@@ -336,6 +346,11 @@ export default function SubscriptionsPage() {
       )
 
       const data = await res.json()
+      const flagOn = (v: unknown) => v === true || v === 'true'
+      if (data && flagOn(data.success) && flagOn(data.activated)) {
+        router.push('/')
+        return
+      }
       // Handle error responses first
       if (data && data.error) {
         alert('Failed to create subscription URL: ' + data.error)
@@ -375,6 +390,23 @@ export default function SubscriptionsPage() {
         Whether you&apos;re an individual seller or a growing business, we have
         the perfect plan to help you succeed in the marketplace.
       </p>
+
+      <div className='max-w-md mx-auto mb-10 flex flex-col gap-2'>
+        <Label
+          htmlFor='sub-coupon'
+          className='text-sm text-gray-700 dark:text-gray-300'
+        >
+          Promo code (optional)
+        </Label>
+        <Input
+          id='sub-coupon'
+          value={couponCode}
+          onChange={(e) => setCouponCode(e.target.value)}
+          placeholder='Enter code if you have one'
+          className='bg-componentBackground'
+          autoComplete='off'
+        />
+      </div>
 
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto mb-10'>
         {tiers.map((tier) => {

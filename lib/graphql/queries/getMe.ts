@@ -11,6 +11,7 @@ export const GET_ME = gql`
       bio
       profileImageUrl
       planType
+      proStoreSevenDayBoostsRemainingThisMonth
       role
       city {
         id

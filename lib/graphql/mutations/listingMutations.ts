@@ -7,8 +7,16 @@ export const DELETE_LISTING = gql`
 `
 
 export const LISTING_BOOST_CHECKOUT_URL = gql`
-  mutation ListingBoostCheckoutUrl($listingId: ID!, $durationDays: Int!) {
-    listingBoostCheckoutUrl(listingId: $listingId, durationDays: $durationDays)
+  mutation ListingBoostCheckoutUrl(
+    $listingId: ID!
+    $durationDays: Int!
+    $couponCode: String
+  ) {
+    listingBoostCheckoutUrl(
+      listingId: $listingId
+      durationDays: $durationDays
+      couponCode: $couponCode
+    )
   }
 `
 

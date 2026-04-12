@@ -13,7 +13,6 @@ import {
 } from '@/lib/graphql/mutations/adminApprovalMutations'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Container } from '@/components/ui/Container'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 import { generateImageUrl } from '@/lib/utils'
@@ -89,11 +88,9 @@ export default function AdminApprovalsPage() {
   // Don't render anything if not authorized
   if (!userId || role !== 'ADMIN') {
     return (
-      <Container className='py-8'>
-        <div className='text-center py-16 text-muted-foreground'>
-          Checking permissions...
-        </div>
-      </Container>
+      <div className='text-center py-16 text-muted-foreground'>
+        Checking permissions...
+      </div>
     )
   }
 
@@ -137,8 +134,8 @@ export default function AdminApprovalsPage() {
   const items = pageData?.items ?? []
 
   return (
-    <Container className='py-8'>
-      <h1 className='text-2xl font-bold mb-2'>Admin Approvals</h1>
+    <div>
+      <h2 className='text-xl font-semibold mb-2'>Content approvals</h2>
       <p className='text-muted-foreground mb-6'>
         Review and approve or decline content that requires admin attention.
       </p>
@@ -304,6 +301,6 @@ export default function AdminApprovalsPage() {
           </Button>
         </div>
       )}
-    </Container>
+    </div>
   )
 }

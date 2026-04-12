@@ -104,7 +104,7 @@ export default function ListingCard({
         passHref
       >
         <div
-          className={`border border-secondary p-4 rounded-lg shadow-lg h-[420px] flex flex-col cursor-pointer transition-all duration-200 ease-in-out hover:shadow-xl hover:opacity-80 hover:scale-[1.02] ${
+          className={`p-4 rounded-lg shadow-lg h-[420px] flex flex-col cursor-pointer transition-all duration-200 ease-in-out hover:shadow-xl hover:opacity-80 hover:scale-[1.02] ${
             listing.sold ? 'opacity-60' : ''
           } ${!primaryColor ? 'bg-componentBackground' : ''}`}
           style={cardStyle}
