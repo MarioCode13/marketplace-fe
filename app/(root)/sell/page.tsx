@@ -298,7 +298,7 @@ export default function SellPage() {
   if (!userId) {
     return (
       <div className='flex min-h-screen items-center justify-center bg-background'>
-        <div className='w-full max-w-md rounded-lg p-6 shadow-lg bg-componentBackground text-center'>
+        <div className='w-full max-w-md rounded-lg p-6 bg-componentBackground text-center'>
           <h1 className='mb-4 text-2xl font-bold text-foreground'>
             Please Log In
           </h1>

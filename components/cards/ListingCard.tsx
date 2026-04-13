@@ -121,21 +121,22 @@ export default function ListingCard({
               <Badge className='bg-red-500 text-white'>SOLD</Badge>
             </div>
           )}
-          <Image
-            src={
-              listing.images && listing.images.length > 0
-                ? generateImageUrl(listing.images[0])
-                : '/logo.png'
-            }
-            alt={listing.title}
-            width={300}
-            height={300}
-            className='w-full h-40 object-cover rounded-md'
-            onError={(e) => {
-              const target = e.target as HTMLImageElement
-              target.src = '/logo.png'
-            }}
-          />
+          <div className='relative w-full overflow-hidden rounded-md aspect-[4/3] sm:aspect-[16/9]'>
+            <Image
+              src={
+                listing.images && listing.images.length > 0
+                  ? generateImageUrl(listing.images[0])
+                  : '/logo.png'
+              }
+              alt={listing.title}
+              fill
+              className='object-cover'
+              onError={(e) => {
+                const target = e.target as HTMLImageElement
+                target.src = '/logo.png'
+              }}
+            />
+          </div>
           <div className='flex-1 flex flex-col justify-between mt-2'>
             <div>
               <h2

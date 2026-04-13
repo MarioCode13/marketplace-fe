@@ -178,10 +178,12 @@ export default function AdminApprovalsPage() {
                 ) : item.listing.user ? (
                   <Link
                     href={`/seller/${item.listing.user.id}`}
-                    className='text-lg text-blue-600 hover:underline'
+                    className='text-lg text-primary hover:underline'
                   >
-                    User: {item.listing.user.firstName}{' '}
-                    {item.listing.user.lastName}
+                    User:{' '}
+                    {item.listing.user.firstName
+                      ? `${item.listing.user.firstName} ${item.listing.user.lastName}`
+                      : item.listing.user.username}
                   </Link>
                 ) : null}
                 <h2 className='text-xl font-semibold  mb-4 '>

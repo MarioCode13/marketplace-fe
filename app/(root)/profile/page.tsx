@@ -376,17 +376,14 @@ export default function Profile() {
             )}
             {isBusinessUser && (
               <Button
+                asChild
                 className='w-full mt-3'
-                color={'secondary'}
-                variant={'contained'}
-                onClick={() => {
-                  if (typeof window !== 'undefined') {
-                    ;(window as Window & typeof globalThis).__NProgress?.start()
-                  }
-                  router.push('/business/edit')
-                }}
+                color='secondary'
+                variant='contained'
               >
-                Configure Business <Building size={18} />
+                <Link href='/business/edit'>
+                  Configure Business <Building size={18} />
+                </Link>
               </Button>
             )}
             {/* Manage Subscriptions CTA */}
