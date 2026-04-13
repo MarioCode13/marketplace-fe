@@ -22,7 +22,7 @@ import {
   ShieldCheck,
 } from 'lucide-react'
 import { useState } from 'react'
-import StoreReviewsModal from '@/components/modals/StoreReviewsModal'
+import ReviewsModal from '@/components/modals/ReviewsModal'
 import { Button } from '@/components/ui/button'
 import { notFound } from 'next/navigation'
 import { useParams } from 'next/navigation'
@@ -685,7 +685,7 @@ export default function ProStoreRoute() {
           </div>
         )}
       </Container>
-      <StoreReviewsModal
+      <ReviewsModal
         isOpen={Boolean(showReviewsModal)}
         onClose={() => setShowReviewsModal(false)}
         userId={business?.businessUsers?.[0]?.user?.id || ''}

@@ -63,20 +63,20 @@ export default function NotificationDropdown() {
 
   const handleMarkAllAsRead = async () => {
     const unreadNotifications = notifications.filter(
-      (n: Notification) => !n.read
+      (n: Notification) => !n.read,
     )
 
     try {
       await Promise.all(
         unreadNotifications.map((notification: Notification) =>
-          markAsRead({ variables: { notificationId: notification.id } })
-        )
+          markAsRead({ variables: { notificationId: notification.id } }),
+        ),
       )
       toast.success('All notifications marked as read')
     } catch (error) {
       toast.error(
         'Failed to mark all notifications as read' +
-          (error instanceof Error ? error.message : '')
+          (error instanceof Error ? error.message : ''),
       )
     }
   }
@@ -143,7 +143,7 @@ export default function NotificationDropdown() {
         ) : (
           <div className='max-h-64 overflow-y-auto'>
             {unreadCount > 0 && (
-              <div className='flex justify-end  mt-2'>
+              <div className='flex justify-end  my-1'>
                 <Button
                   variant='text'
                   size='sm'
@@ -158,7 +158,7 @@ export default function NotificationDropdown() {
             {notifications.slice(0, 5).map((notification: Notification) => (
               <div
                 key={notification.id}
-                className={`p-3 border-b last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer ${
+                className={`p-3 rounded-md mb-2  hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer ${
                   !notification.read ? 'bg-blue-50 dark:bg-blue-900/20' : ''
                 }`}
                 onClick={() => {

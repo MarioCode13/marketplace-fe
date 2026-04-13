@@ -45,15 +45,21 @@ export const GET_LISTING_BY_ID = gql`
         name
         businessType
         email
-        slug 
-         trustRating {
+        slug
+        trustRating {
           averageRating
-           reviewCount
-           verifiedWithThirdParty
-         }
+          reviewCount
+          verifiedWithThirdParty
+        }
         storeBranding {
           storeName
           logoUrl
+        }
+        businessUsers {
+          user {
+            id
+            username
+          }
         }
       }
     }

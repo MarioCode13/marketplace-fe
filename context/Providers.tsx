@@ -7,6 +7,7 @@ import { ThemeProvider } from './ThemeContext'
 import { Toaster } from 'sonner'
 import AppInitializer from '@/context/AppInitializer'
 import ProgressProvider from './ProgressProvider'
+import { TooltipProvider } from '@/components/ui/tooltip'
 
 export default function Providers({
   children,
@@ -23,9 +24,11 @@ export default function Providers({
       <ApolloProviderWrapper initialState={initialApolloState}>
         <ThemeProvider>
           <ProgressProvider>
-            <Toaster position='bottom-right' />
-            {!skipInitializer && <AppInitializer />}
-            {children}
+            <TooltipProvider>
+              <Toaster position='bottom-right' />
+              {!skipInitializer && <AppInitializer />}
+              {children}
+            </TooltipProvider>
           </ProgressProvider>
         </ThemeProvider>
       </ApolloProviderWrapper>

@@ -5,7 +5,12 @@ import { TrustRating, TrustLevel } from '@/lib/graphql/types/trust'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
-import { Star, Shield, CheckCircle, AlertCircle } from 'lucide-react'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+import { Star, Shield, CheckCircle, AlertCircle, Info } from 'lucide-react'
 
 interface TrustRatingDisplayProps {
   trustRating: TrustRating
@@ -87,8 +92,29 @@ export const TrustRatingDisplay: React.FC<TrustRatingDisplayProps> = ({
       <CardContent className='space-y-4'>
         {/* Overall Score */}
         <div className='space-y-2'>
-          <div className='flex items-center justify-between'>
-            <span className='text-sm font-medium'>Overall Score</span>
+          <div className='flex items-center justify-between gap-2'>
+            <div className='flex items-center gap-1 text-sm font-medium'>
+              <span>Overall Score</span>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type='button'
+                    className='inline-flex h-5 w-5 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted'
+                    aria-label='Overall score info'
+                  >
+                    <Info className='h-4 w-4' />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side='top'>
+                  <p>
+                    The overall trust score combines verification,
+                    profile completion, reviews, and transaction history.
+                    Improving any of these areas raises your overall rating.
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+
             <div className='flex items-center gap-2'>
               <div className='flex items-center gap-1'>
                 <Star className='w-4 h-4 fill-yellow-400 text-yellow-400' />
@@ -106,62 +132,139 @@ export const TrustRatingDisplay: React.FC<TrustRatingDisplayProps> = ({
 
         {showDetails && (
           <div className='space-y-3'>
-            {/* Document Score */}
-            <div className='space-y-1'>
-              <div className='flex items-center justify-between'>
-                <span className='text-sm'>Verification</span>
-                <span className='text-sm font-medium'>
-                  {trustRating.verificationScore.toFixed(1)}%
-                </span>
+              {/* Document Score */}
+              <div className='space-y-1'>
+                <div className='flex items-center justify-between gap-2'>
+                  <div className='flex items-center gap-1 text-sm'>
+                    <span>Verification</span>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          type='button'
+                          className='inline-flex h-5 w-5 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted'
+                          aria-label='Verification info'
+                        >
+                          <Info className='h-4 w-4' />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side='top'>
+                        <p>
+                          This score reflects identity verification via
+                          Omnicheck our 3rd party provider. Paid account
+                          required to access full verification features.
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                  <span className='text-sm font-medium'>
+                    {trustRating.verificationScore.toFixed(1)}%
+                  </span>
+                </div>
+                <Progress
+                  value={trustRating.verificationScore}
+                  className='h-1'
+                />
               </div>
-              <Progress
-                value={trustRating.verificationScore}
-                className='h-1'
-              />
-            </div>
 
-            {/* Profile Score */}
-            <div className='space-y-1'>
-              <div className='flex items-center justify-between'>
-                <span className='text-sm'>Profile Completion</span>
-                <span className='text-sm font-medium'>
-                  {trustRating.profileScore.toFixed(1)}%
-                </span>
+              {/* Profile Score */}
+              <div className='space-y-1'>
+                <div className='flex items-center justify-between gap-2'>
+                  <div className='flex items-center gap-1 text-sm'>
+                    <span>Profile Completion</span>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          type='button'
+                          className='inline-flex h-5 w-5 items-center justify-center rounded-full  text-muted-foreground transition-colors hover:bg-muted'
+                          aria-label='Profile completion info'
+                        >
+                          <Info className='h-4 w-4' />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side='top'>
+                        <p>
+                          This score grows as you complete your profile. Add a
+                          photo, contact info, etc.
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                  <span className='text-sm font-medium'>
+                    {trustRating.profileScore.toFixed(1)}%
+                  </span>
+                </div>
+                <Progress
+                  value={trustRating.profileScore}
+                  className='h-1'
+                />
               </div>
-              <Progress
-                value={trustRating.profileScore}
-                className='h-1'
-              />
-            </div>
 
-            {/* Review Score */}
-            <div className='space-y-1'>
-              <div className='flex items-center justify-between'>
-                <span className='text-sm'>Reviews</span>
-                <span className='text-sm font-medium'>
-                  {trustRating.reviewScore.toFixed(1)}%
-                </span>
+              {/* Review Score */}
+              <div className='space-y-1'>
+                <div className='flex items-center justify-between gap-2'>
+                  <div className='flex items-center gap-1 text-sm'>
+                    <span>Reviews</span>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          type='button'
+                          className='inline-flex h-5 w-5 items-center justify-center text-muted-foreground transition-colors hover:bg-muted'
+                          aria-label='Reviews info'
+                        >
+                          <Info className='h-4 w-4' />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side='top'>
+                        <p>
+                          This score is based on buyer feedback. Encourage
+                          reviews and keep ratings high.
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                  <span className='text-sm font-medium'>
+                    {trustRating.reviewScore.toFixed(1)}%
+                  </span>
+                </div>
+                <Progress
+                  value={trustRating.reviewScore}
+                  className='h-1'
+                />
               </div>
-              <Progress
-                value={trustRating.reviewScore}
-                className='h-1'
-              />
-            </div>
 
-            {/* Transaction Score */}
-            <div className='space-y-1'>
-              <div className='flex items-center justify-between'>
-                <span className='text-sm'>Transaction History</span>
-                <span className='text-sm font-medium'>
-                  {trustRating.transactionScore.toFixed(1)}%
-                </span>
+              {/* Transaction Score */}
+              <div className='space-y-1'>
+                <div className='flex items-center justify-between gap-2'>
+                  <div className='flex items-center gap-1 text-sm'>
+                    <span>Transaction History</span>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          type='button'
+                          className='inline-flex h-5 w-5 items-center justify-center text-muted-foreground transition-colors hover:bg-muted'
+                          aria-label='Transaction history info'
+                        >
+                          <Info className='h-4 w-4' />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side='top'>
+                        <p>
+                          This score reflects successful past trades. Keep
+                          orders reliable and avoid disputes.
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </div>
+                  <span className='text-sm font-medium'>
+                    {trustRating.transactionScore.toFixed(1)}%
+                  </span>
+                </div>
+                <Progress
+                  value={trustRating.transactionScore}
+                  className='h-1'
+                />
               </div>
-              <Progress
-                value={trustRating.transactionScore}
-                className='h-1'
-              />
             </div>
-          </div>
         )}
 
         {/* Stats */}

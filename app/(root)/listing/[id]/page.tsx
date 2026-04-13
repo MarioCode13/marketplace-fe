@@ -32,6 +32,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import ReviewsModal from '@/components/modals/ReviewsModal'
 import { Container } from '@/components/ui/Container'
 
 const Page = () => {
@@ -41,6 +42,7 @@ const Page = () => {
   const [modalOpen, setModalOpen] = useState(false)
   const [markAsSoldModalOpen, setMarkAsSoldModalOpen] = useState(false)
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
+  const [showReviewsModal, setShowReviewsModal] = useState(false)
   const user = useSelector((state: RootState) => state.userContext)
 
   const { data: meData } = useQuery(GET_ME, {
@@ -129,6 +131,14 @@ const Page = () => {
       }
     }
   }
+
+  const reviewTargetUserId =
+    listing.user?.id || listing.business?.businessUsers?.[0]?.user?.id || ''
+  const reviewTargetTitle =
+    listing.business?.storeBranding?.storeName ||
+    listing.business?.name ||
+    listing.user?.username ||
+    ''
 
   return (
     <Container>
@@ -420,7 +430,14 @@ const Page = () => {
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <div className='flex items-center gap-1 cursor-pointer'>
+                          <div
+                            className={`flex items-center gap-1 ${
+                              reviewTargetUserId ? 'cursor-pointer' : ''
+                            }`}
+                            onClick={() =>
+                              reviewTargetUserId && setShowReviewsModal(true)
+                            }
+                          >
                             {(() => {
                               const rating =
                                 listing.business?.trustRating?.averageRating ||
@@ -520,6 +537,12 @@ const Page = () => {
           onSuccess={() => {
             window.location.reload()
           }}
+        />
+        <ReviewsModal
+          isOpen={showReviewsModal}
+          onClose={() => setShowReviewsModal(false)}
+          userId={reviewTargetUserId}
+          title={reviewTargetTitle}
         />
       </div>
     </Container>

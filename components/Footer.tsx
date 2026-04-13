@@ -116,14 +116,6 @@ export default function Footer() {
                   Verification Disclosure
                 </Link>
               </li>
-              <li>
-                <Link
-                  href='/refund-policy'
-                  className='text-muted-foreground hover:text-foreground transition-colors'
-                >
-                  Refund Policy
-                </Link>
-              </li>
             </ul>
           </div>
 

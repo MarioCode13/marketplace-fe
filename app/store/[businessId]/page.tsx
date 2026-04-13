@@ -13,7 +13,7 @@ import { useSelector } from 'react-redux'
 import { RootState } from '@/store/store'
 import { Button } from '@/components/ui/button'
 import { useState } from 'react'
-import StoreReviewsModal from '@/components/modals/StoreReviewsModal'
+import ReviewsModal from '@/components/modals/ReviewsModal'
 import { getTextColor } from '@/lib/utils'
 import {
   Tooltip,
@@ -383,7 +383,7 @@ export default function StorePage() {
           )}
         </div>
       </div>
-      <StoreReviewsModal
+      <ReviewsModal
         isOpen={Boolean(showReviewsModal)}
         onClose={() => setShowReviewsModal(false)}
         userId={business.businessUsers?.[0]?.user?.id || ''}

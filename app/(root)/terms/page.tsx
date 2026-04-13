@@ -28,7 +28,7 @@ export default function TermsOfUsePage() {
           {/* Last Updated */}
           <div className='text-sm text-muted-foreground border-b pb-4'>
             Last updated:{' '}
-            {new Date().toLocaleDateString('en-US', {
+            {new Date('04-12-2026').toLocaleDateString('en-US', {
               year: 'numeric',
               month: 'long',
               day: 'numeric',
@@ -539,10 +539,10 @@ export default function TermsOfUsePage() {
             <p className='text-foreground leading-relaxed'>
               If you believe you were charged in error, contact us at{' '}
               <a
-                href='mailto:support@marketplace.com'
+                href='mailto:info@dealio.org.za'
                 className='text-blue-600 hover:underline'
               >
-                support@marketplace.com
+                info@dealio.org.za
               </a>{' '}
               within 30 days of the charge with supporting documentation. We
               will investigate and respond within 10 business days. Chargebacks
@@ -573,10 +573,10 @@ export default function TermsOfUsePage() {
               If you have questions about these Terms of Use, please contact us
               at:{' '}
               <a
-                href='mailto:legal@marketplace.com'
+                href='mailto:info@dealio.org.za'
                 className='text-blue-600 hover:underline'
               >
-                legal@marketplace.com
+                info@dealio.org.za
               </a>
             </p>
           </section>
