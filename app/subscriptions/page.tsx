@@ -1,14 +1,13 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import SubscriptionConfirmationModal from '@/components/modals/SubscriptionConfirmationModal'
 import { RootState } from '@/store/store'
 import { ShieldCheck, User, Store, Star, UserPlus } from 'lucide-react'
 import { useRouter } from 'next/navigation'
@@ -45,9 +44,9 @@ const tiers = [
     accountType: 'Personal',
     features: [
       'All Free User features',
-      'Verified badge & trust boost',
+      'Trust boost',
+      'Ability to verify identity for increased trust',
       'Create up to 8 listings',
-      'Priority in search results',
       'Document verification',
       'Enhanced buyer protection',
       'Priority support',
@@ -113,6 +112,34 @@ export default function SubscriptionsPage() {
   const isLoggedIn = !!userContext.userId
   const userPlanType = userContext.planType || ''
   const businessPlanType = userContext.business?.planType || ''
+  const [selectedTier, setSelectedTier] = useState<(typeof tiers)[0] | null>(
+    null,
+  )
+  const [isConfirmationOpen, setIsConfirmationOpen] = useState(false)
+
+  const openConfirmation = (tier: (typeof tiers)[0]) => {
+    if (tier.name === 'Free User') {
+      return
+    }
+
+    setSelectedTier(tier)
+    setIsConfirmationOpen(true)
+  }
+
+  const closeConfirmation = () => {
+    setIsConfirmationOpen(false)
+    setSelectedTier(null)
+  }
+
+  const handleConfirmSubscribe = async () => {
+    if (!selectedTier) {
+      return
+    }
+
+    setIsConfirmationOpen(false)
+    await handleSubscribe(selectedTier)
+    setSelectedTier(null)
+  }
 
   const handleSubscribe = async (tier: (typeof tiers)[0]) => {
     if (tier.name === 'Free User') {
@@ -205,9 +232,7 @@ export default function SubscriptionsPage() {
               planType,
               itemName: tier.name + ' Subscription',
               amount: recurringAmount,
-              ...(couponCode.trim()
-                ? { couponCode: couponCode.trim() }
-                : {}),
+              ...(couponCode.trim() ? { couponCode: couponCode.trim() } : {}),
             }),
           },
         )
@@ -379,8 +404,6 @@ export default function SubscriptionsPage() {
     }
   }
 
-  // Debug: log current plan type
-  console.log('Current plan type:', userPlanType, businessPlanType)
   return (
     <div className='min-h-screen w-full bg-gradient-to-br from-blue-50 via-white to-indigo-100 dark:from-gray-900 dark:via-gray-950 dark:to-gray-900 py-12 px-4'>
       <h1 className='text-4xl font-extrabold mb-2 text-center text-gray-900 dark:text-white drop-shadow-sm'>
@@ -391,22 +414,21 @@ export default function SubscriptionsPage() {
         the perfect plan to help you succeed in the marketplace.
       </p>
 
-      <div className='max-w-md mx-auto mb-10 flex flex-col gap-2'>
-        <Label
-          htmlFor='sub-coupon'
-          className='text-sm text-gray-700 dark:text-gray-300'
-        >
-          Promo code (optional)
-        </Label>
-        <Input
-          id='sub-coupon'
-          value={couponCode}
-          onChange={(e) => setCouponCode(e.target.value)}
-          placeholder='Enter code if you have one'
-          className='bg-componentBackground'
-          autoComplete='off'
-        />
-      </div>
+      <SubscriptionConfirmationModal
+        open={isConfirmationOpen}
+        selectedTier={selectedTier}
+        couponCode={couponCode}
+        setCouponCode={setCouponCode}
+        loadingTier={loadingTier}
+        onOpenChange={(open) => {
+          if (!open) {
+            closeConfirmation()
+          } else {
+            setIsConfirmationOpen(true)
+          }
+        }}
+        onConfirm={handleConfirmSubscribe}
+      />
 
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto mb-10'>
         {tiers.map((tier) => {
@@ -590,7 +612,7 @@ export default function SubscriptionsPage() {
                             ? 'bg-blue-600 dark:bg-blue-700 text-white'
                             : ''
                         } ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        onClick={() => handleSubscribe(tier)}
+                        onClick={() => openConfirmation(tier)}
                       >
                         {buttonText}
                       </Button>
@@ -607,6 +629,23 @@ export default function SubscriptionsPage() {
           )
         })}
       </div>
+
+      <SubscriptionConfirmationModal
+        open={isConfirmationOpen}
+        selectedTier={selectedTier}
+        couponCode={couponCode}
+        setCouponCode={setCouponCode}
+        loadingTier={loadingTier}
+        onOpenChange={(open) => {
+          if (!open) {
+            closeConfirmation()
+          } else {
+            setIsConfirmationOpen(true)
+          }
+        }}
+        onConfirm={handleConfirmSubscribe}
+      />
+
       {/* Account Type Explanation */}
       <div className='grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto mb-12'>
         <div className='bg-componentBackground p-6 rounded-xl border border-gray-200 dark:border-gray-700'>

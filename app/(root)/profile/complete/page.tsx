@@ -8,12 +8,17 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { toast } from 'sonner'
 import CityAutocomplete from '@/components/drawers/CityAutocomplete'
 import { GET_ME } from '@/lib/graphql/queries/getMe'
 import { profileSchema, type ProfileFormData } from '@/lib/validation'
 import { useRouter } from 'next/navigation'
-import { CheckCircle, Pencil, User, Loader2 } from 'lucide-react'
+import { CheckCircle, Pencil, User, Loader2, Info } from 'lucide-react'
 import Image from 'next/image'
 import OmnicheckTermsModal from '@/components/modals/OmnicheckTermsModal'
 import { generateImageUrl } from '@/lib/utils'
@@ -119,6 +124,9 @@ export default function CompleteProfilePage() {
   const bio = watch('bio')
   const contactNumber = watch('contactNumber')
   const idNumber = watch('idNumber')
+  const hasSubscription =
+    user?.subscription?.status === 'ACTIVE' ||
+    user?.subscription?.status === 'TRIAL'
 
   const completionItems = [
     firstName,
@@ -499,7 +507,37 @@ export default function CompleteProfilePage() {
             </div>
             {/* ID Verification Section */}
             <div className='!mb-8'>
-              <Label>ID Verification</Label>
+              <div className='flex items-center gap-1 mb-2'>
+                <Label>ID Verification</Label>
+                {!hasSubscription && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        type='button'
+                        className='inline-flex items-center rounded-full p-1 text-muted-foreground hover:text-foreground'
+                        aria-label='Subscription required for verification'
+                      >
+                        <Info className='w-4 h-4' />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side='top'>
+                      <div className='text-xs'>
+                        ID verification is only available for subscribed
+                        accounts.
+                        <Button
+                          variant={'text'}
+                          color={'input'}
+                          size={'sm'}
+                          asChild
+                          className='ml-1'
+                        >
+                          <Link href='/subscriptions'>Upgrade</Link>
+                        </Button>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                )}
+              </div>
               <div className='flex flex-col gap-2'>
                 {user?.trustRating?.verifiedId ? (
                   <div className='inline-flex items-center gap-2 px-3 py-2 rounded-md bg-success/10 text-success'>
@@ -510,15 +548,22 @@ export default function CompleteProfilePage() {
                   </div>
                 ) : (
                   <>
-                    <Button
-                      type='button'
-                      variant='outlined'
-                      color='primary'
-                      onClick={handleVerifyID}
-                      disabled={!idNumber || !firstName || !lastName}
-                    >
-                      Verify with OmniCheck
-                    </Button>
+                    <div className='flex items-center gap-2'>
+                      <Button
+                        type='button'
+                        variant='outlined'
+                        color='primary'
+                        onClick={handleVerifyID}
+                        disabled={
+                          !hasSubscription ||
+                          !idNumber ||
+                          !firstName ||
+                          !lastName
+                        }
+                      >
+                        Verify with OmniCheck
+                      </Button>
+                    </div>
                     <span className='text-xs text-muted-foreground'>
                       By verifying your ID, you agree to our use of
                       <button
