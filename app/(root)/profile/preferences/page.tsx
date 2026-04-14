@@ -57,6 +57,7 @@ export default function ProfilePreferencesPage() {
   const [updatePreferences] = useMutation(UPDATE_USER_PREFERENCES)
 
   const me = data?.me
+  const isEligibleForExplicitContent = me?.eligibleForExplicitContent === true
   const [allowExplicit, setAllowExplicit] = useState(false)
   const [marketingOptIn, setMarketingOptIn] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
@@ -69,9 +70,9 @@ export default function ProfilePreferencesPage() {
 
   const handleToggleExplicit = async () => {
     const next = !allowExplicit
-    if (next && !me?.eligibleForExplicitContent) {
+    if (next && me?.eligibleForExplicitContent === false) {
       toast.error(
-        'Verify your South African ID (18+) in your profile before enabling explicit content.'
+        'Verify your South African ID (18+) in your profile before enabling explicit content.',
       )
       return
     }
@@ -105,7 +106,7 @@ export default function ProfilePreferencesPage() {
       toast.success(
         checked
           ? 'You may receive occasional marketing emails from Dealio.'
-          : 'Marketing emails are turned off.'
+          : 'Marketing emails are turned off.',
       )
       await refetch()
     } catch (err) {
@@ -143,18 +144,21 @@ export default function ProfilePreferencesPage() {
             </p>
             <div className='flex items-center gap-3'>
               <span>{allowExplicit ? 'Enabled' : 'Disabled'}</span>
-              <Button onClick={handleToggleExplicit} disabled={isSaving}>
+              <Button
+                onClick={handleToggleExplicit}
+                disabled={isSaving || me == null}
+              >
                 {isSaving ? 'Saving...' : allowExplicit ? 'Disable' : 'Enable'}
               </Button>
             </div>
-            {!me?.eligibleForExplicitContent && (
+            {!isEligibleForExplicitContent && me ? (
               <p className='text-sm text-muted-foreground mt-2'>
                 Complete ID verification on your profile with a valid SA ID
                 number. We use your verified ID and the date encoded in your ID
                 number to confirm you are 18+.
               </p>
-            )}
-            {me?.eligibleForExplicitContent && (
+            ) : null}
+            {isEligibleForExplicitContent && (
               <p className='text-sm text-success mt-2'>
                 You are eligible to enable explicit content (verified ID, 18+).
               </p>
@@ -185,7 +189,10 @@ export default function ProfilePreferencesPage() {
             </div>
           </div>
 
-          <Button variant='outlined' onClick={() => router.push('/profile')}>
+          <Button
+            variant='outlined'
+            onClick={() => router.push('/profile')}
+          >
             Back to Profile
           </Button>
         </div>

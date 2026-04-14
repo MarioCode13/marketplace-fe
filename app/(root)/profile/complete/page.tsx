@@ -65,6 +65,7 @@ export default function CompleteProfilePage() {
     cityLabel: '',
     customCity: '',
   })
+  const [hasInitializedForm, setHasInitializedForm] = useState(false)
 
   const {
     register,
@@ -86,26 +87,29 @@ export default function CompleteProfilePage() {
   })
 
   useEffect(() => {
-    if (user) {
-      setValue('username', user.username || '')
-      setValue('email', user.email || '')
-      setValue('firstName', user.firstName || '')
-      setValue('lastName', user.lastName || '')
-      setValue('bio', user.bio || '')
-      setValue('contactNumber', user.contactNumber || '')
-      setValue('idNumber', user.idNumber || '')
-      const cityId = user.city?.id || ''
-      const cityLabel = user.city
-        ? `${user.city.name}, ${user.city.region.name}, ${user.city.region.country.name}`
-        : ''
-      setFormState({
-        city: cityId,
-        cityLabel: cityLabel,
-        customCity: user.customCity || '',
-      })
-      setShowCustomCity(!!user.customCity)
+    if (!user || hasInitializedForm) {
+      return
     }
-  }, [user, setValue])
+
+    setValue('username', user.username || '')
+    setValue('email', user.email || '')
+    setValue('firstName', user.firstName || '')
+    setValue('lastName', user.lastName || '')
+    setValue('bio', user.bio || '')
+    setValue('contactNumber', user.contactNumber || '')
+    setValue('idNumber', user.idNumber || '')
+    const cityId = user.city?.id || ''
+    const cityLabel = user.city
+      ? `${user.city.name}, ${user.city.region.name}, ${user.city.region.country.name}`
+      : ''
+    setFormState({
+      city: cityId,
+      cityLabel: cityLabel,
+      customCity: user.customCity || '',
+    })
+    setShowCustomCity(!!user.customCity)
+    setHasInitializedForm(true)
+  }, [user, setValue, hasInitializedForm])
 
   if (loading) return <p>Loading...</p>
   if (error) return <p>Error loading profile</p>
@@ -177,7 +181,7 @@ export default function CompleteProfilePage() {
 
       if (data.success && data.verifiedID) {
         toast.success('ID verified successfully!')
-        // Don't refetch - preserve user's form edits
+        await refetch({ fetchPolicy: 'network-only' })
       } else {
         toast.error(
           data.error ||
@@ -489,7 +493,7 @@ export default function CompleteProfilePage() {
                 id='idNumber'
                 placeholder='Enter your 13-digit ID number'
                 maxLength={13}
-                disabled={user?.trustRating?.verifiedId || isProfileComplete}
+                disabled={user?.trustRating?.verifiedId}
                 {...register('idNumber')}
                 className={errors.idNumber ? 'border-red-500' : ''}
               />
