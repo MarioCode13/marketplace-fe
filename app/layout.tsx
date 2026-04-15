@@ -90,7 +90,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang='en-ZA'>
+    <html lang='en-ZA' suppressHydrationWarning>
       <head>
         <link
           rel='icon'

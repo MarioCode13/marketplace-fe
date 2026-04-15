@@ -1,18 +1,8 @@
-'use client'
-
-import { Button } from '@/components/ui/button'
-import { ArrowLeft } from 'lucide-react'
-import { useRouter } from 'next/navigation'
-import { useState } from 'react'
 import Link from 'next/link'
+import { BackButton } from '@/components/BackButton'
+import { HelpFAQ } from '@/components/HelpFAQ'
 
-interface FAQItem {
-  category: string
-  question: string
-  answer: string
-}
-
-const faqItems: FAQItem[] = [
+const faqItems = [
   // Account & Sign-up
   {
     category: 'Account & Sign-up',
@@ -203,31 +193,13 @@ const faqItems: FAQItem[] = [
 ]
 
 export default function HelpPage() {
-  const router = useRouter()
-  const [expandedIndex, setExpandedIndex] = useState<number | null>(null)
-  const [selectedCategory, setSelectedCategory] = useState<string>('All')
-
-  const categories = ['All', ...new Set(faqItems.map((item) => item.category))]
-
-  const filteredItems =
-    selectedCategory === 'All'
-      ? faqItems
-      : faqItems.filter((item) => item.category === selectedCategory)
-
   return (
     <div className='min-h-screen bg-background'>
       <div className='w-full flex justify-center'>
         <div className='w-full max-w-4xl py-8 px-6'>
           {/* Header */}
           <div className='flex items-center gap-4 mb-8'>
-            <Button
-              variant='text'
-              size='sm'
-              onClick={() => router.back()}
-            >
-              <ArrowLeft className='w-4 h-4 mr-2' />
-              Back
-            </Button>
+            <BackButton />
             <h1 className='text-3xl font-bold'>Help Center</h1>
           </div>
 
@@ -242,63 +214,7 @@ export default function HelpPage() {
               </p>
             </section>
 
-            {/* Category Filter */}
-            <section>
-              <h2 className='text-xl font-semibold mb-4'>Browse by Category</h2>
-              <div className='flex flex-wrap gap-2'>
-                {categories.map((category) => (
-                  <Button
-                    key={category}
-                    onClick={() => {
-                      setSelectedCategory(category)
-                      setExpandedIndex(null)
-                    }}
-                    variant={
-                      selectedCategory === category ? 'contained' : 'outlined'
-                    }
-                  >
-                    {category}
-                  </Button>
-                ))}
-              </div>
-            </section>
-
-            {/* FAQ Items */}
-            <section>
-              <div className='space-y-3'>
-                {filteredItems.map((item, index) => (
-                  <div
-                    key={index}
-                    className='border rounded-lg overflow-hidden'
-                  >
-                    <button
-                      onClick={() =>
-                        setExpandedIndex(expandedIndex === index ? null : index)
-                      }
-                      className='w-full flex items-center justify-between p-4   transition-colors'
-                    >
-                      <h3 className='text-lg font-medium text-foreground text-left'>
-                        {item.question}
-                      </h3>
-                      <span
-                        className={`ml-4 flex-shrink-0 transition-transform ${
-                          expandedIndex === index ? 'rotate-180' : ''
-                        }`}
-                      >
-                        ▼
-                      </span>
-                    </button>
-                    {expandedIndex === index && (
-                      <div className='px-4 py-3  border-t'>
-                        <p className='text-foreground leading-relaxed'>
-                          {item.answer}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </section>
+            <HelpFAQ faqItems={faqItems} />
 
             {/* Contact Section */}
             <section className='border-t pt-8'>

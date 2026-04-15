@@ -1,38 +1,20 @@
-'use client'
-
-import { Button } from '@/components/ui/button'
 import { Container } from '@/components/ui/Container'
-import { ArrowLeft } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { BackButton } from '@/components/BackButton'
 
 export default function PrivacyPolicyPage() {
-  const router = useRouter()
-
   return (
     <div className='min-h-screen bg-background'>
       <Container className='py-8'>
         {/* Header */}
         <div className='flex items-center gap-4 mb-8'>
-          <Button
-            variant='text'
-            size='sm'
-            onClick={() => router.back()}
-          >
-            <ArrowLeft className='w-4 h-4 mr-2' />
-            Back
-          </Button>
+          <BackButton />
           <h1 className='text-3xl font-bold'>Privacy Policy</h1>
         </div>
 
         <div className='bg-componentBackground rounded-lg p-8 shadow-lg space-y-8'>
           {/* Last Updated */}
           <div className='text-sm text-muted-foreground border-b pb-4'>
-            Last updated:{' '}
-            {new Date().toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-            })}
+            Last updated: April 12, 2026
           </div>
 
           {/* Introduction */}

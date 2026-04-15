@@ -1,394 +1,61 @@
-'use client'
+import { getServerApolloClient } from '@/lib/apollo/server'
+import { GET_BUSINESS_BY_ID } from '@/lib/graphql/queries/getBusinessById'
+import { notFound } from 'next/navigation'
+import { Metadata } from 'next'
+import StoreClient from './StoreClient'
 
-import {
-  useGetListingsQuery,
-  useGetBusinessByIdQuery,
-} from '@/lib/graphql/generated'
-import { useParams, useRouter } from 'next/navigation'
-import ListingCard from '@/components/cards/ListingCard'
-import SkeletonListingCard from '@/components/cards/SkeletonListingCard'
-import Image from 'next/image'
-import { Settings, ChevronLeft, ChevronRight, Plus, Star } from 'lucide-react'
-import { useSelector } from 'react-redux'
-import { RootState } from '@/store/store'
-import { Button } from '@/components/ui/button'
-import { useState } from 'react'
-import ReviewsModal from '@/components/modals/ReviewsModal'
-import { getTextColor } from '@/lib/utils'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
+export const revalidate = 60
 
-export default function StorePage() {
-  const params = useParams()
-  const navigate = useRouter()
-  const businessId = params?.businessId as string
-  const currentUserId = useSelector(
-    (state: RootState) => state.userContext.userId,
-  )
+type PageProps = {
+  params: Promise<{ businessId: string }>
+}
 
-  // State for pagination only (no filters for resellers)
-  const [offset, setOffset] = useState(0)
-  const limit = 8
-  const [showReviewsModal, setShowReviewsModal] = useState(false)
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
+  const { businessId } = await params
+  const client = getServerApolloClient()
 
-  // Get business data for this business store
-  const {
-    data: businessData,
-    loading: businessLoading,
-    error: businessError,
-  } = useGetBusinessByIdQuery({
+  try {
+    const { data } = await client.query({
+      query: GET_BUSINESS_BY_ID,
+      variables: { id: businessId },
+    })
+
+    const business = data?.business
+    if (!business) return { title: 'Store Not Found' }
+
+    const storeName = business.storeBranding?.storeName || business.name
+
+    return {
+      title: `${storeName} - Store`,
+      description: business.storeBranding?.about?.slice(0, 160) || `Browse ${storeName}'s store on Dealio.`,
+      openGraph: {
+        title: `${storeName} | Dealio`,
+        description: business.storeBranding?.about?.slice(0, 160) || `Browse ${storeName}'s store on Dealio.`,
+        images: business.storeBranding?.logoUrl ? [business.storeBranding.logoUrl] : undefined,
+        url: `https://dealio.org.za/store/${businessId}`,
+      },
+      alternates: {
+        canonical: `/store/${businessId}`,
+      },
+    }
+  } catch {
+    return { title: 'Store' }
+  }
+}
+
+export default async function Page({ params }: PageProps) {
+  const { businessId } = await params
+  const client = getServerApolloClient()
+
+  const { data } = await client.query({
+    query: GET_BUSINESS_BY_ID,
     variables: { id: businessId },
-    skip: !businessId,
-    fetchPolicy: 'cache-and-network',
   })
 
-  const {
-    data: listingsData,
-    loading: listingsLoading,
-    error: listingsError,
-  } = useGetListingsQuery({
-    variables: {
-      limit,
-      offset,
-      businessId,
-    },
-    skip: !businessId,
-  })
+  const business = data?.business
+  if (!business) notFound()
 
-  if (businessLoading)
-    return <div className='p-8 text-center'>Loading store...</div>
-  if (businessError)
-    return (
-      <div className='p-8 text-center text-red-500'>Error loading store.</div>
-    )
-  if (!businessData?.business)
-    return <div className='p-8 text-center'>Store not found.</div>
-
-  const business = businessData.business
-  const branding = business.storeBranding
-  const allListings = listingsData?.getListings?.listings || []
-  // Filter out sold listings
-  const listings = allListings.filter((listing) => !listing.sold)
-  const totalCount = listings.length
-
-  // For business stores, we show "Business Store" instead of plan type
-  const themeColor = branding?.themeColor || '#1f1b30'
-  const primaryColor = branding?.primaryColor || '#1f1b30'
-  const badgeLabel = 'Business Store'
-  const trustRating =
-    business?.businessUsers?.[0]?.user?.trustRating?.starRating?.toFixed(1)
-
-  // Check ownership/management permissions
-  // For business stores: current user must be a member of the business with OWNER or ADMIN role
-  const isBusinessMember = business.businessUsers?.some(
-    (businessUser) =>
-      businessUser.user.id.toString() === currentUserId?.toString() &&
-      ['OWNER', 'ADMIN'].includes(businessUser.role as string),
-  )
-  const isOwner = isBusinessMember
-
-  const getBackgroundStyle = () => {
-    const backgroundColor = branding?.backgroundColor || '#f8f9fa'
-    const endColor = branding?.backgroundColorEnd || '#ffffff'
-    const backgroundType = branding?.backgroundType || 'SOLID'
-
-    if (backgroundType === 'LINEAR_GRADIENT') {
-      let direction = 'to bottom'
-      switch (branding?.linearGradientDirection) {
-        case 'TOP_TO_BOTTOM':
-          direction = 'to bottom'
-          break
-        case 'LEFT_TO_RIGHT':
-          direction = 'to right'
-          break
-        case 'DIAGONAL_TL_BR':
-          direction = 'to bottom right'
-          break
-        case 'DIAGONAL_TR_BL':
-          direction = 'to bottom left'
-          break
-      }
-      return {
-        background: `linear-gradient(${direction}, ${backgroundColor}, ${endColor})`,
-      }
-    }
-
-    if (backgroundType === 'RADIAL_GRADIENT') {
-      const shape =
-        branding?.radialGradientShape === 'ellipse' ? 'ellipse' : 'circle'
-      return {
-        background: `radial-gradient(${shape}, ${backgroundColor}, ${endColor})`,
-      }
-    }
-
-    return { backgroundColor }
-  }
-
-  // Choose text color against the "base" backgroundColor.
-  const textColor = getTextColor(branding?.backgroundColor || '#f8f9fa')
-
-  const handleNext = () => {
-    if (offset + limit < totalCount) setOffset(offset + limit)
-  }
-
-  const handlePrev = () => {
-    if (offset - limit >= 0) setOffset(offset - limit)
-  }
-
-  return (
-    <div style={getBackgroundStyle()}>
-      <div className='max-w-5xl mx-auto p-4 pb-12'>
-        {/* Store Header */}
-        <div className='flex items-center gap-4 mb-4 pt-4'>
-          {branding?.logoUrl && (
-            <Image
-              width={80}
-              height={80}
-              src={branding.logoUrl}
-              alt='Store logo'
-              className='w-20 h-20 rounded-full object-cover border'
-              style={{
-                borderColor: themeColor,
-                borderWidth: 2,
-                borderStyle: 'solid',
-              }}
-            />
-          )}
-          <div className='flex-1'>
-            <div className='flex items-center justify-between'>
-              <h1
-                className='text-2xl font-bold'
-                style={{ color: branding?.primaryColor ?? 'unset' }}
-              >
-                {branding?.storeName || business.name}
-              </h1>
-              {isOwner && (
-                <div className='flex items-center gap-2'>
-                  <Button
-                    variant={'text'}
-                    size={'sm'}
-                    className='gap-2'
-                    onClick={() => navigate.push('/sell')}
-                  >
-                    <Plus size={16} />
-                    Add Listing
-                  </Button>
-                  <Button
-                    variant={'text'}
-                    size={'icon'}
-                    className='rounded-full'
-                    title='Store Settings'
-                    onClick={() => {
-                      if (typeof window !== 'undefined') {
-                        ;(
-                          window as Window & typeof globalThis
-                        ).__NProgress?.start()
-                      }
-                      navigate.push('/business/edit')
-                    }}
-                  >
-                    <Settings
-                      size={24}
-                      style={{
-                        color: textColor,
-                      }}
-                    />
-                  </Button>
-                </div>
-              )}
-            </div>
-            {branding?.about && (
-              <p className='text-gray-600 mt-1'>{branding.about}</p>
-            )}
-            <div className='mt-2 flex items-center gap-2'>
-              {trustRating !== undefined && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div
-                        className='flex items-center gap-1 cursor-pointer'
-                        onClick={() => setShowReviewsModal(true)}
-                      >
-                        {(() => {
-                          const rating = Number(trustRating) || 0
-                          return [1, 2, 3, 4, 5].map((star) => {
-                            if (rating >= star) {
-                              return (
-                                <Star
-                                  key={star}
-                                  className='w-4 h-4 text-yellow-400 fill-yellow-400 stroke-yellow-400'
-                                />
-                              )
-                            } else if (rating >= star - 0.75) {
-                              return (
-                                <span
-                                  key={star}
-                                  style={{
-                                    position: 'relative',
-                                    display: 'inline-block',
-                                    width: '1em',
-                                    height: '1em',
-                                  }}
-                                >
-                                  <Star
-                                    className='w-4 h-4 text-yellow-400'
-                                    style={{
-                                      position: 'absolute',
-                                      left: 0,
-                                      top: 0,
-                                    }}
-                                  />
-                                  <Star
-                                    className='w-4 h-4 text-yellow-400 fill-yellow-400 stroke-yellow-400'
-                                    style={{
-                                      position: 'absolute',
-                                      left: 0,
-                                      top: 0,
-                                      clipPath:
-                                        'polygon(0 0, 50% 0, 50% 100%, 0 100%)',
-                                    }}
-                                  />
-                                </span>
-                              )
-                            } else {
-                              return (
-                                <Star
-                                  key={star}
-                                  className='w-4 h-4 text-gray-300'
-                                />
-                              )
-                            }
-                          })
-                        })()}
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent side='top'>
-                      <p>{trustRating}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
-
-              {badgeLabel && (
-                <span
-                  className='text-xs px-2 py-1 rounded ml-2 text-white'
-                  style={{ backgroundColor: themeColor }}
-                >
-                  {badgeLabel}
-                </span>
-              )}
-
-              {isOwner && (
-                <Button
-                  variant={'outlined'}
-                  size={'sm'}
-                  className='ml-2'
-                  onClick={() => setShowReviewsModal(true)}
-                >
-                  Reviews
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>
-
-        <div className='mt-8'>
-          <div
-            className='w-full mb-4 text-sm text-muted-foreground'
-            style={{ color: textColor }}
-          >
-            {listingsLoading
-              ? 'Loading...'
-              : `${totalCount} listing${totalCount !== 1 ? 's' : ''} found`}
-          </div>
-
-          {/* Listings grid */}
-          {listingsLoading ? (
-            <div className='w-full'>
-              <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full'>
-                {Array.from({ length: limit }).map((_, index) => (
-                  <SkeletonListingCard key={index} />
-                ))}
-              </div>
-            </div>
-          ) : listings.length > 0 ? (
-            <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full'>
-              {listings.map((listing) => (
-                <ListingCard
-                  key={listing.id}
-                  listing={{
-                    ...listing,
-                    price: listing.price.toString(),
-                    user: listing.user ?? undefined,
-                    business: business ? { name: business.name } : undefined,
-                  }}
-                  themeColor={themeColor}
-                  primaryColor={primaryColor}
-                  store
-                />
-              ))}
-            </div>
-          ) : (
-            <div className='text-center py-12'>
-              <p
-                className='text-lg text-muted-foreground mb-2'
-                style={{ color: textColor }}
-              >
-                No listings found
-              </p>
-            </div>
-          )}
-
-          {listingsError && (
-            <div className='w-full mt-4 p-4 bg-destructive/10 border border-destructive/20 rounded-lg'>
-              <p className='text-destructive'>Error: {listingsError.message}</p>
-            </div>
-          )}
-
-          {/* Pagination */}
-          {totalCount > limit && (
-            <div className='flex items-center justify-center gap-4 mt-8'>
-              <Button
-                onClick={handlePrev}
-                disabled={offset === 0}
-                size={'icon'}
-                variant={'outlined'}
-                className='rounded-full disabled:opacity-50'
-              >
-                <ChevronLeft />
-              </Button>
-
-              <span
-                className='text-sm text-muted-foreground'
-                style={{ color: textColor }}
-              >
-                {Math.floor(offset / limit) + 1} of{' '}
-                {Math.ceil(totalCount / limit)}
-              </span>
-
-              <Button
-                onClick={handleNext}
-                size={'icon'}
-                variant={'outlined'}
-                disabled={offset + limit >= totalCount}
-                className='rounded-full disabled:opacity-50'
-              >
-                <ChevronRight />
-              </Button>
-            </div>
-          )}
-        </div>
-      </div>
-      <ReviewsModal
-        isOpen={Boolean(showReviewsModal)}
-        onClose={() => setShowReviewsModal(false)}
-        userId={business.businessUsers?.[0]?.user?.id || ''}
-        title={branding?.storeName || business.name}
-      />
-    </div>
-  )
+  return <StoreClient business={business} businessId={businessId} />
 }

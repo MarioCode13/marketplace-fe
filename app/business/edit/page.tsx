@@ -27,12 +27,14 @@ import {
   BackgroundType,
   LinearGradientDirection,
 } from '@/lib/graphql/generated'
-import DynamicPreviewModal from '@/components/modals/DynamicPreviewModal'
+import dynamic from 'next/dynamic'
 import Link from 'next/link'
-import AddTeamMember from './AddTeamMember'
-import OmnicheckTermsModal from '@/components/modals/OmnicheckTermsModal'
 import { checkImageContent } from '@/lib/utils/contentModeration'
-import CreateView from './CreateView'
+
+const DynamicPreviewModal = dynamic(() => import('@/components/modals/DynamicPreviewModal'))
+const OmnicheckTermsModal = dynamic(() => import('@/components/modals/OmnicheckTermsModal'))
+const AddTeamMember = dynamic(() => import('./AddTeamMember'))
+const CreateView = dynamic(() => import('./CreateView'))
 
 export default function BusinessEditPage() {
   const router = useRouter()
@@ -48,7 +50,7 @@ export default function BusinessEditPage() {
   } = useQuery(GET_BUSINESS_BY_ID, {
     variables: { id: businessId },
     skip: !businessId,
-    fetchPolicy: 'network-only',
+    fetchPolicy: 'cache-and-network',
   })
   const business = businessData?.business
   const dispatch = useDispatch<AppDispatch>()

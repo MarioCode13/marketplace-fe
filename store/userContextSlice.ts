@@ -112,6 +112,11 @@ export const refetchUserProfile = createAsyncThunk(
 					email: data.me.email ?? null,
 					planType: data.me.planType ?? null,
 					cityId: cityId ?? null,
+					profileCompletion: data.me.profileCompletion
+						? {
+							completionPercentage: data.me.profileCompletion.completionPercentage ?? undefined,
+						}
+						: null,
 				}
 				userContextPayload.isBusinessOwner = data.me.role === 'OWNER' || data.me.role === 'ADMIN'
 				userContextPayload.canEditListing = true // or your logic
@@ -264,6 +269,9 @@ const userContextSlice = createSlice({
 		},
 		logout(state) {
 			Object.assign(state, initialState)
+			if (typeof window !== 'undefined') {
+				localStorage.removeItem('userContext')
+			}
 		},
 		setBusinessRole(state, action: PayloadAction<UserRole>) {
 			state.role = action.payload
