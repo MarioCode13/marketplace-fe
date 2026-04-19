@@ -56,14 +56,8 @@ export default {
 			animation: {
 				'pulse-fast': 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite',
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
-			},
-			boxShadow: {
-				sm: 'var(--shadow-sm)',
-				md: 'var(--shadow-md)',
-				lg: 'var(--shadow-lg)',
-				tab: 'var(--shadow-tab-active)',
-				'tab-inactive': 'var(--shadow-tab-inactive)'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'heart-pop': 'heart-pop 320ms cubic-bezier(0.25, 0.46, 0.45, 0.94)'
 			},
 			keyframes: {
 				'accordion-down': {
@@ -81,7 +75,21 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'heart-pop': {
+					'0%': { transform: 'scale(1)' },
+					'35%': { transform: 'scale(1.18)' },
+					'60%': { transform: 'scale(0.97)' },
+					'80%': { transform: 'scale(1.03)' },
+					'100%': { transform: 'scale(1)' }
 				}
+			},
+			boxShadow: {
+				sm: 'var(--shadow-sm)',
+				md: 'var(--shadow-md)',
+				lg: 'var(--shadow-lg)',
+				tab: 'var(--shadow-tab-active)',
+				'tab-inactive': 'var(--shadow-tab-inactive)'
 			}
 		}
 	},

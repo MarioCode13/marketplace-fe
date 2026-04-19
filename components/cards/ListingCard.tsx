@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import dayjs from 'dayjs'
-import { MoreVertical, ShieldCheck, Star, StarIcon } from 'lucide-react'
+import { Heart, MoreVertical, ShieldCheck, Star, StarIcon } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { generateImageUrl } from '@/lib/utils'
@@ -16,7 +16,7 @@ export interface CardListing {
   id: string
   title: string
   description: string
-  price: string
+  price: string | number
   images: string[]
   createdAt: string
   sold?: boolean
@@ -55,6 +55,10 @@ interface ListingCardProps {
   onMarkAsSold?: () => void
   onBoost?: () => void
   isBoosted?: boolean
+  showWishlistHeart?: boolean
+  wishlisted?: boolean
+  wishlistLoading?: boolean
+  onWishlistHeartClick?: () => void
 }
 
 export default function ListingCard({
@@ -68,9 +72,27 @@ export default function ListingCard({
   onMarkAsSold,
   onBoost,
   isBoosted = false,
+  showWishlistHeart = false,
+  wishlisted = false,
+  wishlistLoading = false,
+  onWishlistHeartClick,
 }: ListingCardProps) {
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
+
+  const [wishlistAnimate, setWishlistAnimate] = useState(false)
+  const prevWishlisted = useRef(wishlisted)
+
+  useEffect(() => {
+    if (prevWishlisted.current !== wishlisted) {
+      setWishlistAnimate(true)
+      const timeout = window.setTimeout(() => setWishlistAnimate(false), 1500)
+      prevWishlisted.current = wishlisted
+      return () => window.clearTimeout(timeout)
+    }
+
+    prevWishlisted.current = wishlisted
+  }, [wishlisted])
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -160,7 +182,10 @@ export default function ListingCard({
                 }`}
                 data-testid='listing-price'
               >
-                R{listing.price}
+                R
+                {typeof listing.price === 'number'
+                  ? listing.price
+                  : listing.price}
               </p>
 
               <div className='mt-2 space-y-1'>
@@ -240,6 +265,31 @@ export default function ListingCard({
           </div>
         </div>
       </Link>
+      {showWishlistHeart && (
+        <button
+          type='button'
+          aria-label={wishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+          disabled={wishlistLoading}
+          className={`absolute right-2 z-40 rounded-full p-2 shadow-md shadow-black/20 transition-all duration-200 ease-out disabled:opacity-50 ${
+            listing.sold ? 'top-12' : 'top-2'
+          } ${
+            wishlisted
+              ? 'bg-black/80 text-red-400 hover:bg-black/90'
+              : 'bg-black/55 text-white hover:bg-black/70'
+          } ${wishlistAnimate ? 'animate-heart-pop' : 'hover:scale-105 active:scale-95'}`}
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            onWishlistHeartClick?.()
+          }}
+        >
+          <Heart
+            className='h-5 w-5'
+            fill={wishlisted ? 'currentColor' : 'none'}
+            strokeWidth={2}
+          />
+        </button>
+      )}
       {/* Actions Menu */}
       {showMenu && (
         <div

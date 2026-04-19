@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import ContactSellerModal from '@/components/modals/ContactSellerModal'
 import MarkAsSoldModal from '@/components/modals/MarkAsSoldModal'
 import { Button } from '@/components/ui/button'
@@ -18,6 +18,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ShieldCheck,
+  Heart,
 } from 'lucide-react'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/store/store'
@@ -31,7 +32,14 @@ import {
 import ReviewsModal from '@/components/modals/ReviewsModal'
 import { Container } from '@/components/ui/Container'
 import { Listing } from '@/lib/graphql/types/trust'
-import { GetListingByIdQuery } from '@/lib/graphql/generated'
+import {
+  GetListingByIdQuery,
+  useAddToWatchlistMutation,
+  useMyWatchlistListingIdsQuery,
+  useRemoveFromWatchlistMutation,
+} from '@/lib/graphql/generated'
+import { selectIsLoggedIn } from '@/store/userContextSlice'
+import { toast } from 'sonner'
 
 type ListingData = NonNullable<GetListingByIdQuery['getListingById']> & {
   business?: NonNullable<GetListingByIdQuery['getListingById']>['business'] & {
@@ -52,9 +60,37 @@ export default function ListingDetailClient({
   const [markAsSoldModalOpen, setMarkAsSoldModalOpen] = useState(false)
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
   const [showReviewsModal, setShowReviewsModal] = useState(false)
+  const [wishlistBusy, setWishlistBusy] = useState(false)
   const user = useSelector((state: RootState) => state.userContext)
+  const isLoggedIn = useSelector(selectIsLoggedIn)
 
   const currentUserId = user?.userId
+
+  const { data: wishlistIdsData, refetch: refetchWishlistIds } =
+    useMyWatchlistListingIdsQuery({
+      skip: !isLoggedIn,
+      fetchPolicy: 'cache-and-network',
+    })
+  const [addToWatchlist] = useAddToWatchlistMutation()
+  const [removeFromWatchlist] = useRemoveFromWatchlistMutation()
+  const wishlistIdSet = useMemo(
+    () => new Set(wishlistIdsData?.myWatchlistListingIds ?? []),
+    [wishlistIdsData?.myWatchlistListingIds],
+  )
+  const isWishlisted = wishlistIdSet.has(listing.id)
+  const [wishlistAnimate, setWishlistAnimate] = useState(false)
+  const prevWishlisted = useRef(isWishlisted)
+
+  useEffect(() => {
+    if (prevWishlisted.current !== isWishlisted) {
+      setWishlistAnimate(true)
+      const timeout = window.setTimeout(() => setWishlistAnimate(false), 180)
+      prevWishlisted.current = isWishlisted
+      return () => window.clearTimeout(timeout)
+    }
+
+    prevWishlisted.current = isWishlisted
+  }, [isWishlisted])
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -110,6 +146,37 @@ export default function ListingDetailClient({
     }
   }
 
+  const handleWishlistToggle = useCallback(async () => {
+    if (!isLoggedIn) {
+      toast.info('Sign in to save listings to your wishlist')
+      router.push('/login')
+      return
+    }
+    setWishlistBusy(true)
+    try {
+      if (isWishlisted) {
+        await removeFromWatchlist({ variables: { listingId: listing.id } })
+        toast.success('Removed from wishlist')
+      } else {
+        await addToWatchlist({ variables: { listingId: listing.id } })
+        toast.success('Saved to wishlist')
+      }
+      await refetchWishlistIds()
+    } catch {
+      toast.error('Could not update wishlist. Try again.')
+    } finally {
+      setWishlistBusy(false)
+    }
+  }, [
+    addToWatchlist,
+    isLoggedIn,
+    isWishlisted,
+    listing.id,
+    refetchWishlistIds,
+    removeFromWatchlist,
+    router,
+  ])
+
   const reviewTargetUserId =
     listing.user?.id || listing.business?.businessUsers?.[0]?.user?.id || ''
   const reviewTargetTitle =
@@ -136,6 +203,27 @@ export default function ListingDetailClient({
                 className='object-cover'
                 sizes='(max-width: 768px) 100vw, 50vw'
               />
+              {!isOwner && (
+                <button
+                  type='button'
+                  aria-label={
+                    isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'
+                  }
+                  disabled={wishlistBusy}
+                  className={`absolute left-3 top-3 z-20 rounded-full p-2.5 shadow-md shadow-black/20 transition-all duration-200 ease-out disabled:opacity-50 ${
+                    isWishlisted
+                      ? 'bg-black/80 text-red-400 hover:bg-black/90'
+                      : 'bg-black/55 text-white hover:bg-black/70'
+                  } ${wishlistAnimate ? 'animate-heart-pop' : 'hover:scale-105 active:scale-95'}`}
+                  onClick={() => void handleWishlistToggle()}
+                >
+                  <Heart
+                    className='h-6 w-6'
+                    fill={isWishlisted ? 'currentColor' : 'none'}
+                    strokeWidth={2}
+                  />
+                </button>
+              )}
               {listing.images && listing.images.length > 1 && (
                 <>
                   <button

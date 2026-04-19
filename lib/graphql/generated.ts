@@ -105,15 +105,9 @@ export type Business = {
   addressLine2?: Maybe<Scalars['String']['output']>;
   businessType?: Maybe<Scalars['String']['output']>;
   businessUsers: Array<BusinessUser>;
-  /**
-   * 
-   * Registered business name as per CIPC (optional, user-supplied or populated from Omnicheck).
-   */
+  /** Registered business name as per CIPC (optional, user-supplied or populated from Omnicheck). */
   cipcBusinessName?: Maybe<Scalars['String']['output']>;
-  /**
-   * 
-   * CIPC registration number for this business (optional, user-supplied or populated from Omnicheck).
-   */
+  /** CIPC registration number for this business (optional, user-supplied or populated from Omnicheck). */
   cipcRegistrationNo?: Maybe<Scalars['String']['output']>;
   city?: Maybe<City>;
   contactNumber?: Maybe<Scalars['String']['output']>;
@@ -201,11 +195,6 @@ export enum ContentFlagType {
   ProblematicSlug = 'PROBLEMATIC_SLUG'
 }
 
-/**
- *  Canonical GraphQL definitions for location types.
- *  If any other .graphqls files define Country, Region or City, convert them to "extend type"
- *  or remove the duplicate definitions to avoid "tried to redefine existing" errors.
- */
 export type Country = {
   __typename?: 'Country';
   code: Scalars['String']['output'];
@@ -255,10 +244,7 @@ export type CreateSubscriptionInput = {
   planType: PlanType;
   stripeCustomerId?: InputMaybe<Scalars['String']['input']>;
   stripeSubscriptionId?: InputMaybe<Scalars['String']['input']>;
-  /**
-   * 
-   * Either userId or businessId must be provided, but not both.
-   */
+  /** Either userId or businessId must be provided, but not both. */
   userId?: InputMaybe<Scalars['ID']['input']>;
 };
 
@@ -326,9 +312,7 @@ export enum LinearGradientDirection {
 
 export type Listing = {
   __typename?: 'Listing';
-  /**  Added, nullable */
   archived: Scalars['Boolean']['output'];
-  /**  Now nullable */
   business?: Maybe<Business>;
   category?: Maybe<Category>;
   city?: Maybe<City>;
@@ -339,15 +323,9 @@ export type Listing = {
   expiresAt: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   images: Array<Scalars['String']['output']>;
-  /**  Added */
   inactive: Scalars['Boolean']['output'];
-  /**  Added - indicates listing passed renewal window (7+ days expired) */
   inactiveAt?: Maybe<Scalars['String']['output']>;
   nsfwApprovalStatus?: Maybe<ContentApprovalStatus>;
-  /**
-   *  Added - timestamp when marked as inactive
-   *  NSFW Content Fields
-   */
   nsfwFlagged: Scalars['Boolean']['output'];
   nsfwReviewNotes?: Maybe<Scalars['String']['output']>;
   nsfwReviewedAt?: Maybe<Scalars['String']['output']>;
@@ -369,12 +347,12 @@ export type Mutation = {
   __typename?: 'Mutation';
   acceptBusinessInvitation: Scalars['Boolean']['output'];
   acceptInvitation: Invitation;
+  addToWatchlist: Scalars['Boolean']['output'];
   adminDeleteListingBoostPromoCoupon: Scalars['Boolean']['output'];
   adminDeleteSubscriptionPromoCoupon: Scalars['Boolean']['output'];
   adminSaveListingBoostPromoCoupon: AdminListingBoostPromoCoupon;
   adminSaveSubscriptionPromoCoupon: AdminSubscriptionPromoCoupon;
   approveFlaggedSlug: FlaggedSlug;
-  /**  Admin NSFW Content Approval Mutations */
   approveListing: ContentApprovalQueueItem;
   cancelSubscription: Subscription;
   cancelTransaction: Transaction;
@@ -400,6 +378,7 @@ export type Mutation = {
   reactivateSubscription: Subscription;
   register: AuthResponse;
   rejectFlaggedSlug: FlaggedSlug;
+  removeFromWatchlist: Scalars['Boolean']['output'];
   /** Renew all eligible listings for the current user (expiring within 7 days). Requires paid subscription for personal users. */
   renewAllListings: Array<Listing>;
   /** Renew a listing that is expiring within 7 days. */
@@ -417,10 +396,7 @@ export type Mutation = {
   updateStoreBranding?: Maybe<StoreBranding>;
   updateUser?: Maybe<User>;
   updateUserPlanType?: Maybe<User>;
-  /**
-   * 
-   * Partial update: omit fields you do not want to change. Use one call for explicit + email settings as you add them.
-   */
+  /** Partial update: omit fields you do not want to change. Use one call for explicit + email settings as you add them. */
   updateUserPreferences: User;
   uploadBusinessVerificationDocument: VerificationDocument;
   uploadListingImage: Scalars['String']['output'];
@@ -434,6 +410,11 @@ export type MutationAcceptBusinessInvitationArgs = {
 
 export type MutationAcceptInvitationArgs = {
   invitationId: Scalars['ID']['input'];
+};
+
+
+export type MutationAddToWatchlistArgs = {
+  listingId: Scalars['ID']['input'];
 };
 
 
@@ -602,6 +583,11 @@ export type MutationRegisterArgs = {
 export type MutationRejectFlaggedSlugArgs = {
   flaggedSlugId: Scalars['ID']['input'];
   rejectionReason: Scalars['String']['input'];
+};
+
+
+export type MutationRemoveFromWatchlistArgs = {
+  listingId: Scalars['ID']['input'];
 };
 
 
@@ -779,7 +765,6 @@ export type Query = {
   getBusinessUsers: Array<BusinessUser>;
   getBusinessVerificationDocuments: Array<VerificationDocument>;
   getBuyerForListing?: Maybe<Scalars['String']['output']>;
-  /**  No longer non-nullable list */
   getCategories?: Maybe<Array<Maybe<Category>>>;
   getCategoryById?: Maybe<Category>;
   getConditions?: Maybe<Array<Maybe<Condition>>>;
@@ -790,7 +775,6 @@ export type Query = {
   getListingTransactions: Array<Transaction>;
   getListings: ListingPageResponse;
   getMyReviewForTransaction?: Maybe<Review>;
-  /**  Admin NSFW Content Approval Queries */
   getPendingApprovals: NsfwContentPage;
   getPendingFlaggedSlugs: FlaggedSlugPage;
   getProfileImage?: Maybe<Scalars['String']['output']>;
@@ -822,12 +806,15 @@ export type Query = {
   myBusinesses: Array<Business>;
   myCompletedPurchases: Array<Transaction>;
   myCompletedSales: Array<Transaction>;
-  /**  Nullable return type */
   myListings: ListingPageResponse;
   myPurchases: Array<Transaction>;
   mySales: Array<Transaction>;
   mySubscription?: Maybe<Subscription>;
   mySubscriptionHistory: Array<Subscription>;
+  /** Paginated listings saved to the signed-in user's watchlist. */
+  myWatchlist: ListingPageResponse;
+  /** All listing IDs on the signed-in user's watchlist (newest first). */
+  myWatchlistListingIds: Array<Scalars['ID']['output']>;
   notifications: Array<Notification>;
   reviewsByUser: Array<Review>;
   searchCities: Array<City>;
@@ -1095,6 +1082,12 @@ export type QueryMyListingsArgs = {
 };
 
 
+export type QueryMyWatchlistArgs = {
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
 export type QueryNotificationsArgs = {
   userId: Scalars['ID']['input'];
 };
@@ -1148,7 +1141,6 @@ export type Review = {
   comment?: Maybe<Scalars['String']['output']>;
   createdAt: Scalars['String']['output'];
   /**
-   * 
    * A review in a transaction. Both buyer and seller can review each other.
    * The reviewer is the party leaving the review, and reviewedUser is the other party being reviewed.
    */
@@ -1258,7 +1250,6 @@ export enum TransactionStatus {
   Pending = 'PENDING'
 }
 
-/**  Trust rating: verification is Omnicheck ID only (verifiedId). verificationScore = 100 when verifiedId true, else 0. */
 export type TrustRating = {
   __typename?: 'TrustRating';
   createdAt: Scalars['String']['output'];
@@ -1337,10 +1328,8 @@ export type User = {
   contactNumber?: Maybe<Scalars['String']['output']>;
   createdAt: Scalars['String']['output'];
   customCity?: Maybe<Scalars['String']['output']>;
-  /**  Age / profile (legacy DOB field; explicit content eligibility uses ID verification + SA ID) */
   dateOfBirth?: Maybe<Scalars['String']['output']>;
   /**
-   * 
    * True when the user has verified their SA ID via Omnicheck and the ID number encodes age 18+.
    * Only meaningful on your own profile (other users always see false).
    */
@@ -1351,20 +1340,11 @@ export type User = {
   idNumber?: Maybe<Scalars['String']['output']>;
   lastName?: Maybe<Scalars['String']['output']>;
   listings: Array<Listing>;
-  /**
-   * 
-   * Computed from the user's active subscription. Not stored on the user.
-   */
+  /** Computed from the user's active subscription. Not stored on the user. */
   planType?: Maybe<PlanType>;
-  /**
-   * 
-   * Account-scoped settings (explicit content, email opt-ins). Only populated for the authenticated user viewing their own profile.
-   */
+  /** Account-scoped settings (explicit content, email opt-ins). Only populated for the authenticated user viewing their own profile. */
   preferences?: Maybe<UserPreferences>;
-  /**
-   * 
-   * Pro Store only: 7-day home-page boosts left this calendar month (Africa/Johannesburg) from the included quota. Null if not on Pro Store.
-   */
+  /** Pro Store only: 7-day home-page boosts left this calendar month (Africa/Johannesburg) from the included quota. Null if not on Pro Store. */
   proStoreSevenDayBoostsRemainingThisMonth?: Maybe<Scalars['Int']['output']>;
   profileCompletion?: Maybe<ProfileCompletion>;
   profileImageUrl?: Maybe<Scalars['String']['output']>;
@@ -1650,6 +1630,20 @@ export type UpdateBusinessMutationVariables = Exact<{
 
 export type UpdateBusinessMutation = { __typename?: 'Mutation', updateBusiness?: { __typename?: 'Business', id: string, name: string, email: string, contactNumber?: string | null, addressLine1?: string | null, addressLine2?: string | null, postalCode?: string | null, cipcRegistrationNo?: string | null, cipcBusinessName?: string | null } | null };
 
+export type AddToWatchlistMutationVariables = Exact<{
+  listingId: Scalars['ID']['input'];
+}>;
+
+
+export type AddToWatchlistMutation = { __typename?: 'Mutation', addToWatchlist: boolean };
+
+export type RemoveFromWatchlistMutationVariables = Exact<{
+  listingId: Scalars['ID']['input'];
+}>;
+
+
+export type RemoveFromWatchlistMutation = { __typename?: 'Mutation', removeFromWatchlist: boolean };
+
 export type AdminSubscriptionPromoCouponsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -1705,7 +1699,7 @@ export type GetListingByIdQueryVariables = Exact<{
 }>;
 
 
-export type GetListingByIdQuery = { __typename?: 'Query', getListingById?: { __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, sold: boolean, customCity?: string | null, condition: Condition, createdAt: string, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, category?: { __typename?: 'Category', id: string, name: string, parentId?: string | null } | null, user?: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null, email?: string | null, planType?: PlanType | null, trustRating?: { __typename?: 'TrustRating', verifiedId: boolean, overallScore: number, starRating: number, totalReviews: number } | null } | null, business?: { __typename?: 'Business', id: string, name: string, businessType?: string | null, email: string, slug?: string | null, trustRating?: { __typename?: 'BusinessTrustRating', averageRating: number, reviewCount: number, verifiedWithThirdParty: boolean } | null, storeBranding?: { __typename?: 'StoreBranding', storeName?: string | null, logoUrl?: string | null } | null } | null } | null };
+export type GetListingByIdQuery = { __typename?: 'Query', getListingById?: { __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, sold: boolean, customCity?: string | null, condition: Condition, createdAt: string, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, category?: { __typename?: 'Category', id: string, name: string, parentId?: string | null } | null, user?: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null, email?: string | null, planType?: PlanType | null, trustRating?: { __typename?: 'TrustRating', verifiedId: boolean, overallScore: number, starRating: number, totalReviews: number } | null } | null, business?: { __typename?: 'Business', id: string, name: string, businessType?: string | null, email: string, slug?: string | null, trustRating?: { __typename?: 'BusinessTrustRating', averageRating: number, reviewCount: number, verifiedWithThirdParty: boolean } | null, storeBranding?: { __typename?: 'StoreBranding', storeName?: string | null, logoUrl?: string | null } | null, businessUsers: Array<{ __typename?: 'BusinessUser', user: { __typename?: 'User', id: string, username: string } }> } | null } | null };
 
 export type GetListingsQueryVariables = Exact<{
   limit: Scalars['Int']['input'];
@@ -1913,6 +1907,19 @@ export type ValidateSlugQueryVariables = Exact<{
 
 
 export type ValidateSlugQuery = { __typename?: 'Query', validateSlug: { __typename?: 'SlugValidationResult', message: string, similarTo?: string | null, similarity?: number | null, status: SlugStatus } };
+
+export type MyWatchlistListingIdsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type MyWatchlistListingIdsQuery = { __typename?: 'Query', myWatchlistListingIds: Array<string> };
+
+export type MyWatchlistQueryVariables = Exact<{
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+}>;
+
+
+export type MyWatchlistQuery = { __typename?: 'Query', myWatchlist: { __typename?: 'ListingPageResponse', totalCount: number, listings: Array<{ __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, sold: boolean, nsfwApprovalStatus?: ContentApprovalStatus | null, customCity?: string | null, condition: Condition, createdAt: string, expiresAt: string, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, category?: { __typename?: 'Category', id: string, name: string } | null, user?: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null, trustRating?: { __typename?: 'TrustRating', verifiedId: boolean, starRating: number, totalReviews: number } | null } | null, business?: { __typename?: 'Business', name: string, trustRating?: { __typename?: 'BusinessTrustRating', verifiedWithThirdParty: boolean, averageRating: number, reviewCount: number } | null } | null }> } };
 
 export type IsStoreSlugAvailableQueryVariables = Exact<{
   slug: Scalars['String']['input'];
@@ -3218,6 +3225,68 @@ export function useUpdateBusinessMutation(baseOptions?: Apollo.MutationHookOptio
 export type UpdateBusinessMutationHookResult = ReturnType<typeof useUpdateBusinessMutation>;
 export type UpdateBusinessMutationResult = Apollo.MutationResult<UpdateBusinessMutation>;
 export type UpdateBusinessMutationOptions = Apollo.BaseMutationOptions<UpdateBusinessMutation, UpdateBusinessMutationVariables>;
+export const AddToWatchlistDocument = gql`
+    mutation AddToWatchlist($listingId: ID!) {
+  addToWatchlist(listingId: $listingId)
+}
+    `;
+export type AddToWatchlistMutationFn = Apollo.MutationFunction<AddToWatchlistMutation, AddToWatchlistMutationVariables>;
+
+/**
+ * __useAddToWatchlistMutation__
+ *
+ * To run a mutation, you first call `useAddToWatchlistMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useAddToWatchlistMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [addToWatchlistMutation, { data, loading, error }] = useAddToWatchlistMutation({
+ *   variables: {
+ *      listingId: // value for 'listingId'
+ *   },
+ * });
+ */
+export function useAddToWatchlistMutation(baseOptions?: Apollo.MutationHookOptions<AddToWatchlistMutation, AddToWatchlistMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<AddToWatchlistMutation, AddToWatchlistMutationVariables>(AddToWatchlistDocument, options);
+      }
+export type AddToWatchlistMutationHookResult = ReturnType<typeof useAddToWatchlistMutation>;
+export type AddToWatchlistMutationResult = Apollo.MutationResult<AddToWatchlistMutation>;
+export type AddToWatchlistMutationOptions = Apollo.BaseMutationOptions<AddToWatchlistMutation, AddToWatchlistMutationVariables>;
+export const RemoveFromWatchlistDocument = gql`
+    mutation RemoveFromWatchlist($listingId: ID!) {
+  removeFromWatchlist(listingId: $listingId)
+}
+    `;
+export type RemoveFromWatchlistMutationFn = Apollo.MutationFunction<RemoveFromWatchlistMutation, RemoveFromWatchlistMutationVariables>;
+
+/**
+ * __useRemoveFromWatchlistMutation__
+ *
+ * To run a mutation, you first call `useRemoveFromWatchlistMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useRemoveFromWatchlistMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [removeFromWatchlistMutation, { data, loading, error }] = useRemoveFromWatchlistMutation({
+ *   variables: {
+ *      listingId: // value for 'listingId'
+ *   },
+ * });
+ */
+export function useRemoveFromWatchlistMutation(baseOptions?: Apollo.MutationHookOptions<RemoveFromWatchlistMutation, RemoveFromWatchlistMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<RemoveFromWatchlistMutation, RemoveFromWatchlistMutationVariables>(RemoveFromWatchlistDocument, options);
+      }
+export type RemoveFromWatchlistMutationHookResult = ReturnType<typeof useRemoveFromWatchlistMutation>;
+export type RemoveFromWatchlistMutationResult = Apollo.MutationResult<RemoveFromWatchlistMutation>;
+export type RemoveFromWatchlistMutationOptions = Apollo.BaseMutationOptions<RemoveFromWatchlistMutation, RemoveFromWatchlistMutationVariables>;
 export const AdminSubscriptionPromoCouponsDocument = gql`
     query AdminSubscriptionPromoCoupons {
   adminSubscriptionPromoCoupons {
@@ -3753,6 +3822,12 @@ export const GetListingByIdDocument = gql`
       storeBranding {
         storeName
         logoUrl
+      }
+      businessUsers {
+        user {
+          id
+          username
+        }
       }
     }
   }
@@ -5678,6 +5753,129 @@ export type ValidateSlugQueryHookResult = ReturnType<typeof useValidateSlugQuery
 export type ValidateSlugLazyQueryHookResult = ReturnType<typeof useValidateSlugLazyQuery>;
 export type ValidateSlugSuspenseQueryHookResult = ReturnType<typeof useValidateSlugSuspenseQuery>;
 export type ValidateSlugQueryResult = Apollo.QueryResult<ValidateSlugQuery, ValidateSlugQueryVariables>;
+export const MyWatchlistListingIdsDocument = gql`
+    query MyWatchlistListingIds {
+  myWatchlistListingIds
+}
+    `;
+
+/**
+ * __useMyWatchlistListingIdsQuery__
+ *
+ * To run a query within a React component, call `useMyWatchlistListingIdsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useMyWatchlistListingIdsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useMyWatchlistListingIdsQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useMyWatchlistListingIdsQuery(baseOptions?: Apollo.QueryHookOptions<MyWatchlistListingIdsQuery, MyWatchlistListingIdsQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<MyWatchlistListingIdsQuery, MyWatchlistListingIdsQueryVariables>(MyWatchlistListingIdsDocument, options);
+      }
+export function useMyWatchlistListingIdsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<MyWatchlistListingIdsQuery, MyWatchlistListingIdsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<MyWatchlistListingIdsQuery, MyWatchlistListingIdsQueryVariables>(MyWatchlistListingIdsDocument, options);
+        }
+export function useMyWatchlistListingIdsSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<MyWatchlistListingIdsQuery, MyWatchlistListingIdsQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<MyWatchlistListingIdsQuery, MyWatchlistListingIdsQueryVariables>(MyWatchlistListingIdsDocument, options);
+        }
+export type MyWatchlistListingIdsQueryHookResult = ReturnType<typeof useMyWatchlistListingIdsQuery>;
+export type MyWatchlistListingIdsLazyQueryHookResult = ReturnType<typeof useMyWatchlistListingIdsLazyQuery>;
+export type MyWatchlistListingIdsSuspenseQueryHookResult = ReturnType<typeof useMyWatchlistListingIdsSuspenseQuery>;
+export type MyWatchlistListingIdsQueryResult = Apollo.QueryResult<MyWatchlistListingIdsQuery, MyWatchlistListingIdsQueryVariables>;
+export const MyWatchlistDocument = gql`
+    query MyWatchlist($limit: Int, $offset: Int) {
+  myWatchlist(limit: $limit, offset: $offset) {
+    totalCount
+    listings {
+      id
+      title
+      description
+      images
+      price
+      sold
+      nsfwApprovalStatus
+      city {
+        id
+        name
+        region {
+          name
+          country {
+            name
+          }
+        }
+      }
+      customCity
+      condition
+      createdAt
+      expiresAt
+      category {
+        id
+        name
+      }
+      user {
+        id
+        username
+        profileImageUrl
+        trustRating {
+          verifiedId
+          starRating
+          totalReviews
+        }
+      }
+      business {
+        name
+        trustRating {
+          verifiedWithThirdParty
+          averageRating
+          reviewCount
+        }
+      }
+    }
+  }
+}
+    `;
+
+/**
+ * __useMyWatchlistQuery__
+ *
+ * To run a query within a React component, call `useMyWatchlistQuery` and pass it any options that fit your needs.
+ * When your component renders, `useMyWatchlistQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useMyWatchlistQuery({
+ *   variables: {
+ *      limit: // value for 'limit'
+ *      offset: // value for 'offset'
+ *   },
+ * });
+ */
+export function useMyWatchlistQuery(baseOptions?: Apollo.QueryHookOptions<MyWatchlistQuery, MyWatchlistQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<MyWatchlistQuery, MyWatchlistQueryVariables>(MyWatchlistDocument, options);
+      }
+export function useMyWatchlistLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<MyWatchlistQuery, MyWatchlistQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<MyWatchlistQuery, MyWatchlistQueryVariables>(MyWatchlistDocument, options);
+        }
+export function useMyWatchlistSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<MyWatchlistQuery, MyWatchlistQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<MyWatchlistQuery, MyWatchlistQueryVariables>(MyWatchlistDocument, options);
+        }
+export type MyWatchlistQueryHookResult = ReturnType<typeof useMyWatchlistQuery>;
+export type MyWatchlistLazyQueryHookResult = ReturnType<typeof useMyWatchlistLazyQuery>;
+export type MyWatchlistSuspenseQueryHookResult = ReturnType<typeof useMyWatchlistSuspenseQuery>;
+export type MyWatchlistQueryResult = Apollo.QueryResult<MyWatchlistQuery, MyWatchlistQueryVariables>;
 export const IsStoreSlugAvailableDocument = gql`
     query IsStoreSlugAvailable($slug: String!) {
   isStoreSlugAvailable(slug: $slug)

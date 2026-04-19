@@ -222,6 +222,9 @@ export default function Navbar() {
                   <DropdownMenuItem asChild>
                     <Link href='/profile'>Profile</Link>
                   </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href='/wishlist'>Wishlist</Link>
+                  </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={handleLogout}
                     className='text-red-500'

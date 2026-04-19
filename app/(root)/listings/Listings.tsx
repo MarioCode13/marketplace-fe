@@ -4,7 +4,15 @@ import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import ListingCard from '@/components/cards/ListingCard'
 import { ChevronLeft, ChevronRight, ListFilter, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useCallback } from 'react'
+import { useSelector } from 'react-redux'
+import { selectIsLoggedIn } from '@/store/userContextSlice'
+import {
+  useAddToWatchlistMutation,
+  useMyWatchlistListingIdsQuery,
+  useRemoveFromWatchlistMutation,
+} from '@/lib/graphql/generated'
+import { toast } from 'sonner'
 import FilterDrawer from '@/components/drawers/FilterDrawer'
 import {
   buildCategoryTree,
@@ -77,7 +85,53 @@ const Listings: React.FC<ListingsProps> = ({
   const router = useRouter()
   const searchParams = useSearchParams()
   const [isFilterOpen, setIsFilterOpen] = useState(false)
+  const [wishlistPendingId, setWishlistPendingId] = useState<string | null>(
+    null,
+  )
+  const isLoggedIn = useSelector(selectIsLoggedIn)
+  const { data: wishlistIdsData, refetch: refetchWishlistIds } =
+    useMyWatchlistListingIdsQuery({ skip: !isLoggedIn, fetchPolicy: 'cache-and-network' })
+  const [addToWatchlist] = useAddToWatchlistMutation()
+  const [removeFromWatchlist] = useRemoveFromWatchlistMutation()
+  const wishlistIdSet = useMemo(
+    () => new Set(wishlistIdsData?.myWatchlistListingIds ?? []),
+    [wishlistIdsData?.myWatchlistListingIds],
+  )
   const { data: categoriesData } = useGetCategoriesQuery()
+
+  const handleWishlistToggle = useCallback(
+    async (listingId: string) => {
+      if (!isLoggedIn) {
+        toast.info('Sign in to save listings to your wishlist')
+        router.push('/login')
+        return
+      }
+      const currentlyOn = wishlistIdSet.has(listingId)
+      setWishlistPendingId(listingId)
+      try {
+        if (currentlyOn) {
+          await removeFromWatchlist({ variables: { listingId } })
+          toast.success('Removed from wishlist')
+        } else {
+          await addToWatchlist({ variables: { listingId } })
+          toast.success('Saved to wishlist')
+        }
+        await refetchWishlistIds()
+      } catch {
+        toast.error('Could not update wishlist. Try again.')
+      } finally {
+        setWishlistPendingId(null)
+      }
+    },
+    [
+      addToWatchlist,
+      isLoggedIn,
+      refetchWishlistIds,
+      removeFromWatchlist,
+      router,
+      wishlistIdSet,
+    ],
+  )
 
   const categoriesTree = useMemo(() => {
     if (!categoriesData?.getCategories) return []
@@ -467,6 +521,12 @@ const Listings: React.FC<ListingsProps> = ({
                       ...listing,
                       user: listing.user ?? undefined,
                     }}
+                    showWishlistHeart
+                    wishlisted={wishlistIdSet.has(listing.id)}
+                    wishlistLoading={wishlistPendingId === listing.id}
+                    onWishlistHeartClick={() =>
+                      handleWishlistToggle(listing.id)
+                    }
                   />
                 ))}
               </div>
