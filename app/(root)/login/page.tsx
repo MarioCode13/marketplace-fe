@@ -153,6 +153,15 @@ export default function Login() {
 
           <div className='space-y-3'>
             <Button
+              type='button'
+              variant={'text'}
+              className='w-full'
+              onClick={() => router.push('/forgot-password')}
+            >
+              Forgot Password?
+            </Button>
+
+            <Button
               type='submit'
               variant={'contained'}
               color='gradient'

@@ -13,6 +13,8 @@ export function middleware(request: NextRequest) {
         '/api/auth/refresh',
         '/api/auth/resend-verification-email',
         '/api/auth/verify-email',
+        '/api/auth/forgot-password',
+        '/api/auth/reset-password',
     ])
     if (csrfExemptPaths.has(request.nextUrl.pathname)) {
         return NextResponse.next()
