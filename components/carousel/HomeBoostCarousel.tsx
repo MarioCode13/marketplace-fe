@@ -92,17 +92,17 @@ export default function HomeBoostCarousel() {
             <motion.div
               className='flex gap-4'
               animate={{
-                x: [0, -264 * shuffledListings.length], // 260px width + 4px gap
+                x: [0, -(276 * shuffledListings.length)], // 260px width + 16px gap (gap-4)
               }}
               transition={{
                 x: {
                   repeat: Infinity,
                   repeatType: 'loop',
-                  duration: shuffledListings.length * 5, // Constant speed: 5 seconds per full set
+                  duration: shuffledListings.length * 5,
                   ease: 'linear',
                 },
               }}
-              style={{ width: `${duplicatedListings.length * 264}px` }}
+              style={{ width: `${duplicatedListings.length * 276}px` }}
             >
               {duplicatedListings.map((listing, index) => {
                 const seller =
