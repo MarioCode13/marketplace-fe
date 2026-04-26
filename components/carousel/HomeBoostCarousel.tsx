@@ -3,8 +3,13 @@
 import { useQuery } from '@apollo/client'
 import Link from 'next/link'
 import Image from 'next/image'
-import { motion, useInView } from 'framer-motion'
-import { useRef, useMemo } from 'react'
+import {
+  motion,
+  useAnimationFrame,
+  useInView,
+  useMotionValue,
+} from 'framer-motion'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { BOOSTED_HOME_LISTINGS } from '@/lib/graphql/queries/boostedHomeListings'
 import { generateImageUrl } from '@/lib/utils'
 
@@ -22,6 +27,7 @@ type BoostedListing = {
 export default function HomeBoostCarousel() {
   const ref = useRef<HTMLDivElement>(null)
   const isInView = useInView(ref, { once: true })
+  const [containerWidth, setContainerWidth] = useState(0)
 
   const { data, loading, error } = useQuery(BOOSTED_HOME_LISTINGS, {
     variables: { limit: 16 },
@@ -45,7 +51,61 @@ export default function HomeBoostCarousel() {
   }, [listings])
 
   // Duplicate shuffled listings for infinite loop
-  const duplicatedListings = [...shuffledListings, ...shuffledListings]
+  const ITEM_PITCH_PX = 276 // 260px width + 16px gap (gap-4)
+  const baseSetWidth = shuffledListings.length * ITEM_PITCH_PX
+
+  // Ensure the track is long enough to avoid blank trailing space.
+  // Rule: at least (containerWidth + one full base set) of content.
+  const repeatedListings = useMemo(() => {
+    if (shuffledListings.length === 0) return []
+    if (shuffledListings.length === 1) return [...shuffledListings]
+
+    const targetWidth = Math.max(containerWidth + baseSetWidth, baseSetWidth * 2)
+    const minRepeats = Math.max(2, Math.ceil(targetWidth / baseSetWidth))
+    const out: BoostedListing[] = []
+    for (let i = 0; i < minRepeats; i++) {
+      out.push(...shuffledListings)
+    }
+    return out
+  }, [baseSetWidth, containerWidth, shuffledListings])
+
+  // Marquee motion (no visible reset/jump)
+  const x = useMotionValue(0)
+  const speedPxPerSecond = 36
+
+  const wrap = (min: number, max: number, v: number) => {
+    const range = max - min
+    if (range === 0) return min
+    return ((((v - min) % range) + range) % range) + min
+  }
+
+  useEffect(() => {
+    // Reset when data changes so it doesn't "snap" mid-track
+    x.set(0)
+  }, [baseSetWidth, x])
+
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el) return
+
+    const ro = new ResizeObserver((entries) => {
+      const w = entries[0]?.contentRect?.width ?? 0
+      setContainerWidth(w)
+    })
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+
+  useAnimationFrame((_, delta) => {
+    if (!isInView || loading) return
+    if (shuffledListings.length <= 1) return
+    if (baseSetWidth <= 0) return
+
+    const moveBy = (speedPxPerSecond * delta) / 1000
+    const next = x.get() - moveBy
+    // Keep x in [-baseSetWidth, 0) so the duplicated track always covers viewport
+    x.set(wrap(-baseSetWidth, 0, next))
+  })
 
   if (loading && listings.length === 0) {
     return (
@@ -91,20 +151,12 @@ export default function HomeBoostCarousel() {
             {/* Min height to prevent CLS, taller for safety */}
             <motion.div
               className='flex gap-4'
-              animate={{
-                x: [0, -(276 * shuffledListings.length)], // 260px width + 16px gap (gap-4)
+              style={{
+                x: shuffledListings.length > 1 ? x : 0,
+                width: `${repeatedListings.length * ITEM_PITCH_PX}px`,
               }}
-              transition={{
-                x: {
-                  repeat: Infinity,
-                  repeatType: 'loop',
-                  duration: shuffledListings.length * 5,
-                  ease: 'linear',
-                },
-              }}
-              style={{ width: `${duplicatedListings.length * 276}px` }}
             >
-              {duplicatedListings.map((listing, index) => {
+              {repeatedListings.map((listing, index) => {
                 const seller =
                   listing.business?.name || listing.user?.username || 'Seller'
                 const place = listing.city?.name || listing.customCity || ''
