@@ -1,13 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
 import { Label } from '@/components/ui/label'
 import { PasswordInput } from '@/components/ui/password-input'
 import { Button } from '@/components/ui/button'
 
-export default function ResetPasswordPage() {
+function ResetPasswordForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const token = searchParams.get('token') || ''
@@ -107,5 +107,26 @@ export default function ResetPasswordPage() {
         </form>
       </div>
     </div>
+  )
+}
+
+function ResetPasswordFormFallback() {
+  return (
+    <div className='flex min-h-screen items-center justify-center bg-background'>
+      <div className='w-full max-w-md rounded-lg p-6 shadow-lg bg-componentBackground'>
+        <h2 className='mb-2 text-2xl font-bold text-foreground'>
+          Reset Password
+        </h2>
+        <p className='mb-6 text-sm text-muted-foreground'>Loading...</p>
+      </div>
+    </div>
+  )
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<ResetPasswordFormFallback />}>
+      <ResetPasswordForm />
+    </Suspense>
   )
 }
