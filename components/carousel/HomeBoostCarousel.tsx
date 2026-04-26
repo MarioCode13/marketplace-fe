@@ -40,15 +40,36 @@ export default function HomeBoostCarousel() {
     [data],
   )
 
-  // Shuffle listings for random order
-  const shuffledListings = useMemo(() => {
+  // Stable shuffle (avoid reshuffling on unrelated re-renders)
+  const shuffleSeedRef = useRef<number | null>(null)
+  if (shuffleSeedRef.current == null) {
+    shuffleSeedRef.current = Math.floor(Math.random() * 1_000_000_000)
+  }
+  const listingsKey = useMemo(() => listings.map((l) => l.id).join(','), [listings])
+
+  const [shuffledListings, setShuffledListings] = useState<BoostedListing[]>([])
+
+  useEffect(() => {
+    if (listings.length <= 1) {
+      setShuffledListings(listings)
+      return
+    }
+
+    const mulberry32 = (seed: number) => () => {
+      let t = (seed += 0x6d2b79f5)
+      t = Math.imul(t ^ (t >>> 15), t | 1)
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+    }
+
+    const rand = mulberry32(shuffleSeedRef.current!)
     const shuffled = [...listings]
     for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1))
+      const j = Math.floor(rand() * (i + 1))
       ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
     }
-    return shuffled
-  }, [listings])
+    setShuffledListings(shuffled)
+  }, [listingsKey, listings])
 
   // Duplicate shuffled listings for infinite loop
   const ITEM_PITCH_PX = 276 // 260px width + 16px gap (gap-4)
@@ -130,10 +151,10 @@ export default function HomeBoostCarousel() {
   }
 
   return (
-    <div ref={ref}>
+    <div ref={ref} className='w-full'>
       {isInView &&
         (loading ? (
-          <div className='overflow-hidden min-h-[220px]'>
+          <div className='w-full overflow-hidden min-h-[220px]'>
             {' '}
             {/* Min height to prevent CLS, taller for safety */}
             <div className='flex gap-4'>
@@ -146,7 +167,7 @@ export default function HomeBoostCarousel() {
             </div>
           </div>
         ) : listings.length > 0 ? (
-          <div className='overflow-hidden min-h-[220px]'>
+          <div className='w-full overflow-hidden min-h-[220px]'>
             {' '}
             {/* Min height to prevent CLS, taller for safety */}
             <motion.div
