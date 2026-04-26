@@ -66,7 +66,7 @@ export default function Navbar() {
   }
 
   return (
-    <nav className='bg-componentBackground text-foreground shadow-sm transition-colors duration-300 sticky top-0 z-30'>
+    <nav className='bg-componentBackground text-foreground shadow-sm transition-colors duration-300 sticky top-0 z-50'>
       <Container className='flex justify-between items-center py-4'>
         {/* Logo */}
         <Link href='/'>
