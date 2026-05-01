@@ -43,10 +43,6 @@ interface Category {
   children?: Category[]
 }
 
-interface GetCategoriesData {
-  getCategories: Category[]
-}
-
 export default function AdminCategoriesPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -134,13 +130,18 @@ export default function AdminCategoriesPage() {
   ): Category[] => {
     return categories
       .filter((cat) => cat.parentId === parentId)
-      .map((cat) => ({
-        ...cat,
-        children: buildCategoryTree(categories, cat.id),
-      }))
+      .map(
+        (cat): Category => ({
+          ...cat,
+          children: buildCategoryTree(categories, cat.id),
+        }),
+      )
   }
 
-  const renderCategoryRow = (category: Category, level: number = 0) => {
+  const renderCategoryRow = (
+    category: Category,
+    level: number = 0,
+  ): JSX.Element => {
     const hasChildren = category.children && category.children.length > 0
     const isExpanded = expandedCategories.has(category.id)
 
@@ -189,7 +190,9 @@ export default function AdminCategoriesPage() {
   }
 
   const categoryTree = data?.getCategories
-    ? buildCategoryTree(data.getCategories)
+    ? buildCategoryTree(
+        data.getCategories.filter((cat): cat is Category => cat !== null),
+      )
     : []
 
   return (
@@ -284,7 +287,9 @@ export default function AdminCategoriesPage() {
                   <SelectContent>
                     <SelectItem value=''>None (Main Category)</SelectItem>
                     {data?.getCategories
-                      .filter((cat) => !cat.parentId)
+                      ?.filter(
+                        (cat): cat is Category => cat !== null && !cat.parentId,
+                      )
                       .map((cat) => (
                         <SelectItem
                           key={cat.id}
@@ -344,7 +349,7 @@ export default function AdminCategoriesPage() {
           </div>
           <DialogFooter>
             <Button
-              variant='outline'
+              variant='outlined'
               onClick={() => setIsAddDialogOpen(false)}
             >
               Cancel
