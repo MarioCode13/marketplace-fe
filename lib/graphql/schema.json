@@ -862,7 +862,7 @@
           },
           {
             "name": "cipcBusinessName",
-            "description": "Registered business name as per CIPC (optional, user-supplied or populated from Omnicheck).",
+            "description": "\r\nRegistered business name as per CIPC (optional, user-supplied or populated from Omnicheck).\r",
             "args": [],
             "type": {
               "kind": "SCALAR",
@@ -874,7 +874,7 @@
           },
           {
             "name": "cipcRegistrationNo",
-            "description": "CIPC registration number for this business (optional, user-supplied or populated from Omnicheck).",
+            "description": "\r\nCIPC registration number for this business (optional, user-supplied or populated from Omnicheck).\r",
             "args": [],
             "type": {
               "kind": "SCALAR",
@@ -1629,7 +1629,7 @@
       {
         "kind": "OBJECT",
         "name": "Country",
-        "description": null,
+        "description": " Canonical GraphQL definitions for location types.\n If any other .graphqls files define Country, Region or City, convert them to \"extend type\"\n or remove the duplicate definitions to avoid \"tried to redefine existing\" errors.",
         "isOneOf": null,
         "fields": [
           {
@@ -2123,7 +2123,7 @@
           },
           {
             "name": "userId",
-            "description": "Either userId or businessId must be provided, but not both.",
+            "description": "\r\nEither userId or businessId must be provided, but not both.\r",
             "type": {
               "kind": "SCALAR",
               "name": "ID",
@@ -2689,7 +2689,7 @@
         "fields": [
           {
             "name": "archived",
-            "description": null,
+            "description": " Added, nullable",
             "args": [],
             "type": {
               "kind": "NON_NULL",
@@ -2705,7 +2705,7 @@
           },
           {
             "name": "business",
-            "description": null,
+            "description": " Now nullable",
             "args": [],
             "type": {
               "kind": "OBJECT",
@@ -2857,7 +2857,7 @@
           },
           {
             "name": "inactive",
-            "description": null,
+            "description": " Added",
             "args": [],
             "type": {
               "kind": "NON_NULL",
@@ -2873,7 +2873,7 @@
           },
           {
             "name": "inactiveAt",
-            "description": null,
+            "description": " Added - indicates listing passed renewal window (7+ days expired)",
             "args": [],
             "type": {
               "kind": "SCALAR",
@@ -2897,7 +2897,7 @@
           },
           {
             "name": "nsfwFlagged",
-            "description": null,
+            "description": " Added - timestamp when marked as inactive\n NSFW Content Fields",
             "args": [],
             "type": {
               "kind": "NON_NULL",
@@ -3365,7 +3365,7 @@
           },
           {
             "name": "approveListing",
-            "description": null,
+            "description": " Admin NSFW Content Approval Mutations",
             "args": [
               {
                 "name": "approvalNotes",
@@ -5390,7 +5390,7 @@
           },
           {
             "name": "updateUserPreferences",
-            "description": "Partial update: omit fields you do not want to change. Use one call for explicit + email settings as you add them.",
+            "description": "\r\nPartial update: omit fields you do not want to change. Use one call for explicit + email settings as you add them.\r",
             "args": [
               {
                 "name": "input",
@@ -6681,7 +6681,7 @@
           },
           {
             "name": "getCategories",
-            "description": null,
+            "description": " No longer non-nullable list",
             "args": [],
             "type": {
               "kind": "LIST",
@@ -6939,7 +6939,7 @@
             "args": [
               {
                 "name": "businessId",
-                "description": null,
+                "description": " Optional: filter by user/store",
                 "type": {
                   "kind": "SCALAR",
                   "name": "ID",
@@ -7181,7 +7181,7 @@
           },
           {
             "name": "getPendingApprovals",
-            "description": null,
+            "description": " Admin NSFW Content Approval Queries",
             "args": [
               {
                 "name": "page",
@@ -8156,7 +8156,7 @@
           },
           {
             "name": "myListings",
-            "description": null,
+            "description": " Nullable return type",
             "args": [
               {
                 "name": "limit",
@@ -8778,7 +8778,7 @@
           },
           {
             "name": "id",
-            "description": "A review in a transaction. Both buyer and seller can review each other.\nThe reviewer is the party leaving the review, and reviewedUser is the other party being reviewed.",
+            "description": "\r\nA review in a transaction. Both buyer and seller can review each other.\r\nThe reviewer is the party leaving the review, and reviewedUser is the other party being reviewed.\r",
             "args": [],
             "type": {
               "kind": "NON_NULL",
@@ -9762,7 +9762,7 @@
       {
         "kind": "OBJECT",
         "name": "TrustRating",
-        "description": null,
+        "description": " Trust rating: verification is Omnicheck ID only (verifiedId). verificationScore = 100 when verifiedId true, else 0.",
         "isOneOf": null,
         "fields": [
           {
@@ -10615,7 +10615,7 @@
           },
           {
             "name": "dateOfBirth",
-            "description": null,
+            "description": " Age / profile (legacy DOB field; explicit content eligibility uses ID verification + SA ID)",
             "args": [],
             "type": {
               "kind": "SCALAR",
@@ -10627,7 +10627,7 @@
           },
           {
             "name": "eligibleForExplicitContent",
-            "description": "True when the user has verified their SA ID via Omnicheck and the ID number encodes age 18+.\nOnly meaningful on your own profile (other users always see false).",
+            "description": "\r\nTrue when the user has verified their SA ID via Omnicheck and the ID number encodes age 18+.\r\nOnly meaningful on your own profile (other users always see false).\r",
             "args": [],
             "type": {
               "kind": "NON_NULL",
@@ -10731,7 +10731,7 @@
           },
           {
             "name": "planType",
-            "description": "Computed from the user's active subscription. Not stored on the user.",
+            "description": "\r\nComputed from the user's active subscription. Not stored on the user.\r",
             "args": [],
             "type": {
               "kind": "ENUM",
@@ -10743,7 +10743,7 @@
           },
           {
             "name": "preferences",
-            "description": "Account-scoped settings (explicit content, email opt-ins). Only populated for the authenticated user viewing their own profile.",
+            "description": "\r\nAccount-scoped settings (explicit content, email opt-ins). Only populated for the authenticated user viewing their own profile.\r",
             "args": [],
             "type": {
               "kind": "OBJECT",
@@ -10755,7 +10755,7 @@
           },
           {
             "name": "proStoreSevenDayBoostsRemainingThisMonth",
-            "description": "Pro Store only: 7-day home-page boosts left this calendar month (Africa/Johannesburg) from the included quota. Null if not on Pro Store.",
+            "description": "\r\nPro Store only: 7-day home-page boosts left this calendar month (Africa/Johannesburg) from the included quota. Null if not on Pro Store.\r",
             "args": [],
             "type": {
               "kind": "SCALAR",
@@ -12060,7 +12060,7 @@
     "directives": [
       {
         "name": "deprecated",
-        "description": "Marks an element of a GraphQL schema as no longer supported.",
+        "description": "Marks the field, argument, input field or enum value as deprecated",
         "isRepeatable": false,
         "locations": [
           "ARGUMENT_DEFINITION",
@@ -12071,7 +12071,7 @@
         "args": [
           {
             "name": "reason",
-            "description": "Explains why this element was deprecated, usually also including a suggestion for how to access supported similar data. Formatted using the Markdown syntax, as specified by [CommonMark](https://commonmark.org/).",
+            "description": "The reason for the deprecation",
             "type": {
               "kind": "SCALAR",
               "name": "String",
@@ -12085,7 +12085,7 @@
       },
       {
         "name": "include",
-        "description": "Directs the executor to include this field or fragment only when the `if` argument is true.",
+        "description": "Directs the executor to include this field or fragment only when the `if` argument is true",
         "isRepeatable": false,
         "locations": [
           "FIELD",
@@ -12113,7 +12113,7 @@
       },
       {
         "name": "oneOf",
-        "description": "Indicates exactly one field must be supplied and this field must not be `null`.",
+        "description": "Indicates an Input Object is a OneOf Input Object.",
         "isRepeatable": false,
         "locations": [
           "INPUT_OBJECT"
@@ -12150,7 +12150,7 @@
       },
       {
         "name": "specifiedBy",
-        "description": "Exposes a URL that specifies the behavior of this scalar.",
+        "description": "Exposes a URL that specifies the behaviour of this scalar.",
         "isRepeatable": false,
         "locations": [
           "SCALAR"
@@ -12158,7 +12158,7 @@
         "args": [
           {
             "name": "url",
-            "description": "The URL that specifies the behavior of this scalar.",
+            "description": "The URL that specifies the behaviour of this scalar.",
             "type": {
               "kind": "NON_NULL",
               "name": null,

@@ -45,7 +45,10 @@ export default function HomeBoostCarousel() {
   if (shuffleSeedRef.current == null) {
     shuffleSeedRef.current = Math.floor(Math.random() * 1_000_000_000)
   }
-  const listingsKey = useMemo(() => listings.map((l) => l.id).join(','), [listings])
+  const listingsKey = useMemo(
+    () => listings.map((l) => l.id).join(','),
+    [listings],
+  )
 
   const [shuffledListings, setShuffledListings] = useState<BoostedListing[]>([])
 
@@ -81,7 +84,10 @@ export default function HomeBoostCarousel() {
     if (shuffledListings.length === 0) return []
     if (shuffledListings.length === 1) return [...shuffledListings]
 
-    const targetWidth = Math.max(containerWidth + baseSetWidth, baseSetWidth * 2)
+    const targetWidth = Math.max(
+      containerWidth + baseSetWidth,
+      baseSetWidth * 2,
+    )
     const minRepeats = Math.max(2, Math.ceil(targetWidth / baseSetWidth))
     const out: BoostedListing[] = []
     for (let i = 0; i < minRepeats; i++) {
@@ -132,7 +138,6 @@ export default function HomeBoostCarousel() {
     return (
       <section className='relative z-20 w-full bg-gradient-to-b from-white to-blue-50/40 dark:from-gray-900 dark:to-gray-950 border-y border-blue-100/80 dark:border-gray-800 py-10'>
         <div className='max-w-6xl mx-auto px-6'>
-          <div className='h-8 w-48 bg-gray-200 dark:bg-gray-800 rounded animate-pulse mb-6' />
           <div className='flex gap-4 overflow-hidden'>
             {Array.from({ length: 4 }).map((_, i) => (
               <div
@@ -151,7 +156,10 @@ export default function HomeBoostCarousel() {
   }
 
   return (
-    <div ref={ref} className='w-full'>
+    <div
+      ref={ref}
+      className='w-full'
+    >
       {isInView &&
         (loading ? (
           <div className='w-full overflow-hidden min-h-[220px]'>

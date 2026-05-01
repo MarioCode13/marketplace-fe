@@ -2,12 +2,19 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/store/store'
 import { Container } from '@/components/ui/Container'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { CheckCircle, Ticket } from 'lucide-react'
+
+import {
+  CheckCircle,
+  Ticket,
+  Users,
+  FolderTree,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react'
 
 export default function AdminLayout({
   children,
@@ -17,6 +24,7 @@ export default function AdminLayout({
   const pathname = usePathname()
   const router = useRouter()
   const { userId, role } = useSelector((state: RootState) => state.userContext)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
 
   useEffect(() => {
     if (userId === null) {
@@ -30,18 +38,39 @@ export default function AdminLayout({
     return null
   }
 
-  const approvalsActive =
-    pathname === '/admin' ||
-    pathname === '/admin/approvals' ||
-    pathname?.startsWith('/admin/approvals/')
-  const couponsActive =
-    pathname === '/admin/coupons' || pathname?.startsWith('/admin/coupons/')
+  const isActive = (href: string) => {
+    if (href === '/admin/approvals') {
+      return (
+        pathname === '/admin' ||
+        pathname === '/admin/approvals' ||
+        pathname?.startsWith('/admin/approvals/')
+      )
+    }
+    return pathname === href || pathname?.startsWith(href + '/')
+  }
 
-  const defaultTab = approvalsActive
-    ? 'approvals'
-    : couponsActive
-      ? 'coupons'
-      : 'approvals'
+  const navItems = [
+    {
+      title: 'Approvals',
+      href: '/admin/approvals',
+      icon: CheckCircle,
+    },
+    {
+      title: 'Coupons',
+      href: '/admin/coupons',
+      icon: Ticket,
+    },
+    {
+      title: 'Users',
+      href: '/admin/users',
+      icon: Users,
+    },
+    {
+      title: 'Categories',
+      href: '/admin/categories',
+      icon: FolderTree,
+    },
+  ]
 
   return (
     <Container className='py-8'>
@@ -49,47 +78,61 @@ export default function AdminLayout({
         <h1 className='text-2xl font-bold'>Admin</h1>
       </div>
 
-      <Tabs
-        defaultValue={defaultTab}
-        className='w-full'
-      >
-        <TabsList className='grid w-full grid-cols-2 gap-4'>
-          <TabsTrigger
-            value='approvals'
-            className='flex items-center gap-2'
-            asChild
-          >
-            <Link href='/admin/approvals'>
-              <CheckCircle className='w-4 h-4' />
-              Approvals
-            </Link>
-          </TabsTrigger>
-          <TabsTrigger
-            value='coupons'
-            className='flex items-center gap-2'
-            asChild
-          >
-            <Link href='/admin/coupons'>
-              <Ticket className='w-4 h-4' />
-              Coupons
-            </Link>
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent
-          value='approvals'
-          className='mt-6'
+      <div className='flex gap-6'>
+        {/* Collapsible Sidebar */}
+        <aside
+          className={`flex-shrink-0 transition-all duration-300 rounded-md bg-componentBackground h-full p-1 ${
+            sidebarCollapsed ? 'w-12' : 'w-52'
+          }`}
         >
-          {children}
-        </TabsContent>
+          <div
+            className={`flex items-center mb-2 ${
+              sidebarCollapsed ? 'justify-center' : 'justify-end'
+            }`}
+          >
+            <button
+              onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              className='p-1 hover:bg-muted rounded-md transition-colors'
+              aria-label={
+                sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'
+              }
+            >
+              {sidebarCollapsed ? (
+                <ChevronRight className='w-5 h-5' />
+              ) : (
+                <ChevronLeft className='w-5 h-5' />
+              )}
+            </button>
+          </div>
 
-        <TabsContent
-          value='coupons'
-          className='mt-6'
-        >
-          {children}
-        </TabsContent>
-      </Tabs>
+          <nav className='space-y-1'>
+            {navItems.map((item) => {
+              const Icon = item.icon
+              const active = isActive(item.href)
+
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`flex items-center gap-3 px-3 py-2 rounded-md transition-colors ${
+                    active
+                      ? 'bg-primary text-primary-foreground'
+                      : 'hover:bg-muted'
+                  }`}
+                >
+                  <Icon className='w-4 h-5 flex-shrink-0' />
+                  {!sidebarCollapsed && (
+                    <span className='font-medium'>{item.title}</span>
+                  )}
+                </Link>
+              )
+            })}
+          </nav>
+        </aside>
+
+        {/* Main Content */}
+        <main className='flex-1 min-w-0'>{children}</main>
+      </div>
     </Container>
   )
 }

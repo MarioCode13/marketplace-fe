@@ -105,9 +105,15 @@ export type Business = {
   addressLine2?: Maybe<Scalars['String']['output']>;
   businessType?: Maybe<Scalars['String']['output']>;
   businessUsers: Array<BusinessUser>;
-  /** Registered business name as per CIPC (optional, user-supplied or populated from Omnicheck). */
+  /**
+   * 
+   * Registered business name as per CIPC (optional, user-supplied or populated from Omnicheck).
+   */
   cipcBusinessName?: Maybe<Scalars['String']['output']>;
-  /** CIPC registration number for this business (optional, user-supplied or populated from Omnicheck). */
+  /**
+   * 
+   * CIPC registration number for this business (optional, user-supplied or populated from Omnicheck).
+   */
   cipcRegistrationNo?: Maybe<Scalars['String']['output']>;
   city?: Maybe<City>;
   contactNumber?: Maybe<Scalars['String']['output']>;
@@ -195,6 +201,11 @@ export enum ContentFlagType {
   ProblematicSlug = 'PROBLEMATIC_SLUG'
 }
 
+/**
+ *  Canonical GraphQL definitions for location types.
+ *  If any other .graphqls files define Country, Region or City, convert them to "extend type"
+ *  or remove the duplicate definitions to avoid "tried to redefine existing" errors.
+ */
 export type Country = {
   __typename?: 'Country';
   code: Scalars['String']['output'];
@@ -244,7 +255,10 @@ export type CreateSubscriptionInput = {
   planType: PlanType;
   stripeCustomerId?: InputMaybe<Scalars['String']['input']>;
   stripeSubscriptionId?: InputMaybe<Scalars['String']['input']>;
-  /** Either userId or businessId must be provided, but not both. */
+  /**
+   * 
+   * Either userId or businessId must be provided, but not both.
+   */
   userId?: InputMaybe<Scalars['ID']['input']>;
 };
 
@@ -312,7 +326,9 @@ export enum LinearGradientDirection {
 
 export type Listing = {
   __typename?: 'Listing';
+  /**  Added, nullable */
   archived: Scalars['Boolean']['output'];
+  /**  Now nullable */
   business?: Maybe<Business>;
   category?: Maybe<Category>;
   city?: Maybe<City>;
@@ -323,9 +339,15 @@ export type Listing = {
   expiresAt: Scalars['String']['output'];
   id: Scalars['ID']['output'];
   images: Array<Scalars['String']['output']>;
+  /**  Added */
   inactive: Scalars['Boolean']['output'];
+  /**  Added - indicates listing passed renewal window (7+ days expired) */
   inactiveAt?: Maybe<Scalars['String']['output']>;
   nsfwApprovalStatus?: Maybe<ContentApprovalStatus>;
+  /**
+   *  Added - timestamp when marked as inactive
+   *  NSFW Content Fields
+   */
   nsfwFlagged: Scalars['Boolean']['output'];
   nsfwReviewNotes?: Maybe<Scalars['String']['output']>;
   nsfwReviewedAt?: Maybe<Scalars['String']['output']>;
@@ -353,6 +375,7 @@ export type Mutation = {
   adminSaveListingBoostPromoCoupon: AdminListingBoostPromoCoupon;
   adminSaveSubscriptionPromoCoupon: AdminSubscriptionPromoCoupon;
   approveFlaggedSlug: FlaggedSlug;
+  /**  Admin NSFW Content Approval Mutations */
   approveListing: ContentApprovalQueueItem;
   cancelSubscription: Subscription;
   cancelTransaction: Transaction;
@@ -396,7 +419,10 @@ export type Mutation = {
   updateStoreBranding?: Maybe<StoreBranding>;
   updateUser?: Maybe<User>;
   updateUserPlanType?: Maybe<User>;
-  /** Partial update: omit fields you do not want to change. Use one call for explicit + email settings as you add them. */
+  /**
+   * 
+   * Partial update: omit fields you do not want to change. Use one call for explicit + email settings as you add them.
+   */
   updateUserPreferences: User;
   uploadBusinessVerificationDocument: VerificationDocument;
   uploadListingImage: Scalars['String']['output'];
@@ -765,6 +791,7 @@ export type Query = {
   getBusinessUsers: Array<BusinessUser>;
   getBusinessVerificationDocuments: Array<VerificationDocument>;
   getBuyerForListing?: Maybe<Scalars['String']['output']>;
+  /**  No longer non-nullable list */
   getCategories?: Maybe<Array<Maybe<Category>>>;
   getCategoryById?: Maybe<Category>;
   getConditions?: Maybe<Array<Maybe<Condition>>>;
@@ -775,6 +802,7 @@ export type Query = {
   getListingTransactions: Array<Transaction>;
   getListings: ListingPageResponse;
   getMyReviewForTransaction?: Maybe<Review>;
+  /**  Admin NSFW Content Approval Queries */
   getPendingApprovals: NsfwContentPage;
   getPendingFlaggedSlugs: FlaggedSlugPage;
   getProfileImage?: Maybe<Scalars['String']['output']>;
@@ -806,6 +834,7 @@ export type Query = {
   myBusinesses: Array<Business>;
   myCompletedPurchases: Array<Transaction>;
   myCompletedSales: Array<Transaction>;
+  /**  Nullable return type */
   myListings: ListingPageResponse;
   myPurchases: Array<Transaction>;
   mySales: Array<Transaction>;
@@ -1141,6 +1170,7 @@ export type Review = {
   comment?: Maybe<Scalars['String']['output']>;
   createdAt: Scalars['String']['output'];
   /**
+   * 
    * A review in a transaction. Both buyer and seller can review each other.
    * The reviewer is the party leaving the review, and reviewedUser is the other party being reviewed.
    */
@@ -1250,6 +1280,7 @@ export enum TransactionStatus {
   Pending = 'PENDING'
 }
 
+/**  Trust rating: verification is Omnicheck ID only (verifiedId). verificationScore = 100 when verifiedId true, else 0. */
 export type TrustRating = {
   __typename?: 'TrustRating';
   createdAt: Scalars['String']['output'];
@@ -1328,8 +1359,10 @@ export type User = {
   contactNumber?: Maybe<Scalars['String']['output']>;
   createdAt: Scalars['String']['output'];
   customCity?: Maybe<Scalars['String']['output']>;
+  /**  Age / profile (legacy DOB field; explicit content eligibility uses ID verification + SA ID) */
   dateOfBirth?: Maybe<Scalars['String']['output']>;
   /**
+   * 
    * True when the user has verified their SA ID via Omnicheck and the ID number encodes age 18+.
    * Only meaningful on your own profile (other users always see false).
    */
@@ -1340,11 +1373,20 @@ export type User = {
   idNumber?: Maybe<Scalars['String']['output']>;
   lastName?: Maybe<Scalars['String']['output']>;
   listings: Array<Listing>;
-  /** Computed from the user's active subscription. Not stored on the user. */
+  /**
+   * 
+   * Computed from the user's active subscription. Not stored on the user.
+   */
   planType?: Maybe<PlanType>;
-  /** Account-scoped settings (explicit content, email opt-ins). Only populated for the authenticated user viewing their own profile. */
+  /**
+   * 
+   * Account-scoped settings (explicit content, email opt-ins). Only populated for the authenticated user viewing their own profile.
+   */
   preferences?: Maybe<UserPreferences>;
-  /** Pro Store only: 7-day home-page boosts left this calendar month (Africa/Johannesburg) from the included quota. Null if not on Pro Store. */
+  /**
+   * 
+   * Pro Store only: 7-day home-page boosts left this calendar month (Africa/Johannesburg) from the included quota. Null if not on Pro Store.
+   */
   proStoreSevenDayBoostsRemainingThisMonth?: Maybe<Scalars['Int']['output']>;
   profileCompletion?: Maybe<ProfileCompletion>;
   profileImageUrl?: Maybe<Scalars['String']['output']>;
@@ -1436,11 +1478,6 @@ export type GetConditionsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type GetConditionsQuery = { __typename?: 'Query', getConditions?: Array<Condition | null> | null };
-
-export type GetAllUsersQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type GetAllUsersQuery = { __typename?: 'Query', getAllUsers: Array<{ __typename?: 'User', id: string, username: string, email?: string | null }> };
 
 export type ApproveListingMutationVariables = Exact<{
   approvalQueueId: Scalars['ID']['input'];
@@ -2169,47 +2206,6 @@ export type GetConditionsQueryHookResult = ReturnType<typeof useGetConditionsQue
 export type GetConditionsLazyQueryHookResult = ReturnType<typeof useGetConditionsLazyQuery>;
 export type GetConditionsSuspenseQueryHookResult = ReturnType<typeof useGetConditionsSuspenseQuery>;
 export type GetConditionsQueryResult = Apollo.QueryResult<GetConditionsQuery, GetConditionsQueryVariables>;
-export const GetAllUsersDocument = gql`
-    query GetAllUsers {
-  getAllUsers {
-    id
-    username
-    email
-  }
-}
-    `;
-
-/**
- * __useGetAllUsersQuery__
- *
- * To run a query within a React component, call `useGetAllUsersQuery` and pass it any options that fit your needs.
- * When your component renders, `useGetAllUsersQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useGetAllUsersQuery({
- *   variables: {
- *   },
- * });
- */
-export function useGetAllUsersQuery(baseOptions?: Apollo.QueryHookOptions<GetAllUsersQuery, GetAllUsersQueryVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<GetAllUsersQuery, GetAllUsersQueryVariables>(GetAllUsersDocument, options);
-      }
-export function useGetAllUsersLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetAllUsersQuery, GetAllUsersQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<GetAllUsersQuery, GetAllUsersQueryVariables>(GetAllUsersDocument, options);
-        }
-export function useGetAllUsersSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GetAllUsersQuery, GetAllUsersQueryVariables>) {
-          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
-          return Apollo.useSuspenseQuery<GetAllUsersQuery, GetAllUsersQueryVariables>(GetAllUsersDocument, options);
-        }
-export type GetAllUsersQueryHookResult = ReturnType<typeof useGetAllUsersQuery>;
-export type GetAllUsersLazyQueryHookResult = ReturnType<typeof useGetAllUsersLazyQuery>;
-export type GetAllUsersSuspenseQueryHookResult = ReturnType<typeof useGetAllUsersSuspenseQuery>;
-export type GetAllUsersQueryResult = Apollo.QueryResult<GetAllUsersQuery, GetAllUsersQueryVariables>;
 export const ApproveListingDocument = gql`
     mutation ApproveListing($approvalQueueId: ID!, $approvalNotes: String) {
   approveListing(approvalQueueId: $approvalQueueId, approvalNotes: $approvalNotes) {
