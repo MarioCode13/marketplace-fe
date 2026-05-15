@@ -101,7 +101,9 @@ export default function EditListingPage() {
   const { data: categoriesData, loading: categoriesLoading } =
     useGetCategoriesQuery()
 
-  const { data: meData } = useQuery(GET_ME)
+  const { data: meData } = useQuery(GET_ME, {
+    errorPolicy: 'all',
+  })
 
   const categoriesTree: CategoryNode[] = useMemo(() => {
     if (!categoriesData?.getCategories) return []

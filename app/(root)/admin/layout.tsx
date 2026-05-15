@@ -85,14 +85,10 @@ export default function AdminLayout({
             sidebarCollapsed ? 'w-12' : 'w-52'
           }`}
         >
-          <div
-            className={`flex items-center mb-2 ${
-              sidebarCollapsed ? 'justify-center' : 'justify-end'
-            }`}
-          >
+          <div className='flex items-center mb-2 justify-start'>
             <button
               onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-              className='p-1 hover:bg-muted rounded-md transition-colors'
+              className='px-2.5 py-2 hover:bg-muted rounded-md transition-colors'
               aria-label={
                 sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'
               }

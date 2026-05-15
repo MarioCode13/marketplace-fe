@@ -9,7 +9,15 @@ import {
 } from '@/components/ui/tooltip'
 import SubscriptionConfirmationModal from '@/components/modals/SubscriptionConfirmationModal'
 import { RootState } from '@/store/store'
-import { ShieldCheck, User, Store, Star, UserPlus } from 'lucide-react'
+import {
+  ShieldCheck,
+  User,
+  Store,
+  Star,
+  UserPlus,
+  ExternalLinkIcon,
+} from 'lucide-react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { useSelector } from 'react-redux'
@@ -520,25 +528,39 @@ export default function SubscriptionsPage() {
               style={tier.highlight ? { minHeight: 480 } : { minHeight: 460 }}
             >
               <div>
-                {tier.badge && (
-                  <span className='absolute -top-4 left-1/2 -translate-x-1/2 bg-blue-600 dark:bg-blue-500 text-white text-xs font-semibold px-4 py-1 rounded-xl shadow-lg z-20'>
-                    {tier.badge}
-                  </span>
-                )}
-                <div
-                  className={`mb-4 flex items-center justify-center w-16 h-16 rounded-full ${
-                    tier.highlight
-                      ? 'bg-blue-100 dark:bg-blue-900'
-                      : 'bg-gray-100 dark:bg-gray-800'
-                  }`}
-                >
-                  <Icon
-                    className={`w-8 h-8 ${
+                <div className='flex justify-between items-center'>
+                  {tier.badge && (
+                    <span className='absolute -top-4 left-1/2 -translate-x-1/2 bg-blue-600 dark:bg-blue-500 text-white text-xs font-semibold px-4 py-1 rounded-xl shadow-lg z-20'>
+                      {tier.badge}
+                    </span>
+                  )}
+                  <div
+                    className={`mb-4 flex items-center justify-center w-16 h-16 rounded-full ${
                       tier.highlight
-                        ? 'text-blue-600 dark:text-blue-300'
-                        : 'text-gray-500 dark:text-gray-300'
+                        ? 'bg-blue-100 dark:bg-blue-900'
+                        : 'bg-gray-100 dark:bg-gray-800'
                     }`}
-                  />
+                  >
+                    <Icon
+                      className={`w-8 h-8 ${
+                        tier.highlight
+                          ? 'text-blue-600 dark:text-blue-300'
+                          : 'text-gray-500 dark:text-gray-300'
+                      }`}
+                    />
+                  </div>
+                  {tier.name === 'Pro Store' && (
+                    <div className='mb-4 text-center'>
+                      <Link
+                        href='/demo-store'
+                        className='text-sm font-semibold text-blue-600 dark:text-blue-300 hover:underline'
+                      >
+                        <Button color={'gradient'}>
+                          Preview <ExternalLinkIcon />
+                        </Button>
+                      </Link>
+                    </div>
+                  )}
                 </div>
                 <h2
                   className={`text-2xl font-bold mb-1 ${

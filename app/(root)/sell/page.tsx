@@ -94,7 +94,9 @@ export default function SellPage() {
   const router = useRouter()
   const userContext = useSelector((state: RootState) => state.userContext)
   const userId = userContext.userId
-  const { data } = useQuery(GET_ME)
+  const { data } = useQuery(GET_ME, {
+    errorPolicy: 'all',
+  })
   const user = data?.me
   const [uploading, setUploading] = useState(false)
 

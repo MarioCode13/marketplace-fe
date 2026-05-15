@@ -100,7 +100,10 @@ export default function MyListingsPage() {
     skip: !boostListingId,
   })
 
-  const { data: meData, refetch: refetchMe } = useQuery(GET_ME, { skip: !userId })
+  const { data: meData, refetch: refetchMe } = useQuery(GET_ME, {
+    skip: !userId,
+    errorPolicy: 'all',
+  })
   const proBoostsLeft = meData?.me?.proStoreSevenDayBoostsRemainingThisMonth
   const proQuotaApplies =
     boostDurationDays === 7 &&
@@ -191,9 +194,7 @@ export default function MyListingsPage() {
         variables: {
           listingId: boostListingId,
           durationDays: boostDurationDays,
-          ...(trimmedBoostCoupon
-            ? { couponCode: trimmedBoostCoupon }
-            : {}),
+          ...(trimmedBoostCoupon ? { couponCode: trimmedBoostCoupon } : {}),
         },
       })
 
@@ -398,7 +399,10 @@ export default function MyListingsPage() {
                     </span>
                   </>
                 ) : (
-                  <>Total: R{Number(boostPriceData.listingBoostPriceZar).toFixed(2)}</>
+                  <>
+                    Total: R
+                    {Number(boostPriceData.listingBoostPriceZar).toFixed(2)}
+                  </>
                 )}
               </p>
             )}

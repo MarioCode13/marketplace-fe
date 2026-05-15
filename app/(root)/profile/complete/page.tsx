@@ -52,7 +52,9 @@ const COMPLETE_PROFILE = gql`
 
 export default function CompleteProfilePage() {
   const router = useRouter()
-  const { loading, error, data, refetch } = useQuery(GET_ME)
+  const { loading, error, data, refetch } = useQuery(GET_ME, {
+    errorPolicy: 'all',
+  })
   const [completeProfile] = useMutation(COMPLETE_PROFILE)
   const user = data?.me
 

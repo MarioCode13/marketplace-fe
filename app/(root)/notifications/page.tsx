@@ -40,7 +40,9 @@ export default function NotificationsPage() {
   const userContext = useSelector((state: RootState) => state.userContext)
   const userId = userContext.userId
 
-  const { data: meData } = useQuery(GET_ME)
+  const { data: meData } = useQuery(GET_ME, {
+    errorPolicy: 'all',
+  })
 
   const {
     data: notificationsData,

@@ -99,6 +99,7 @@ export const refetchUserProfile = createAsyncThunk(
 			const { data } = await client.query<MeQuery>({
 				query: GET_ME,
 				fetchPolicy: 'network-only',
+				errorPolicy: 'all',
 			})
 			console.log('[refetchUserProfile] GET_ME result:', data)
 			if (data?.me && data.me.id) {

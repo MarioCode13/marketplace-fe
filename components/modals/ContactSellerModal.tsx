@@ -29,7 +29,10 @@ const ContactSellerModal = ({
 }: ContactSellerModalProps) => {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
-  const { data: meData } = useQuery(GET_ME, { skip: false })
+  const { data: meData } = useQuery(GET_ME, {
+    skip: false,
+    errorPolicy: 'all',
+  })
 
   useEffect(() => {
     if (meData?.me) {

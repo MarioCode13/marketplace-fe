@@ -36,6 +36,7 @@ export default function NotificationDropdown() {
   const { data: meData } = useQuery(GET_ME, {
     skip: !user,
     fetchPolicy: 'cache-first',
+    errorPolicy: 'all',
   })
 
   const {

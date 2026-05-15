@@ -8,7 +8,9 @@ import { useRouter } from 'next/navigation'
 import { formatEnum } from '@/lib/utils'
 
 export default function ProfileSubscriptionsPage() {
-  const { data, loading, error } = useQuery(GET_ME)
+  const { data, loading, error } = useQuery(GET_ME, {
+    errorPolicy: 'all',
+  })
   const { data: businessData, loading: businessLoading } =
     useQuery(GET_MY_BUSINESS)
   const router = useRouter()
