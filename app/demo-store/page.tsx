@@ -206,6 +206,7 @@ export default function DemoStorePage() {
                   primaryColor='rgb(21, 19, 30)'
                   cardTextColor='#fff'
                   store
+                  clickable={false}
                 />
               ))}
             </div>

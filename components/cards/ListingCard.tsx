@@ -59,6 +59,7 @@ interface ListingCardProps {
   wishlisted?: boolean
   wishlistLoading?: boolean
   onWishlistHeartClick?: () => void
+  clickable?: boolean
 }
 
 export default function ListingCard({
@@ -76,6 +77,7 @@ export default function ListingCard({
   wishlisted = false,
   wishlistLoading = false,
   onWishlistHeartClick,
+  clickable = true,
 }: ListingCardProps) {
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -116,155 +118,162 @@ export default function ListingCard({
       ? { background: primaryColor, color: cardTextColor || '#222' }
       : undefined
 
+  const cardClasses = `p-4 rounded-lg shadow-lg h-[420px] flex flex-col transition-all duration-200 ease-in-out ${
+    clickable
+      ? 'cursor-pointer hover:shadow-xl hover:opacity-80 hover:scale-[1.02]'
+      : ''
+  } ${listing.sold ? 'opacity-60' : ''} ${!primaryColor ? 'bg-componentBackground' : ''}`
+
+  const cardContent = (
+    <div
+      className={cardClasses}
+      style={cardStyle}
+    >
+      {isBoosted && (
+        <div className='absolute top-2 left-2 z-20'>
+          <Badge className='bg-yellow-400 text-black gap-1'>
+            <StarIcon size={16} /> Boosted
+          </Badge>
+        </div>
+      )}
+      {listing.sold && (
+        <div className='absolute top-2 right-2 z-10'>
+          <Badge className='bg-red-500 text-white'>SOLD</Badge>
+        </div>
+      )}
+      <div className='relative w-full overflow-hidden rounded-md aspect-[4/3] sm:aspect-[16/9]'>
+        <Image
+          src={
+            listing.images && listing.images.length > 0
+              ? generateImageUrl(listing.images[0])
+              : '/logo.png'
+          }
+          alt={listing.title}
+          fill
+          className='object-cover'
+          onError={(e) => {
+            const target = e.target as HTMLImageElement
+            target.src = '/logo.png'
+          }}
+        />
+      </div>
+      <div className='flex-1 flex flex-col justify-between mt-2'>
+        <div>
+          <h2
+            className='text-xl font-semibold mb-2 line-clamp-2 leading-snug'
+            style={cardTextColor ? { color: cardTextColor } : undefined}
+          >
+            {listing.title}
+          </h2>
+          <p
+            className='text-foreground line-clamp-2'
+            style={cardTextColor ? { color: cardTextColor } : undefined}
+          >
+            {listing.description}
+          </p>
+        </div>
+
+        <div>
+          <p
+            className={`font-bold ${
+              listing.sold ? 'text-gray-500 line-through' : 'text-success'
+            }`}
+            data-testid='listing-price'
+          >
+            R{typeof listing.price === 'number' ? listing.price : listing.price}
+          </p>
+
+          <div className='mt-2 space-y-1'>
+            {!store && (
+              <>
+                <div className='flex items-center gap-2'>
+                  <p className='text-sm text-gray-500'>
+                    {listing.business?.name ||
+                      listing.user?.username ||
+                      'Unknown'}
+                  </p>
+                  {(listing.business?.trustRating?.verifiedWithThirdParty ||
+                    (!listing.business &&
+                      listing.user?.trustRating?.verifiedId)) && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <ShieldCheck className='w-4 h-4 text-success' />
+                        </TooltipTrigger>
+                        <TooltipContent side='top'>
+                          <p>Verified</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                </div>
+
+                {(listing.user?.trustRating?.starRating ||
+                  listing.business?.trustRating?.averageRating) && (
+                  <div className='flex items-center gap-2'>
+                    <div className='flex items-center gap-1'>
+                      <Star className='w-3 h-3 fill-yellow-400 text-yellow-400' />
+                      <span className='text-xs font-medium'>
+                        {listing.user?.trustRating?.starRating !== undefined
+                          ? listing.user.trustRating.starRating.toFixed(1)
+                          : listing.business?.trustRating?.averageRating !==
+                              undefined
+                            ? listing.business!.trustRating!.averageRating!.toFixed(
+                                1,
+                              )
+                            : ''}
+                      </span>
+                    </div>
+                    {(listing.user?.trustRating?.totalReviews ||
+                      listing.business?.trustRating?.reviewCount) && (
+                      <span
+                        className='text-xs text-gray-500'
+                        style={
+                          cardTextColor ? { color: cardTextColor } : undefined
+                        }
+                      >
+                        (
+                        {listing.user?.trustRating?.totalReviews ??
+                          listing.business?.trustRating?.reviewCount}{' '}
+                        reviews)
+                      </span>
+                    )}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+          <div className='flex justify-between'>
+            <p
+              className='text-sm text-gray-500 mt-2'
+              style={cardTextColor ? { color: cardTextColor } : undefined}
+            >
+              {dayjs(listing.createdAt).format('DD MMM YYYY')}
+            </p>
+            {listing.nsfwApprovalStatus === 'PENDING' && (
+              <Badge className='text-xs h-6 mt-2 '>Pending</Badge>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+
   return (
     <div
       className='relative'
       data-testid='listing-card'
     >
-      <Link
-        href={`/listing/${listing.id}`}
-        passHref
-      >
-        <div
-          className={`p-4 rounded-lg shadow-lg h-[420px] flex flex-col cursor-pointer transition-all duration-200 ease-in-out hover:shadow-xl hover:opacity-80 hover:scale-[1.02] ${
-            listing.sold ? 'opacity-60' : ''
-          } ${!primaryColor ? 'bg-componentBackground' : ''}`}
-          style={cardStyle}
+      {clickable ? (
+        <Link
+          href={`/listing/${listing.id}`}
+          passHref
         >
-          {isBoosted && (
-            <div className='absolute top-2 left-2 z-20'>
-              <Badge className='bg-yellow-400 text-black gap-1'>
-                <StarIcon size={16} /> Boosted
-              </Badge>
-            </div>
-          )}
-          {listing.sold && (
-            <div className='absolute top-2 right-2 z-10'>
-              <Badge className='bg-red-500 text-white'>SOLD</Badge>
-            </div>
-          )}
-          <div className='relative w-full overflow-hidden rounded-md aspect-[4/3] sm:aspect-[16/9]'>
-            <Image
-              src={
-                listing.images && listing.images.length > 0
-                  ? generateImageUrl(listing.images[0])
-                  : '/logo.png'
-              }
-              alt={listing.title}
-              fill
-              className='object-cover'
-              onError={(e) => {
-                const target = e.target as HTMLImageElement
-                target.src = '/logo.png'
-              }}
-            />
-          </div>
-          <div className='flex-1 flex flex-col justify-between mt-2'>
-            <div>
-              <h2
-                className='text-xl font-semibold mb-2 line-clamp-2 leading-snug'
-                style={cardTextColor ? { color: cardTextColor } : undefined}
-              >
-                {listing.title}
-              </h2>
-              <p
-                className='text-foreground line-clamp-2'
-                style={cardTextColor ? { color: cardTextColor } : undefined}
-              >
-                {listing.description}
-              </p>
-            </div>
-
-            <div>
-              <p
-                className={`font-bold ${
-                  listing.sold ? 'text-gray-500 line-through' : 'text-success'
-                }`}
-                data-testid='listing-price'
-              >
-                R
-                {typeof listing.price === 'number'
-                  ? listing.price
-                  : listing.price}
-              </p>
-
-              <div className='mt-2 space-y-1'>
-                {!store && (
-                  <>
-                    <div className='flex items-center gap-2'>
-                      <p className='text-sm text-gray-500'>
-                        {listing.business?.name ||
-                          listing.user?.username ||
-                          'Unknown'}
-                      </p>
-                      {(listing.business?.trustRating?.verifiedWithThirdParty ||
-                        (!listing.business &&
-                          listing.user?.trustRating?.verifiedId)) && (
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <ShieldCheck className='w-4 h-4 text-success' />
-                            </TooltipTrigger>
-                            <TooltipContent side='top'>
-                              <p>Verified</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      )}
-                    </div>
-
-                    {(listing.user?.trustRating?.starRating ||
-                      listing.business?.trustRating?.averageRating) && (
-                      <div className='flex items-center gap-2'>
-                        <div className='flex items-center gap-1'>
-                          <Star className='w-3 h-3 fill-yellow-400 text-yellow-400' />
-                          <span className='text-xs font-medium'>
-                            {listing.user?.trustRating?.starRating !== undefined
-                              ? listing.user.trustRating.starRating.toFixed(1)
-                              : listing.business?.trustRating?.averageRating !==
-                                  undefined
-                                ? listing.business!.trustRating!.averageRating!.toFixed(
-                                    1,
-                                  )
-                                : ''}
-                          </span>
-                        </div>
-                        {(listing.user?.trustRating?.totalReviews ||
-                          listing.business?.trustRating?.reviewCount) && (
-                          <span
-                            className='text-xs text-gray-500'
-                            style={
-                              cardTextColor
-                                ? { color: cardTextColor }
-                                : undefined
-                            }
-                          >
-                            (
-                            {listing.user?.trustRating?.totalReviews ??
-                              listing.business?.trustRating?.reviewCount}{' '}
-                            reviews)
-                          </span>
-                        )}
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-              <div className='flex justify-between'>
-                <p
-                  className='text-sm text-gray-500 mt-2'
-                  style={cardTextColor ? { color: cardTextColor } : undefined}
-                >
-                  {dayjs(listing.createdAt).format('DD MMM YYYY')}
-                </p>
-                {listing.nsfwApprovalStatus === 'PENDING' && (
-                  <Badge className='text-xs h-6 mt-2 '>Pending</Badge>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </Link>
+          {cardContent}
+        </Link>
+      ) : (
+        cardContent
+      )}
       {showWishlistHeart && (
         <button
           type='button'

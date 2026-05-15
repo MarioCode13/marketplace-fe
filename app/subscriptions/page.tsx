@@ -120,6 +120,7 @@ export default function SubscriptionsPage() {
   const isLoggedIn = !!userContext.userId
   const userPlanType = userContext.planType || ''
   const businessPlanType = userContext.business?.planType || ''
+  const hasBusinessAccount = !!userContext.businessId || !!userContext.business
   const [selectedTier, setSelectedTier] = useState<(typeof tiers)[0] | null>(
     null,
   )
@@ -450,11 +451,12 @@ export default function SubscriptionsPage() {
             'Pro Store': 'PRO_STORE',
           }
           const tierPlanType = tierPlanTypeMap[tier.name] || ''
-          // Prefer business plan only when the user is actually a business user
+          // Prefer business plan only when the user is actually a business user.
+          // Fall back to the raw user plan type if the business plan type is unavailable.
           let currentPlanType = userContext.isBusinessUser
-            ? businessPlanType
+            ? businessPlanType || userPlanType
             : userPlanType
-          // If logged in but no planType is set, treat as FREE_USER so UI enables upgrades
+          // If logged in but no planType is set, treat as FREE_USER so UI enables upgrades.
           if (isLoggedIn && !currentPlanType) {
             currentPlanType = 'FREE_USER'
           }
@@ -476,7 +478,14 @@ export default function SubscriptionsPage() {
           let isDisabled = false
           let buttonText = ''
           let tooltipText = ''
-          if (!isLoggedIn) {
+
+          if (hasBusinessAccount && tier.accountType === 'Personal') {
+            // Business accounts should not be able to purchase personal User+ / Free User plans.
+            isDisabled = true
+            buttonText = 'Unavailable'
+            tooltipText =
+              'Your account is associated with a business. Manage or upgrade a business plan instead.'
+          } else if (!isLoggedIn) {
             isDisabled = true
             buttonText = isPaid ? 'Subscribe' : 'Current Plan'
             tooltipText = 'Please create an account first'
