@@ -62,13 +62,26 @@ export interface FlatCategory {
   name: string
   slug?: string
   parentId?: string | null
-  // ...other fields
+  sortOrder?: number
 }
 
 export interface CategoryNode {
   id: string
   name: string
+  sortOrder?: number
   children?: CategoryNode[]
+}
+
+function sortCategorySiblings(nodes: CategoryNode[]): void {
+  nodes.sort((a, b) => {
+    const orderA = a.sortOrder ?? 0
+    const orderB = b.sortOrder ?? 0
+    if (orderA !== orderB) return orderA - orderB
+    return a.name.localeCompare(b.name)
+  })
+  nodes.forEach((node) => {
+    if (node.children?.length) sortCategorySiblings(node.children)
+  })
 }
 
 export function slugify(text: string): string {
@@ -84,7 +97,12 @@ export function buildCategoryTree(flat: FlatCategory[]): CategoryNode[] {
 
   // First, create a map of all nodes
   flat.forEach(cat => {
-    idToNode[cat.id] = { id: cat.id, name: cat.name, children: [] }
+    idToNode[cat.id] = {
+      id: cat.id,
+      name: cat.name,
+      sortOrder: cat.sortOrder ?? 0,
+      children: [],
+    }
   })
 
   // Then, assign children to parents
@@ -102,6 +120,7 @@ export function buildCategoryTree(flat: FlatCategory[]): CategoryNode[] {
     else if (node.children) node.children.forEach(clean)
   }
   roots.forEach(clean)
+  sortCategorySiblings(roots)
 
   return roots
 }

@@ -90,7 +90,10 @@ const Listings: React.FC<ListingsProps> = ({
   )
   const isLoggedIn = useSelector(selectIsLoggedIn)
   const { data: wishlistIdsData, refetch: refetchWishlistIds } =
-    useMyWatchlistListingIdsQuery({ skip: !isLoggedIn, fetchPolicy: 'cache-and-network' })
+    useMyWatchlistListingIdsQuery({
+      skip: !isLoggedIn,
+      fetchPolicy: 'cache-and-network',
+    })
   const [addToWatchlist] = useAddToWatchlistMutation()
   const [removeFromWatchlist] = useRemoveFromWatchlistMutation()
   const wishlistIdSet = useMemo(
@@ -581,7 +584,7 @@ const Listings: React.FC<ListingsProps> = ({
             </Button>
           </div>
         )}
-        <div className='py-6 mt-6 vw-full'>
+        <div className='py-6 mt-6 w-[100vw]'>
           <ListingsBoostCarousel />
         </div>
       </div>

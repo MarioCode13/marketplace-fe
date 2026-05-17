@@ -19,7 +19,12 @@ export const GET_LISTING_BY_ID = gql`
           }
         }
       }
-      category{
+      category {
+        id
+        name
+        parentId
+      }
+      secondaryCategory {
         id
         name
         parentId

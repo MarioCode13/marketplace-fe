@@ -40,6 +40,7 @@ interface Category {
   name: string
   slug: string
   parentId?: string | null
+  sortOrder?: number
   children?: Category[]
 }
 
@@ -130,6 +131,12 @@ export default function AdminCategoriesPage() {
   ): Category[] => {
     return categories
       .filter((cat) => cat.parentId === parentId)
+      .sort((a, b) => {
+        const orderA = a.sortOrder ?? 0
+        const orderB = b.sortOrder ?? 0
+        if (orderA !== orderB) return orderA - orderB
+        return a.name.localeCompare(b.name)
+      })
       .map(
         (cat): Category => ({
           ...cat,

@@ -126,6 +126,7 @@ export default function EditListingPage() {
       setValue('price', listing.price.toString())
       setValue('quantity', listing.quantity?.toString() || '')
       setValue('categoryId', listing.category?.id || '')
+      setValue('secondaryCategoryId', listing.secondaryCategory?.id || '')
       setValue('condition', listing.condition)
       setValue('customCity', listing?.customCity || '')
       setValue('sellerMarked18Plus', listing.sellerMarked18Plus || false)
@@ -247,6 +248,10 @@ export default function EditListingPage() {
         images,
         condition: formData.condition as Condition,
         categoryId: formData.categoryId.toString(),
+        clearSecondaryCategory: !formData.secondaryCategoryId,
+        secondaryCategoryId: formData.secondaryCategoryId
+          ? formData.secondaryCategoryId.toString()
+          : undefined,
         cityId: cityState.city || null,
         customCity: cityState.customCity || null,
         quantity: formData.quantity
@@ -504,6 +509,23 @@ export default function EditListingPage() {
                   </p>
                 )}
               </div>
+            </div>
+
+            <div className='space-y-2'>
+              <Label>Secondary Category (Optional)</Label>
+              <CategoryCascader
+                categories={categoriesTree as CategoryNode[]}
+                value={watch('secondaryCategoryId')}
+                onChange={(id) => {
+                  setValue('secondaryCategoryId', id)
+                }}
+                placeholder='Select a Secondary Category'
+              />
+              {errors.secondaryCategoryId && (
+                <p className='text-sm text-red-500 mt-1'>
+                  {errors.secondaryCategoryId.message}
+                </p>
+              )}
             </div>
 
             <div className='flex items-center gap-3'>

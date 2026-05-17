@@ -7,6 +7,7 @@ export const GET_CATEGORIES = gql`
       name
       slug
       parentId
+      sortOrder
     }
   }
 `

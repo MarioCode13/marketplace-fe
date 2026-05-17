@@ -27,8 +27,15 @@ export const GET_ME = gql`
       contactNumber
       idNumber
       subscription {
+        id
         status
         planType
+        amount
+        billingCycle
+        currentPeriodStart
+        currentPeriodEnd
+        cancelAtPeriodEnd
+        cancelledAt
       }
       trustRating{
         verifiedId

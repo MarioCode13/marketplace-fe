@@ -42,6 +42,9 @@ export const listingSchema = z.object({
     categoryId: z
         .string()
         .min(1, 'Please select a category'),
+    secondaryCategoryId: z
+        .string()
+        .optional(),
     quantity: z
         .string()
         .optional()
@@ -69,6 +72,18 @@ export const listingSchema = z.object({
             'Custom city contains invalid characters or patterns'
         ),
     sellerMarked18Plus: z.boolean().optional(),
+}).superRefine((data, ctx) => {
+    if (
+        data.secondaryCategoryId &&
+        data.categoryId &&
+        data.secondaryCategoryId === data.categoryId
+    ) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: 'Secondary category must be different from the primary category',
+            path: ['secondaryCategoryId'],
+        })
+    }
 })
 
 export type ListingFormData = z.infer<typeof listingSchema>

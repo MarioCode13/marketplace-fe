@@ -44,6 +44,7 @@ const CREATE_LISTING = gql`
     $description: String!
     $images: [String!]!
     $categoryId: ID!
+    $secondaryCategoryId: ID
     $price: Float!
     $quantity: Int
     $customCity: String
@@ -59,6 +60,7 @@ const CREATE_LISTING = gql`
       description: $description
       images: $images
       categoryId: $categoryId
+      secondaryCategoryId: $secondaryCategoryId
       price: $price
       quantity: $quantity
       customCity: $customCity
@@ -240,6 +242,7 @@ export default function SellPage() {
           description: formData.description,
           images,
           categoryId: formData.categoryId,
+          secondaryCategoryId: formData.secondaryCategoryId || undefined,
           price: parseFloat(formData.price),
           customCity: cityState.customCity || undefined,
           cityId: cityState.city || undefined,
@@ -453,12 +456,38 @@ export default function SellPage() {
                 value={watch('categoryId')}
                 onChange={(id) => {
                   setValue('categoryId', id)
+                  if (watch('secondaryCategoryId') === id) {
+                    setValue('secondaryCategoryId', '')
+                  }
                 }}
                 placeholder='Select a Category'
               />
               {errors.categoryId && (
                 <p className='text-sm text-red-500 mt-1'>
                   {errors.categoryId.message}
+                </p>
+              )}
+            </div>
+          )}
+
+          {categoriesLoading ? (
+            <p>Loading categories...</p>
+          ) : categoriesError ? (
+            <p>Error loading categories</p>
+          ) : (
+            <div className='space-y-2'>
+              <Label>Secondary Category (Optional)</Label>
+              <CategoryCascader
+                categories={categoriesTree as CategoryNode[]}
+                value={watch('secondaryCategoryId')}
+                onChange={(id) => {
+                  setValue('secondaryCategoryId', id)
+                }}
+                placeholder='Select a Secondary Category'
+              />
+              {errors.secondaryCategoryId && (
+                <p className='text-sm text-red-500 mt-1'>
+                  {errors.secondaryCategoryId.message}
                 </p>
               )}
             </div>

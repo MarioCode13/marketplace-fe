@@ -126,7 +126,6 @@ export type Business = {
   slug?: Maybe<Scalars['String']['output']>;
   storeBranding?: Maybe<StoreBranding>;
   trustRating?: Maybe<BusinessTrustRating>;
-  verificationDocuments: Array<VerificationDocument>;
 };
 
 export type BusinessTrustRating = {
@@ -155,6 +154,7 @@ export type Category = {
   name: Scalars['String']['output'];
   parentId?: Maybe<Scalars['String']['output']>;
   slug: Scalars['String']['output'];
+  sortOrder: Scalars['Int']['output'];
 };
 
 export type City = {
@@ -262,17 +262,6 @@ export type CreateSubscriptionInput = {
   userId?: InputMaybe<Scalars['ID']['input']>;
 };
 
-export enum DocumentType {
-  BankAccountVerification = 'BANK_ACCOUNT_VERIFICATION',
-  BusinessRegistration = 'BUSINESS_REGISTRATION',
-  DriversLicense = 'DRIVERS_LICENSE',
-  IdCard = 'ID_CARD',
-  OwnerIdentity = 'OWNER_IDENTITY',
-  ProfilePhoto = 'PROFILE_PHOTO',
-  ProofOfAddress = 'PROOF_OF_ADDRESS',
-  TaxClearance = 'TAX_CLEARANCE'
-}
-
 export type FlaggedSlug = {
   __typename?: 'FlaggedSlug';
   business: Business;
@@ -354,6 +343,7 @@ export type Listing = {
   nsfwReviewedBy?: Maybe<User>;
   price: Scalars['Float']['output'];
   quantity: Scalars['Int']['output'];
+  secondaryCategory?: Maybe<Category>;
   sold: Scalars['Boolean']['output'];
   title: Scalars['String']['output'];
   user?: Maybe<User>;
@@ -389,7 +379,6 @@ export type Mutation = {
   declineBusinessInvitation: Scalars['Boolean']['output'];
   declineInvitation: Invitation;
   declineListing: ContentApprovalQueueItem;
-  deleteBusinessVerificationDocument: Scalars['Boolean']['output'];
   deleteListing: Scalars['Boolean']['output'];
   deleteReview: Scalars['Boolean']['output'];
   linkUserToBusiness: BusinessUser;
@@ -424,7 +413,6 @@ export type Mutation = {
    * Partial update: omit fields you do not want to change. Use one call for explicit + email settings as you add them.
    */
   updateUserPreferences: User;
-  uploadBusinessVerificationDocument: VerificationDocument;
   uploadListingImage: Scalars['String']['output'];
 };
 
@@ -509,6 +497,7 @@ export type MutationCreateListingArgs = {
   nsfwFlagged?: InputMaybe<Scalars['Boolean']['input']>;
   price: Scalars['Float']['input'];
   quantity?: InputMaybe<Scalars['Int']['input']>;
+  secondaryCategoryId?: InputMaybe<Scalars['ID']['input']>;
   sellerMarked18Plus?: InputMaybe<Scalars['Boolean']['input']>;
   title: Scalars['String']['input'];
   userId: Scalars['ID']['input'];
@@ -550,12 +539,6 @@ export type MutationDeclineInvitationArgs = {
 export type MutationDeclineListingArgs = {
   approvalQueueId: Scalars['ID']['input'];
   declineReason: Scalars['String']['input'];
-};
-
-
-export type MutationDeleteBusinessVerificationDocumentArgs = {
-  businessId: Scalars['ID']['input'];
-  documentId: Scalars['ID']['input'];
 };
 
 
@@ -713,13 +696,6 @@ export type MutationUpdateUserPreferencesArgs = {
 };
 
 
-export type MutationUploadBusinessVerificationDocumentArgs = {
-  businessId: Scalars['ID']['input'];
-  documentType: DocumentType;
-  file: Scalars['String']['input'];
-};
-
-
 export type MutationUploadListingImageArgs = {
   image: Scalars['String']['input'];
 };
@@ -786,10 +762,8 @@ export type Query = {
   getApprovalsForListing: Array<ContentApprovalQueueItem>;
   getAvailablePlans: Array<Scalars['String']['output']>;
   getBusinessBySlug?: Maybe<Business>;
-  getBusinessDocumentByType?: Maybe<VerificationDocument>;
   getBusinessTransactions: Array<Transaction>;
   getBusinessUsers: Array<BusinessUser>;
-  getBusinessVerificationDocuments: Array<VerificationDocument>;
   getBuyerForListing?: Maybe<Scalars['String']['output']>;
   /**  No longer non-nullable list */
   getCategories?: Maybe<Array<Maybe<Category>>>;
@@ -815,14 +789,12 @@ export type Query = {
   getTrustRating?: Maybe<TrustRating>;
   getUserAverageRating: Scalars['Float']['output'];
   getUserById?: Maybe<User>;
-  getUserDocumentByType?: Maybe<VerificationDocument>;
   getUserNegativeReviews: Array<Review>;
   getUserPositiveReviewCount: Scalars['Int']['output'];
   getUserPositiveReviews: Array<Review>;
   getUserProfileImage?: Maybe<Scalars['String']['output']>;
   getUserReviewCount: Scalars['Int']['output'];
   getUserReviews: Array<Review>;
-  getUserVerificationDocuments: Array<VerificationDocument>;
   hasActiveSubscription: Scalars['Boolean']['output'];
   hasBoughtListing: Scalars['Boolean']['output'];
   isStoreSlugAvailable: Scalars['Boolean']['output'];
@@ -903,23 +875,12 @@ export type QueryGetBusinessBySlugArgs = {
 };
 
 
-export type QueryGetBusinessDocumentByTypeArgs = {
-  businessId: Scalars['ID']['input'];
-  documentType: DocumentType;
-};
-
-
 export type QueryGetBusinessTransactionsArgs = {
   businessId: Scalars['ID']['input'];
 };
 
 
 export type QueryGetBusinessUsersArgs = {
-  businessId: Scalars['ID']['input'];
-};
-
-
-export type QueryGetBusinessVerificationDocumentsArgs = {
   businessId: Scalars['ID']['input'];
 };
 
@@ -1044,12 +1005,6 @@ export type QueryGetUserByIdArgs = {
 };
 
 
-export type QueryGetUserDocumentByTypeArgs = {
-  documentType: DocumentType;
-  userId: Scalars['ID']['input'];
-};
-
-
 export type QueryGetUserNegativeReviewsArgs = {
   userId: Scalars['ID']['input'];
 };
@@ -1076,11 +1031,6 @@ export type QueryGetUserReviewCountArgs = {
 
 
 export type QueryGetUserReviewsArgs = {
-  userId: Scalars['ID']['input'];
-};
-
-
-export type QueryGetUserVerificationDocumentsArgs = {
   userId: Scalars['ID']['input'];
 };
 
@@ -1318,6 +1268,7 @@ export type UpdateBusinessInput = {
 export type UpdateListingInput = {
   categoryId?: InputMaybe<Scalars['ID']['input']>;
   cityId?: InputMaybe<Scalars['ID']['input']>;
+  clearSecondaryCategory?: InputMaybe<Scalars['Boolean']['input']>;
   condition?: InputMaybe<Condition>;
   customCity?: InputMaybe<Scalars['String']['input']>;
   description?: InputMaybe<Scalars['String']['input']>;
@@ -1325,6 +1276,7 @@ export type UpdateListingInput = {
   images?: InputMaybe<Array<Scalars['String']['input']>>;
   price?: InputMaybe<Scalars['Float']['input']>;
   quantity?: InputMaybe<Scalars['Int']['input']>;
+  secondaryCategoryId?: InputMaybe<Scalars['ID']['input']>;
   title?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -1395,7 +1347,6 @@ export type User = {
   subscription?: Maybe<Subscription>;
   trustRating?: Maybe<TrustRating>;
   username: Scalars['String']['output'];
-  verificationDocuments?: Maybe<Array<VerificationDocument>>;
 };
 
 export type UserPreferences = {
@@ -1408,19 +1359,6 @@ export type UserPreferences = {
 export type UserPreferencesInput = {
   allowsExplicitContent?: InputMaybe<Scalars['Boolean']['input']>;
   emailMarketingOptIn?: InputMaybe<Scalars['Boolean']['input']>;
-};
-
-export type VerificationDocument = {
-  __typename?: 'VerificationDocument';
-  businessId?: Maybe<Scalars['ID']['output']>;
-  documentType: DocumentType;
-  documentUrl: Scalars['String']['output'];
-  id: Scalars['ID']['output'];
-  notes?: Maybe<Scalars['String']['output']>;
-  status: VerificationStatus;
-  uploadedAt: Scalars['String']['output'];
-  userId?: Maybe<Scalars['ID']['output']>;
-  verifiedAt?: Maybe<Scalars['String']['output']>;
 };
 
 export enum VerificationStatus {
@@ -1460,6 +1398,7 @@ export type CreateListingMutationVariables = Exact<{
   description: Scalars['String']['input'];
   images: Array<Scalars['String']['input']> | Scalars['String']['input'];
   categoryId: Scalars['ID']['input'];
+  secondaryCategoryId?: InputMaybe<Scalars['ID']['input']>;
   price: Scalars['Float']['input'];
   quantity?: InputMaybe<Scalars['Int']['input']>;
   customCity?: InputMaybe<Scalars['String']['input']>;
@@ -1634,6 +1573,16 @@ export type DeleteReviewMutationVariables = Exact<{
 
 export type DeleteReviewMutation = { __typename?: 'Mutation', deleteReview: boolean };
 
+export type CancelSubscriptionMutationVariables = Exact<{ [key: string]: never; }>;
+
+
+export type CancelSubscriptionMutation = { __typename?: 'Mutation', cancelSubscription: { __typename?: 'Subscription', id: string, status: SubscriptionStatus, planType: PlanType, cancelAtPeriodEnd?: boolean | null, currentPeriodEnd?: string | null } };
+
+export type ReactivateSubscriptionMutationVariables = Exact<{ [key: string]: never; }>;
+
+
+export type ReactivateSubscriptionMutation = { __typename?: 'Mutation', reactivateSubscription: { __typename?: 'Subscription', id: string, status: SubscriptionStatus, planType: PlanType, cancelAtPeriodEnd?: boolean | null, currentPeriodEnd?: string | null } };
+
 export type CreateTransactionMutationVariables = Exact<{
   listingId: Scalars['ID']['input'];
   buyerId: Scalars['ID']['input'];
@@ -1729,7 +1678,7 @@ export type BusinessTrustRatingQuery = { __typename?: 'Query', businessTrustRati
 export type GetCategoriesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetCategoriesQuery = { __typename?: 'Query', getCategories?: Array<{ __typename?: 'Category', id: string, name: string, slug: string, parentId?: string | null } | null> | null };
+export type GetCategoriesQuery = { __typename?: 'Query', getCategories?: Array<{ __typename?: 'Category', id: string, name: string, slug: string, parentId?: string | null, sortOrder: number } | null> | null };
 
 export type GetListingByIdQueryVariables = Exact<{
   id: Scalars['ID']['input'];
@@ -1763,7 +1712,7 @@ export type GetListingsQuery = { __typename?: 'Query', getListings: { __typename
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type MeQuery = { __typename?: 'Query', me?: { __typename?: 'User', id: string, username: string, email?: string | null, firstName?: string | null, lastName?: string | null, bio?: string | null, profileImageUrl?: string | null, planType?: PlanType | null, proStoreSevenDayBoostsRemainingThisMonth?: number | null, role: string, customCity?: string | null, contactNumber?: string | null, idNumber?: string | null, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, subscription?: { __typename?: 'Subscription', status: SubscriptionStatus, planType: PlanType } | null, trustRating?: { __typename?: 'TrustRating', verifiedId: boolean } | null, profileCompletion?: { __typename?: 'ProfileCompletion', completionPercentage: number } | null } | null };
+export type MeQuery = { __typename?: 'Query', me?: { __typename?: 'User', id: string, username: string, email?: string | null, firstName?: string | null, lastName?: string | null, bio?: string | null, profileImageUrl?: string | null, planType?: PlanType | null, proStoreSevenDayBoostsRemainingThisMonth?: number | null, role: string, customCity?: string | null, contactNumber?: string | null, idNumber?: string | null, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, subscription?: { __typename?: 'Subscription', id: string, status: SubscriptionStatus, planType: PlanType, amount: number, billingCycle: BillingCycle, currentPeriodStart?: string | null, currentPeriodEnd?: string | null, cancelAtPeriodEnd?: boolean | null, cancelledAt?: string | null } | null, trustRating?: { __typename?: 'TrustRating', verifiedId: boolean } | null, profileCompletion?: { __typename?: 'ProfileCompletion', completionPercentage: number } | null } | null };
 
 export type GetMyBusinessQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1914,13 +1863,6 @@ export type SearchUsersQueryVariables = Exact<{
 
 
 export type SearchUsersQuery = { __typename?: 'Query', searchUsers: Array<{ __typename?: 'User', id: string, username: string, email?: string | null, profileImageUrl?: string | null, firstName?: string | null, lastName?: string | null, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, trustRating?: { __typename?: 'TrustRating', overallScore: number, starRating: number, trustLevel: string, totalReviews: number, totalTransactions: number, successfulTransactions: number } | null }> };
-
-export type GetUserVerificationDocumentsQueryVariables = Exact<{
-  userId: Scalars['ID']['input'];
-}>;
-
-
-export type GetUserVerificationDocumentsQuery = { __typename?: 'Query', getUserVerificationDocuments: Array<{ __typename?: 'VerificationDocument', id: string, userId?: string | null, documentType: DocumentType, documentUrl: string, status: VerificationStatus, uploadedAt: string, verifiedAt?: string | null, notes?: string | null }> };
 
 export type MyListingsQueryVariables = Exact<{
   limit?: InputMaybe<Scalars['Int']['input']>;
@@ -2101,12 +2043,13 @@ export type UpdateUserPreferencesMutationHookResult = ReturnType<typeof useUpdat
 export type UpdateUserPreferencesMutationResult = Apollo.MutationResult<UpdateUserPreferencesMutation>;
 export type UpdateUserPreferencesMutationOptions = Apollo.BaseMutationOptions<UpdateUserPreferencesMutation, UpdateUserPreferencesMutationVariables>;
 export const CreateListingDocument = gql`
-    mutation CreateListing($title: String!, $description: String!, $images: [String!]!, $categoryId: ID!, $price: Float!, $quantity: Int, $customCity: String, $cityId: ID, $condition: Condition!, $userId: ID!, $businessId: ID, $nsfwFlagged: Boolean, $sellerMarked18Plus: Boolean) {
+    mutation CreateListing($title: String!, $description: String!, $images: [String!]!, $categoryId: ID!, $secondaryCategoryId: ID, $price: Float!, $quantity: Int, $customCity: String, $cityId: ID, $condition: Condition!, $userId: ID!, $businessId: ID, $nsfwFlagged: Boolean, $sellerMarked18Plus: Boolean) {
   createListing(
     title: $title
     description: $description
     images: $images
     categoryId: $categoryId
+    secondaryCategoryId: $secondaryCategoryId
     price: $price
     quantity: $quantity
     customCity: $customCity
@@ -2150,6 +2093,7 @@ export type CreateListingMutationFn = Apollo.MutationFunction<CreateListingMutat
  *      description: // value for 'description'
  *      images: // value for 'images'
  *      categoryId: // value for 'categoryId'
+ *      secondaryCategoryId: // value for 'secondaryCategoryId'
  *      price: // value for 'price'
  *      quantity: // value for 'quantity'
  *      customCity: // value for 'customCity'
@@ -3025,6 +2969,78 @@ export function useDeleteReviewMutation(baseOptions?: Apollo.MutationHookOptions
 export type DeleteReviewMutationHookResult = ReturnType<typeof useDeleteReviewMutation>;
 export type DeleteReviewMutationResult = Apollo.MutationResult<DeleteReviewMutation>;
 export type DeleteReviewMutationOptions = Apollo.BaseMutationOptions<DeleteReviewMutation, DeleteReviewMutationVariables>;
+export const CancelSubscriptionDocument = gql`
+    mutation CancelSubscription {
+  cancelSubscription {
+    id
+    status
+    planType
+    cancelAtPeriodEnd
+    currentPeriodEnd
+  }
+}
+    `;
+export type CancelSubscriptionMutationFn = Apollo.MutationFunction<CancelSubscriptionMutation, CancelSubscriptionMutationVariables>;
+
+/**
+ * __useCancelSubscriptionMutation__
+ *
+ * To run a mutation, you first call `useCancelSubscriptionMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCancelSubscriptionMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [cancelSubscriptionMutation, { data, loading, error }] = useCancelSubscriptionMutation({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useCancelSubscriptionMutation(baseOptions?: Apollo.MutationHookOptions<CancelSubscriptionMutation, CancelSubscriptionMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<CancelSubscriptionMutation, CancelSubscriptionMutationVariables>(CancelSubscriptionDocument, options);
+      }
+export type CancelSubscriptionMutationHookResult = ReturnType<typeof useCancelSubscriptionMutation>;
+export type CancelSubscriptionMutationResult = Apollo.MutationResult<CancelSubscriptionMutation>;
+export type CancelSubscriptionMutationOptions = Apollo.BaseMutationOptions<CancelSubscriptionMutation, CancelSubscriptionMutationVariables>;
+export const ReactivateSubscriptionDocument = gql`
+    mutation ReactivateSubscription {
+  reactivateSubscription {
+    id
+    status
+    planType
+    cancelAtPeriodEnd
+    currentPeriodEnd
+  }
+}
+    `;
+export type ReactivateSubscriptionMutationFn = Apollo.MutationFunction<ReactivateSubscriptionMutation, ReactivateSubscriptionMutationVariables>;
+
+/**
+ * __useReactivateSubscriptionMutation__
+ *
+ * To run a mutation, you first call `useReactivateSubscriptionMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useReactivateSubscriptionMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [reactivateSubscriptionMutation, { data, loading, error }] = useReactivateSubscriptionMutation({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useReactivateSubscriptionMutation(baseOptions?: Apollo.MutationHookOptions<ReactivateSubscriptionMutation, ReactivateSubscriptionMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<ReactivateSubscriptionMutation, ReactivateSubscriptionMutationVariables>(ReactivateSubscriptionDocument, options);
+      }
+export type ReactivateSubscriptionMutationHookResult = ReturnType<typeof useReactivateSubscriptionMutation>;
+export type ReactivateSubscriptionMutationResult = Apollo.MutationResult<ReactivateSubscriptionMutation>;
+export type ReactivateSubscriptionMutationOptions = Apollo.BaseMutationOptions<ReactivateSubscriptionMutation, ReactivateSubscriptionMutationVariables>;
 export const CreateTransactionDocument = gql`
     mutation CreateTransaction($listingId: ID!, $buyerId: ID!, $salePrice: Float!, $paymentMethod: String, $notes: String) {
   createTransaction(
@@ -3729,6 +3745,7 @@ export const GetCategoriesDocument = gql`
     name
     slug
     parentId
+    sortOrder
   }
 }
     `;
@@ -4006,8 +4023,15 @@ export const MeDocument = gql`
     contactNumber
     idNumber
     subscription {
+      id
       status
       planType
+      amount
+      billingCycle
+      currentPeriodStart
+      currentPeriodEnd
+      cancelAtPeriodEnd
+      cancelledAt
     }
     trustRating {
       verifiedId
@@ -5538,53 +5562,6 @@ export type SearchUsersQueryHookResult = ReturnType<typeof useSearchUsersQuery>;
 export type SearchUsersLazyQueryHookResult = ReturnType<typeof useSearchUsersLazyQuery>;
 export type SearchUsersSuspenseQueryHookResult = ReturnType<typeof useSearchUsersSuspenseQuery>;
 export type SearchUsersQueryResult = Apollo.QueryResult<SearchUsersQuery, SearchUsersQueryVariables>;
-export const GetUserVerificationDocumentsDocument = gql`
-    query GetUserVerificationDocuments($userId: ID!) {
-  getUserVerificationDocuments(userId: $userId) {
-    id
-    userId
-    documentType
-    documentUrl
-    status
-    uploadedAt
-    verifiedAt
-    notes
-  }
-}
-    `;
-
-/**
- * __useGetUserVerificationDocumentsQuery__
- *
- * To run a query within a React component, call `useGetUserVerificationDocumentsQuery` and pass it any options that fit your needs.
- * When your component renders, `useGetUserVerificationDocumentsQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useGetUserVerificationDocumentsQuery({
- *   variables: {
- *      userId: // value for 'userId'
- *   },
- * });
- */
-export function useGetUserVerificationDocumentsQuery(baseOptions: Apollo.QueryHookOptions<GetUserVerificationDocumentsQuery, GetUserVerificationDocumentsQueryVariables> & ({ variables: GetUserVerificationDocumentsQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<GetUserVerificationDocumentsQuery, GetUserVerificationDocumentsQueryVariables>(GetUserVerificationDocumentsDocument, options);
-      }
-export function useGetUserVerificationDocumentsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetUserVerificationDocumentsQuery, GetUserVerificationDocumentsQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<GetUserVerificationDocumentsQuery, GetUserVerificationDocumentsQueryVariables>(GetUserVerificationDocumentsDocument, options);
-        }
-export function useGetUserVerificationDocumentsSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GetUserVerificationDocumentsQuery, GetUserVerificationDocumentsQueryVariables>) {
-          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
-          return Apollo.useSuspenseQuery<GetUserVerificationDocumentsQuery, GetUserVerificationDocumentsQueryVariables>(GetUserVerificationDocumentsDocument, options);
-        }
-export type GetUserVerificationDocumentsQueryHookResult = ReturnType<typeof useGetUserVerificationDocumentsQuery>;
-export type GetUserVerificationDocumentsLazyQueryHookResult = ReturnType<typeof useGetUserVerificationDocumentsLazyQuery>;
-export type GetUserVerificationDocumentsSuspenseQueryHookResult = ReturnType<typeof useGetUserVerificationDocumentsSuspenseQuery>;
-export type GetUserVerificationDocumentsQueryResult = Apollo.QueryResult<GetUserVerificationDocumentsQuery, GetUserVerificationDocumentsQueryVariables>;
 export const MyListingsDocument = gql`
     query MyListings($limit: Int, $offset: Int) {
   myListings(limit: $limit, offset: $offset) {
