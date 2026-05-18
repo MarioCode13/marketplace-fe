@@ -198,7 +198,9 @@ export default function AdminCategoriesPage() {
 
   const categoryTree = data?.getCategories
     ? buildCategoryTree(
-        data.getCategories.filter((cat): cat is Category => cat !== null),
+        (data.getCategories as (Category | null)[]).filter(
+          (cat): cat is Category => cat !== null,
+        ),
       )
     : []
 
@@ -293,7 +295,7 @@ export default function AdminCategoriesPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value=''>None (Main Category)</SelectItem>
-                    {data?.getCategories
+                    {(data?.getCategories as (Category | null)[] | undefined)
                       ?.filter(
                         (cat): cat is Category => cat !== null && !cat.parentId,
                       )
