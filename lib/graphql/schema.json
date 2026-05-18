@@ -9881,6 +9881,18 @@
             "deprecationReason": null
           },
           {
+            "name": "clearSecondaryCategory",
+            "description": "When true, removes the secondary category (secondaryCategoryId is ignored).",
+            "type": {
+              "kind": "SCALAR",
+              "name": "Boolean",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "condition",
             "description": null,
             "type": {

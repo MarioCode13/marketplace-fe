@@ -17,10 +17,11 @@ interface SellerProfileClientProps {
   reviews: Review[]
 }
 
-export default function SellerProfileClient({ user, reviews }: SellerProfileClientProps) {
-
-  const activeListings =
-    user.listings?.filter((listing) => !listing.sold) || []
+export default function SellerProfileClient({
+  user,
+  reviews,
+}: SellerProfileClientProps) {
+  const activeListings = user.listings?.filter((listing) => !listing.sold) || []
 
   return (
     <div className='container mx-auto px-4 py-8'>
@@ -195,14 +196,6 @@ export default function SellerProfileClient({ user, reviews }: SellerProfileClie
                     <div className='flex items-center justify-between'>
                       <span className='text-sm'>Location</span>
                       {user.profileCompletion.hasLocation ? (
-                        <CheckCircle className='h-4 w-4 text-green-500' />
-                      ) : (
-                        <Clock className='h-4 w-4 text-gray-400' />
-                      )}
-                    </div>
-                    <div className='flex items-center justify-between'>
-                      <span className='text-sm'>ID Document</span>
-                      {user.profileCompletion.hasIdDocument ? (
                         <CheckCircle className='h-4 w-4 text-green-500' />
                       ) : (
                         <Clock className='h-4 w-4 text-gray-400' />

@@ -68,6 +68,7 @@ export default function CompleteProfilePage() {
     customCity: '',
   })
   const [hasInitializedForm, setHasInitializedForm] = useState(false)
+  const [idVerifyLoading, setIdVerifyLoading] = useState(false)
 
   const {
     register,
@@ -157,6 +158,7 @@ export default function CompleteProfilePage() {
       return
     }
 
+    setIdVerifyLoading(true)
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE}/api/id-verify`,
@@ -196,6 +198,8 @@ export default function CompleteProfilePage() {
           ? err.message
           : 'ID verification failed. Please try again.',
       )
+    } finally {
+      setIdVerifyLoading(false)
     }
   }
 
@@ -554,21 +558,45 @@ export default function CompleteProfilePage() {
                   </div>
                 ) : (
                   <>
-                    <div className='flex items-center gap-2'>
-                      <Button
-                        type='button'
-                        variant='outlined'
-                        color='primary'
-                        onClick={handleVerifyID}
-                        disabled={
-                          !hasSubscription ||
-                          !idNumber ||
-                          !firstName ||
-                          !lastName
-                        }
-                      >
-                        Verify with OmniCheck
-                      </Button>
+                    <div className='flex flex-col gap-2'>
+                      <div className='flex items-center gap-2'>
+                        <Button
+                          type='button'
+                          variant='outlined'
+                          color='primary'
+                          onClick={handleVerifyID}
+                          disabled={
+                            idVerifyLoading ||
+                            !hasSubscription ||
+                            !idNumber ||
+                            !firstName ||
+                            !lastName
+                          }
+                          aria-busy={idVerifyLoading}
+                          aria-label={
+                            idVerifyLoading
+                              ? 'Verifying ID with OmniCheck'
+                              : undefined
+                          }
+                        >
+                          {idVerifyLoading ? (
+                            <>
+                              <Loader2
+                                className='w-4 h-4 animate-spin shrink-0 mr-2'
+                                aria-hidden
+                              />
+                              Verifying…
+                            </>
+                          ) : (
+                            'Verify with OmniCheck'
+                          )}
+                        </Button>
+                      </div>
+                      {idVerifyLoading && (
+                        <p className='text-xs text-muted-foreground' role='status'>
+                          Contacting OmniCheck — this can take up to a minute.
+                        </p>
+                      )}
                     </div>
                     <span className='text-xs text-muted-foreground'>
                       By verifying your ID, you agree to our use of

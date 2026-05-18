@@ -40,9 +40,6 @@ export const GET_SELLER_PROFILE = gql`
         hasBio
         hasContactNumber
         hasLocation
-        hasIdDocument
-        hasDriversLicense
-        hasProofOfAddress
         completionPercentage
         createdAt
         updatedAt
