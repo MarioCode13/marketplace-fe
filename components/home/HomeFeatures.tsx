@@ -2,14 +2,7 @@
 
 import { Container } from '@/components/ui/Container'
 import { motion } from 'framer-motion'
-import {
-  Shield,
-  Users,
-  TrendingUp,
-  Star,
-  Heart,
-  Zap,
-} from 'lucide-react'
+import { Shield, Users, TrendingUp, Star, Heart, Zap } from 'lucide-react'
 
 const features = [
   {
@@ -21,31 +14,31 @@ const features = [
   {
     icon: Zap,
     title: 'Secure Transactions',
-    color: 'bg-green-500',
+    color: 'bg-blue-500',
     text: 'Built-in security measures protect both buyers and sellers, ensuring safe and transparent transactions.',
   },
   {
     icon: Users,
     title: 'Verified Community',
-    color: 'bg-purple-500',
+    color: 'bg-blue-500',
     text: 'Join a community of verified users who value transparency, honesty, and fair dealing.',
   },
   {
     icon: Heart,
     title: 'Sustainable Shopping',
-    color: 'bg-yellow-500',
+    color: 'bg-blue-500',
     text: "Give items a second life while saving money and reducing waste. It's good for your wallet and the planet.",
   },
   {
     icon: TrendingUp,
     title: 'Great Deals',
-    color: 'bg-red-500',
+    color: 'bg-blue-500',
     text: 'Find amazing deals on quality secondhand items or turn your unused items into cash quickly and easily.',
   },
   {
     icon: Star,
     title: 'Quality Assurance',
-    color: 'bg-indigo-500',
+    color: 'bg-blue-500',
     text: 'Detailed condition ratings and honest descriptions help you make informed purchasing decisions.',
   },
 ]

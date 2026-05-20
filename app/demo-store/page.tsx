@@ -131,7 +131,7 @@ export default function DemoStorePage() {
           </Link>
         </div>
 
-        <div className='rounded-[2rem] border border-slate-200 bg-white shadow-xl shadow-slate-200/50 dark:border-slate-800 dark:bg-slate-950 dark:shadow-black/20'>
+        <div className='rounded-[2rem] border border-slate-200  bg-white shadow-xl shadow-slate-200/50 dark:border-slate-800 dark:bg-[radial-gradient(circle_at_top,_#16a34a_0%,_#14532d_55%,_#0b1f14_100%)] dark:shadow-black/20'>
           <div className='h-72 w-[100vw] max-w-[100%] overflow-hidden mb-6'>
             <div
               className='h-full w-full bg-cover bg-center rounded-tl-[2rem] rounded-tr-[2rem]'
@@ -141,8 +141,8 @@ export default function DemoStorePage() {
               }}
             />
           </div>
-          <div className='p-8'>
-            <div className='flex items-center gap-4 mb-4'>
+          <div className='p-8 '>
+            <div className='flex items-center gap-4 mb-4 '>
               <div
                 className='h-24  w-24 rounded-full border border-slate-200 bg-slate-900 dark:border-slate-700'
                 style={{
@@ -203,7 +203,7 @@ export default function DemoStorePage() {
                 <ListingCard
                   key={listing.id}
                   listing={listing}
-                  primaryColor='rgb(21, 19, 30)'
+                  primaryColor='rgb(15, 48, 22)'
                   cardTextColor='#fff'
                   store
                   clickable={false}
