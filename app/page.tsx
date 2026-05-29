@@ -13,6 +13,21 @@ export const metadata: Metadata = {
     description:
       'South Africa\'s trusted marketplace for buying and selling secondhand items. Secure, transparent, and built on trust.',
     url: 'https://dealio.org.za',
+    images: [
+      {
+        url: 'https://dealio.org.za/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Dealio - South Africa\'s Trusted Marketplace',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Dealio - South Africa\'s Trusted Marketplace',
+    description:
+      'South Africa\'s trusted marketplace for buying and selling secondhand items. Secure, transparent, and built on trust.',
+    images: ['https://dealio.org.za/og-image.png'],
   },
   alternates: {
     canonical: '/',

@@ -1,7 +1,7 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Label } from '@/components/ui/label'
@@ -12,15 +12,21 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { toast } from 'sonner'
 import Link from 'next/link'
 import { registrationSchema, type RegistrationFormData } from '@/lib/validation'
+import {
+  normalizeReferralCode,
+  REFERRAL_QUERY_PARAM,
+  REFERRAL_STORAGE_KEY,
+} from '@/lib/constants/referral'
 
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_BASE || 'https://api.dealio.org.za'
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'https://api.dealio.org.za'
 
-export default function Register() {
+function RegisterForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [usernameCheckLoading, setUsernameCheckLoading] = useState(false)
   const [registerLoading, setRegisterLoading] = useState(false)
+  const [referralCode, setReferralCode] = useState('')
 
   const {
     register: registerField,
@@ -31,8 +37,26 @@ export default function Register() {
     resolver: zodResolver(registrationSchema),
   })
 
+  useEffect(() => {
+    const fromUrl = normalizeReferralCode(
+      searchParams.get(REFERRAL_QUERY_PARAM),
+    )
+    if (fromUrl) {
+      setReferralCode(fromUrl)
+      sessionStorage.setItem(REFERRAL_STORAGE_KEY, fromUrl)
+      return
+    }
+    const stored = normalizeReferralCode(
+      sessionStorage.getItem(REFERRAL_STORAGE_KEY),
+    )
+    if (stored) {
+      setReferralCode(stored)
+    }
+  }, [searchParams])
+
   const loading = registerLoading || isSubmitting
   const password = watch('password')
+  const normalizedReferral = normalizeReferralCode(referralCode)
 
   const getPasswordStrength = () => {
     if (!password) return { strength: 0, color: 'bg-gray-200', text: '' }
@@ -98,6 +122,8 @@ export default function Register() {
       return
     }
 
+    const codeToSend = normalizeReferralCode(referralCode)
+
     setRegisterLoading(true)
     try {
       const res = await fetch(`${API_BASE}/api/auth/register`, {
@@ -108,6 +134,7 @@ export default function Register() {
           username: data.username,
           email: data.email,
           password: data.password,
+          ...(codeToSend ? { referralCode: codeToSend } : {}),
         }),
       })
 
@@ -127,6 +154,7 @@ export default function Register() {
       }
 
       if (body.success) {
+        sessionStorage.removeItem(REFERRAL_STORAGE_KEY)
         toast.success(
           'Registration successful! Check your email for verification instructions.',
         )
@@ -148,6 +176,7 @@ export default function Register() {
     <div className='flex min-h-screen items-center justify-center bg-background'>
       <div className='w-full max-w-md rounded-lg p-6 shadow-lg bg-componentBackground'>
         <h2 className='mb-6 text-2xl font-bold text-foreground'>Register</h2>
+
         <form
           onSubmit={handleSubmit(onSubmit)}
           className='flex flex-col gap-4'
@@ -191,6 +220,36 @@ export default function Register() {
             {errors.email && (
               <p className='text-sm text-red-500 mt-1'>
                 {errors.email.message}
+              </p>
+            )}
+          </div>
+
+          <div className='flex flex-col'>
+            <Label
+              htmlFor='referralCode'
+              className='mb-2'
+            >
+              Referral code{' '}
+              <span className='font-normal text-muted-foreground'>
+                (optional)
+              </span>
+            </Label>
+            <Input
+              id='referralCode'
+              name='referralCode'
+              placeholder='Enter a referral code'
+              value={referralCode}
+              onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+              autoComplete='off'
+              className='font-mono uppercase'
+            />
+            {normalizedReferral && (
+              <p className='mt-4 rounded-md border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-950 dark:border-blue-800 dark:bg-blue-950/40 dark:text-blue-100'>
+                You were referred by code{' '}
+                <span className='font-mono font-semibold'>
+                  {normalizedReferral}
+                </span>
+                . Referrer will receive boost credits when you sign up.
               </p>
             )}
           </div>
@@ -282,14 +341,14 @@ export default function Register() {
                 I agree to the{' '}
                 <Link
                   href='/terms'
-                  className='text-blue-600 hover:underline'
+                  className='text-blue-500 hover:underline'
                 >
                   Terms of Use
                 </Link>{' '}
                 and{' '}
                 <Link
                   href='/privacy'
-                  className='text-blue-600 hover:underline'
+                  className='text-blue-500 hover:underline'
                 >
                   Privacy Policy
                 </Link>
@@ -320,5 +379,24 @@ export default function Register() {
         </form>
       </div>
     </div>
+  )
+}
+
+function RegisterFallback() {
+  return (
+    <div className='flex min-h-screen items-center justify-center bg-background'>
+      <div className='w-full max-w-md rounded-lg p-6 shadow-lg bg-componentBackground'>
+        <h2 className='mb-6 text-2xl font-bold text-foreground'>Register</h2>
+        <p className='text-muted-foreground'>Loading…</p>
+      </div>
+    </div>
+  )
+}
+
+export default function Register() {
+  return (
+    <Suspense fallback={<RegisterFallback />}>
+      <RegisterForm />
+    </Suspense>
   )
 }

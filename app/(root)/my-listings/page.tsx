@@ -1,5 +1,5 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/store/store'
 import { useQuery, useMutation } from '@apollo/client'
@@ -21,7 +21,7 @@ import {
   BOOSTED_HOME_LISTINGS,
   LISTING_BOOST_PRICE_ZAR,
 } from '@/lib/graphql/queries/boostedHomeListings'
-import { GET_ME } from '@/lib/graphql/queries/getMe'
+import { useMeQuery } from '@/lib/graphql/generated'
 import useListingBoost from '@/lib/hooks/useListingBoost'
 import { LISTING_BOOST_GRAPHQL_INLINE_ACTIVATION } from '@/lib/constants/listingBoostCheckout'
 import ListingCard from '@/components/cards/ListingCard'
@@ -39,7 +39,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { toast } from 'sonner'
-import { Listing, PlanType } from '@/lib/graphql/generated'
+import { BoostCreditBalance, Listing, PlanType } from '@/lib/graphql/generated'
+import { REFERRAL_QUERY_PARAM } from '@/lib/constants/referral'
 
 // Using generated TrustListing type from lib/graphql/types/trust
 
@@ -56,6 +57,8 @@ export default function MyListingsPage() {
   const [boostListingId, setBoostListingId] = useState<string | null>(null)
   const [boostDurationDays, setBoostDurationDays] = useState<7 | 14 | 30>(30)
   const [boostCouponCode, setBoostCouponCode] = useState('')
+  const [referralShareUrl, setReferralShareUrl] = useState<string | null>(null)
+  const [referralDialogOpen, setReferralDialogOpen] = useState(false)
 
   const router = useRouter()
   const userContext = useSelector((state: RootState) => state.userContext)
@@ -100,15 +103,48 @@ export default function MyListingsPage() {
     skip: !boostListingId,
   })
 
-  const { data: meData, refetch: refetchMe } = useQuery(GET_ME, {
+  const { data: meData, refetch: refetchMe } = useMeQuery({
     skip: !userId,
     errorPolicy: 'all',
   })
+  const boostCreditBalances: BoostCreditBalance[] =
+    meData?.me?.boostCreditBalances?.filter((b) => b.available > 0) ?? []
+  const sevenDayCredits =
+    boostCreditBalances.find((b) => b.durationDays === 7)?.available ?? 0
   const proBoostsLeft = meData?.me?.proStoreSevenDayBoostsRemainingThisMonth
-  const proQuotaApplies =
-    boostDurationDays === 7 &&
-    typeof proBoostsLeft === 'number' &&
-    proBoostsLeft > 0
+  const myReferralCode = meData?.me?.referralCode
+  const referralSignupsRemaining = meData?.me?.referralSignupsRemainingThisMonth
+
+  useEffect(() => {
+    if (!myReferralCode) {
+      setReferralShareUrl(null)
+      return
+    }
+    const path = `/register?${REFERRAL_QUERY_PARAM}=${encodeURIComponent(myReferralCode)}`
+    setReferralShareUrl(`${window.location.origin}${path}`)
+  }, [myReferralCode])
+
+  const copyReferralLink = async () => {
+    if (!referralShareUrl) return
+    try {
+      await navigator.clipboard.writeText(referralShareUrl)
+      toast.success('Referral link copied')
+    } catch {
+      toast.error('Could not copy link')
+    }
+  }
+
+  const copyReferralCode = async () => {
+    if (!myReferralCode) return
+    try {
+      await navigator.clipboard.writeText(myReferralCode)
+      toast.success('Referral code copied')
+    } catch {
+      toast.error('Could not copy code')
+    }
+  }
+
+  const creditApplies = boostDurationDays === 7 && sevenDayCredits > 0
 
   const allListings: Listing[] = isBusinessUser
     ? data?.getListings?.listings || []
@@ -246,6 +282,51 @@ export default function MyListingsPage() {
                 </Link>
               </div>
             </div>
+            {(boostCreditBalances.length > 0 || myReferralCode) && (
+              <div className='mb-6 flex flex-col gap-3'>
+                {boostCreditBalances.length > 0 && (
+                  <div className='text-sm text-slate-700 dark:text-slate-300'>
+                    <span className='font-semibold'>
+                      {boostCreditBalances.reduce(
+                        (sum, balance) => sum + balance.available,
+                        0,
+                      )}
+                    </span>{' '}
+                    boost credit
+                    {boostCreditBalances.reduce(
+                      (sum, balance) => sum + balance.available,
+                      0,
+                    ) === 1
+                      ? ''
+                      : 's'}{' '}
+                    available — use Boost on a listing to apply one at no
+                    charge.
+                  </div>
+                )}
+                {myReferralCode && (
+                  <div className='flex justify-end'>
+                    <div className='flex flex-wrap items-center gap-3'>
+                      <Button
+                        type='button'
+                        variant='outlined'
+                        color='primary'
+                        onClick={() => setReferralDialogOpen(true)}
+                      >
+                        Referral link
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+            {typeof proBoostsLeft === 'number' && proBoostsLeft === 0 && (
+              <p className='mb-6 text-sm text-amber-800 dark:text-amber-200'>
+                Your Pro Store included 7-day boosts for this month are used up.
+                {sevenDayCredits > 0
+                  ? ' You still have other 7-day credits available above.'
+                  : ' You can still boost at the standard rate or choose 14 or 30 days.'}
+              </p>
+            )}
             {loading ? (
               <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full'>
                 {Array.from({ length: 3 }).map((_, index) => (
@@ -359,11 +440,12 @@ export default function MyListingsPage() {
             <DialogTitle>Boost your listing</DialogTitle>
             <DialogDescription>
               Feature this listing on the home page for the period you choose.
-              {proQuotaApplies ? (
+              {creditApplies ? (
                 <>
                   {' '}
-                  Your Pro Store plan includes up to five 7-day boosts per
-                  calendar month (you have {proBoostsLeft} left this month).
+                  You have {sevenDayCredits} seven-day boost credit
+                  {sevenDayCredits === 1 ? '' : 's'} available to apply at no
+                  charge.
                 </>
               ) : (
                 <>
@@ -391,11 +473,12 @@ export default function MyListingsPage() {
             </label>
             {boostPriceData != null && (
               <p className='text-lg font-semibold text-gray-900 dark:text-white'>
-                {proQuotaApplies ? (
+                {creditApplies ? (
                   <>
                     Total: R0.00{' '}
                     <span className='text-sm font-normal text-gray-600 dark:text-gray-400'>
-                      (Pro Store — {proBoostsLeft} of 5 slots left this month)
+                      ({sevenDayCredits} seven-day credit
+                      {sevenDayCredits === 1 ? '' : 's'} available)
                     </span>
                   </>
                 ) : (
@@ -409,10 +492,11 @@ export default function MyListingsPage() {
             {boostDurationDays === 7 &&
               meData?.me?.planType === PlanType.ProStore &&
               typeof proBoostsLeft === 'number' &&
-              proBoostsLeft === 0 && (
+              proBoostsLeft === 0 &&
+              sevenDayCredits === 0 && (
                 <p className='text-sm text-amber-700 dark:text-amber-300'>
-                  You have used all five included 7-day boosts this month. Pay
-                  the standard rate or pick 14 or 30 days.
+                  No 7-day boost credits available. Pay the standard rate or
+                  pick 14 or 30 days.
                 </p>
               )}
             <div className='space-y-2'>
@@ -451,9 +535,90 @@ export default function MyListingsPage() {
             >
               {isBoostLoading
                 ? 'Processing…'
-                : proQuotaApplies
-                  ? 'Use included boost'
+                : creditApplies
+                  ? 'Use boost credit'
                   : 'Pay with PayFast'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={referralDialogOpen}
+        onOpenChange={setReferralDialogOpen}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Referral link</DialogTitle>
+            <DialogDescription>
+              Share your referral link to earn up to two 7-day boosts per
+              signup.
+            </DialogDescription>
+          </DialogHeader>
+          <div className='space-y-4 py-2'>
+            {referralSignupsRemaining != null && (
+              <p className='text-sm text-slate-600 dark:text-slate-400'>
+                {referralSignupsRemaining > 0 ? (
+                  <>
+                    You have{' '}
+                    <span className='font-semibold'>
+                      {referralSignupsRemaining}
+                    </span>{' '}
+                    rewarded signup
+                    {referralSignupsRemaining === 1 ? '' : 's'} remaining this
+                    month.
+                  </>
+                ) : (
+                  <>Your monthly referral reward limit has been reached.</>
+                )}
+              </p>
+            )}
+            <div className='space-y-2'>
+              <div>
+                <p className='text-sm font-medium text-gray-700 dark:text-gray-300'>
+                  Referral code
+                </p>
+                <div className='mt-1 flex items-center gap-2 rounded bg-slate-100 px-3 py-2 text-sm text-slate-900 dark:bg-slate-900 dark:text-slate-100'>
+                  <span className='font-mono'>{myReferralCode}</span>
+                  <Button
+                    type='button'
+                    variant='outlined'
+                    color='primary'
+                    className='text-xs'
+                    onClick={() => void copyReferralCode()}
+                  >
+                    Copy code
+                  </Button>
+                </div>
+              </div>
+              <div>
+                <p className='text-sm font-medium text-gray-700 dark:text-gray-300'>
+                  Referral link
+                </p>
+                <div className='mt-1 flex items-center gap-2 rounded bg-slate-50 px-3 py-2 text-sm text-slate-900 dark:bg-slate-900 dark:text-slate-100'>
+                  <code className='flex-1 min-w-0 truncate'>
+                    {referralShareUrl}
+                  </code>
+                  <Button
+                    type='button'
+                    variant='outlined'
+                    color='primary'
+                    className='text-xs'
+                    onClick={() => void copyReferralLink()}
+                  >
+                    Copy link
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant='outlined'
+              color='primary'
+              onClick={() => setReferralDialogOpen(false)}
+            >
+              Close
             </Button>
           </DialogFooter>
         </DialogContent>

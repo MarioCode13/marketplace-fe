@@ -99,6 +99,27 @@ export enum BillingCycle {
   Yearly = 'YEARLY'
 }
 
+export type BoostCreditBalance = {
+  __typename?: 'BoostCreditBalance';
+  available: Scalars['Int']['output'];
+  bySource: Array<BoostCreditSourceBalance>;
+  durationDays: Scalars['Int']['output'];
+};
+
+export enum BoostCreditSource {
+  Admin = 'ADMIN',
+  LegacyMigration = 'LEGACY_MIGRATION',
+  ProStoreMonthly = 'PRO_STORE_MONTHLY',
+  Purchase = 'PURCHASE',
+  Referral = 'REFERRAL'
+}
+
+export type BoostCreditSourceBalance = {
+  __typename?: 'BoostCreditSourceBalance';
+  available: Scalars['Int']['output'];
+  source: BoostCreditSource;
+};
+
 export type Brand = {
   __typename?: 'Brand';
   category: Category;
@@ -595,6 +616,7 @@ export type MutationMarkNotificationReadArgs = {
 export type MutationRegisterArgs = {
   email: Scalars['String']['input'];
   password: Scalars['String']['input'];
+  referralCode?: InputMaybe<Scalars['String']['input']>;
   username: Scalars['String']['input'];
 };
 
@@ -1335,6 +1357,8 @@ export type User = {
   __typename?: 'User';
   ageVerified: Scalars['Boolean']['output'];
   bio?: Maybe<Scalars['String']['output']>;
+  /** Wallet balances of unused boost credits, grouped by duration (own profile only). */
+  boostCreditBalances: Array<BoostCreditBalance>;
   business?: Maybe<Business>;
   city?: Maybe<City>;
   contactNumber?: Maybe<Scalars['String']['output']>;
@@ -1371,6 +1395,12 @@ export type User = {
   proStoreSevenDayBoostsRemainingThisMonth?: Maybe<Scalars['Int']['output']>;
   profileCompletion?: Maybe<ProfileCompletion>;
   profileImageUrl?: Maybe<Scalars['String']['output']>;
+  /** Shareable referral code (own profile only). */
+  referralCode?: Maybe<Scalars['String']['output']>;
+  /** How many more referral signups can earn boost credits this month. Own profile only. */
+  referralSignupsRemainingThisMonth?: Maybe<Scalars['Int']['output']>;
+  /** Rewarded referral signups this SA calendar month (max 2). Own profile only. */
+  referralSignupsRewardedThisMonth?: Maybe<Scalars['Int']['output']>;
   role: Scalars['String']['output'];
   storeBranding?: Maybe<StoreBranding>;
   subscription?: Maybe<Subscription>;
@@ -1754,11 +1784,6 @@ export type GetListingsQueryVariables = Exact<{
 
 
 export type GetListingsQuery = { __typename?: 'Query', getListings: { __typename?: 'ListingPageResponse', totalCount: number, listings: Array<{ __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, sold: boolean, nsfwApprovalStatus?: ContentApprovalStatus | null, customCity?: string | null, condition: Condition, createdAt: string, expiresAt: string, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, category?: { __typename?: 'Category', id: string, name: string } | null, brand?: { __typename?: 'Brand', id: string, name: string } | null, user?: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null, trustRating?: { __typename?: 'TrustRating', verifiedId: boolean, starRating: number, totalReviews: number } | null } | null, business?: { __typename?: 'Business', name: string, trustRating?: { __typename?: 'BusinessTrustRating', verifiedWithThirdParty: boolean, averageRating: number, reviewCount: number } | null } | null }> } };
-
-export type MeQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type MeQuery = { __typename?: 'Query', me?: { __typename?: 'User', id: string, username: string, email?: string | null, firstName?: string | null, lastName?: string | null, bio?: string | null, profileImageUrl?: string | null, planType?: PlanType | null, proStoreSevenDayBoostsRemainingThisMonth?: number | null, role: string, customCity?: string | null, contactNumber?: string | null, idNumber?: string | null, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, subscription?: { __typename?: 'Subscription', id: string, status: SubscriptionStatus, planType: PlanType, amount: number, billingCycle: BillingCycle, currentPeriodStart?: string | null, currentPeriodEnd?: string | null, cancelAtPeriodEnd?: boolean | null, cancelledAt?: string | null } | null, trustRating?: { __typename?: 'TrustRating', verifiedId: boolean } | null, profileCompletion?: { __typename?: 'ProfileCompletion', completionPercentage: number } | null } | null };
 
 export type GetMyBusinessQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -4144,84 +4169,6 @@ export type GetListingsQueryHookResult = ReturnType<typeof useGetListingsQuery>;
 export type GetListingsLazyQueryHookResult = ReturnType<typeof useGetListingsLazyQuery>;
 export type GetListingsSuspenseQueryHookResult = ReturnType<typeof useGetListingsSuspenseQuery>;
 export type GetListingsQueryResult = Apollo.QueryResult<GetListingsQuery, GetListingsQueryVariables>;
-export const MeDocument = gql`
-    query Me {
-  me {
-    id
-    username
-    email
-    firstName
-    lastName
-    bio
-    profileImageUrl
-    planType
-    proStoreSevenDayBoostsRemainingThisMonth
-    role
-    city {
-      id
-      name
-      region {
-        name
-        country {
-          name
-        }
-      }
-    }
-    customCity
-    contactNumber
-    idNumber
-    subscription {
-      id
-      status
-      planType
-      amount
-      billingCycle
-      currentPeriodStart
-      currentPeriodEnd
-      cancelAtPeriodEnd
-      cancelledAt
-    }
-    trustRating {
-      verifiedId
-    }
-    profileCompletion {
-      completionPercentage
-    }
-  }
-}
-    `;
-
-/**
- * __useMeQuery__
- *
- * To run a query within a React component, call `useMeQuery` and pass it any options that fit your needs.
- * When your component renders, `useMeQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useMeQuery({
- *   variables: {
- *   },
- * });
- */
-export function useMeQuery(baseOptions?: Apollo.QueryHookOptions<MeQuery, MeQueryVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<MeQuery, MeQueryVariables>(MeDocument, options);
-      }
-export function useMeLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<MeQuery, MeQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<MeQuery, MeQueryVariables>(MeDocument, options);
-        }
-export function useMeSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<MeQuery, MeQueryVariables>) {
-          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
-          return Apollo.useSuspenseQuery<MeQuery, MeQueryVariables>(MeDocument, options);
-        }
-export type MeQueryHookResult = ReturnType<typeof useMeQuery>;
-export type MeLazyQueryHookResult = ReturnType<typeof useMeLazyQuery>;
-export type MeSuspenseQueryHookResult = ReturnType<typeof useMeSuspenseQuery>;
-export type MeQueryResult = Apollo.QueryResult<MeQuery, MeQueryVariables>;
 export const GetMyBusinessDocument = gql`
     query GetMyBusiness {
   myBusiness {
