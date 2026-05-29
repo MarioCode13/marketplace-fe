@@ -2,13 +2,14 @@
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { useMeQuery } from '@/lib/graphql/generated'
+import { useQuery } from '@apollo/client'
+import { GET_ME, type MeQuery } from '@/lib/graphql/queries/getMe'
 
 export default function SubscriptionSuccess() {
   const [status, setStatus] = useState<'pending' | 'active' | 'error'>(
     'pending'
   )
-  const { data, startPolling, stopPolling } = useMeQuery({
+  const { data, startPolling, stopPolling } = useQuery<MeQuery>(GET_ME, {
     pollInterval: 2000,
     fetchPolicy: 'network-only',
   })

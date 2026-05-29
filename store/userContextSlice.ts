@@ -1,10 +1,9 @@
 import { createAction, createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit'
 import { getApolloClient } from '@/lib/apollo/client'
 // No longer using GraphQL for login; handled by backend REST
-import { GET_ME } from '@/lib/graphql/queries/getMe'
+import { GET_ME, type MeQuery } from '@/lib/graphql/queries/getMe'
 import { GET_MY_BUSINESS } from '@/lib/graphql/queries/getMyBusiness'
 import { Business } from '@/lib/graphql/generated'
-import { MeQuery } from '@/lib/graphql/generated'
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "https://api.dealio.org.za"
 

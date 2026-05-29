@@ -11,8 +11,9 @@ import Image from 'next/image'
 import {
 	useBusinessTrustRatingQuery,
 	useGetTrustRatingQuery,
-	useMeQuery,
 } from '@/lib/graphql/generated'
+import { GET_ME, type MeQuery } from '@/lib/graphql/queries/getMe'
+import { useQuery } from '@apollo/client'
 import {
 	Pencil,
 	User,
@@ -67,7 +68,9 @@ export default function Profile() {
 	})
 
 	// Get user object for verification status — use cache to avoid redundant network call
-	const { data: meData } = useMeQuery({ fetchPolicy: 'cache-first' })
+	const { data: meData } = useQuery<MeQuery>(GET_ME, {
+		fetchPolicy: 'cache-first',
+	})
 	// Use userContext fields for business user logic
 	const isBusinessUser = userContext.isBusinessUser
 	const canEditBusinessProfile = userContext.isBusinessOwner

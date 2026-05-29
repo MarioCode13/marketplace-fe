@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/store/store'
-import { useQuery, useMutation } from '@apollo/client'
+import { gql, useQuery, useMutation } from '@apollo/client'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import SkeletonListingCard from '@/components/cards/SkeletonListingCard'
@@ -21,7 +21,6 @@ import {
   BOOSTED_HOME_LISTINGS,
   LISTING_BOOST_PRICE_ZAR,
 } from '@/lib/graphql/queries/boostedHomeListings'
-import { useMeQuery } from '@/lib/graphql/generated'
 import useListingBoost from '@/lib/hooks/useListingBoost'
 import { LISTING_BOOST_GRAPHQL_INLINE_ACTIVATION } from '@/lib/constants/listingBoostCheckout'
 import ListingCard from '@/components/cards/ListingCard'
@@ -39,8 +38,40 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { toast } from 'sonner'
-import { BoostCreditBalance, Listing, PlanType } from '@/lib/graphql/generated'
+import { Listing, PlanType } from '@/lib/graphql/generated'
 import { REFERRAL_QUERY_PARAM } from '@/lib/constants/referral'
+
+type ReferralBoostCreditBalance = {
+  available: number
+  durationDays: number
+}
+
+type MeForMyListingsQuery = {
+  me?: {
+    referralCode?: string | null
+    referralSignupsRewardedThisMonth?: number | null
+    referralSignupsRemainingThisMonth?: number | null
+    proStoreSevenDayBoostsRemainingThisMonth?: number | null
+    planType?: string | null
+    boostCreditBalances: ReferralBoostCreditBalance[]
+  } | null
+}
+
+const ME_FOR_MY_LISTINGS_QUERY = gql`
+  query MeForMyListings {
+    me {
+      referralCode
+      referralSignupsRewardedThisMonth
+      referralSignupsRemainingThisMonth
+      proStoreSevenDayBoostsRemainingThisMonth
+      planType
+      boostCreditBalances {
+        available
+        durationDays
+      }
+    }
+  }
+`
 
 // Using generated TrustListing type from lib/graphql/types/trust
 
@@ -103,11 +134,14 @@ export default function MyListingsPage() {
     skip: !boostListingId,
   })
 
-  const { data: meData, refetch: refetchMe } = useMeQuery({
-    skip: !userId,
-    errorPolicy: 'all',
-  })
-  const boostCreditBalances: BoostCreditBalance[] =
+  const { data: meData, refetch: refetchMe } = useQuery<MeForMyListingsQuery>(
+    ME_FOR_MY_LISTINGS_QUERY,
+    {
+      skip: !userId,
+      errorPolicy: 'all',
+    },
+  )
+  const boostCreditBalances: ReferralBoostCreditBalance[] =
     meData?.me?.boostCreditBalances?.filter((b) => b.available > 0) ?? []
   const sevenDayCredits =
     boostCreditBalances.find((b) => b.durationDays === 7)?.available ?? 0
@@ -288,13 +322,15 @@ export default function MyListingsPage() {
                   <div className='text-sm text-slate-700 dark:text-slate-300'>
                     <span className='font-semibold'>
                       {boostCreditBalances.reduce(
-                        (sum, balance) => sum + balance.available,
+                        (sum: number, balance: ReferralBoostCreditBalance) =>
+                          sum + balance.available,
                         0,
                       )}
                     </span>{' '}
                     boost credit
                     {boostCreditBalances.reduce(
-                      (sum, balance) => sum + balance.available,
+                      (sum: number, balance: ReferralBoostCreditBalance) =>
+                        sum + balance.available,
                       0,
                     ) === 1
                       ? ''
