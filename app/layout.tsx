@@ -45,7 +45,7 @@ export const metadata: Metadata = {
       "Buy and sell secondhand items safely on Dealio, South Africa's trusted marketplace. Secure transactions, verified sellers, and a transparent trust rating system.",
     images: [
       {
-        url: '/og-image.png',
+        url: 'https://dealio.org.za/og-image.png',
         width: 1200,
         height: 630,
         alt: "Dealio - South Africa's Trusted Secondhand Marketplace",
@@ -63,7 +63,7 @@ export const metadata: Metadata = {
     title: "Dealio - South Africa's Trusted Secondhand Marketplace",
     description:
       "Buy and sell secondhand items safely on Dealio, South Africa's trusted marketplace.",
-    images: ['/og-image.png'],
+    images: ['https://dealio.org.za/og-image.png'],
     creator: '@dealio_za',
   },
   robots: {
