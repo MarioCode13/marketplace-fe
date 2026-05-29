@@ -2,9 +2,9 @@
 
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import ListingCard from '@/components/cards/ListingCard'
-import { ChevronLeft, ChevronRight, ListFilter, Search } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ListFilter, Loader2, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import React, { useState, useMemo, useCallback } from 'react'
+import React, { useState, useMemo, useCallback, useTransition } from 'react'
 import { useSelector } from 'react-redux'
 import { selectIsLoggedIn } from '@/store/userContextSlice'
 import {
@@ -13,7 +13,10 @@ import {
   useRemoveFromWatchlistMutation,
 } from '@/lib/graphql/generated'
 import { toast } from 'sonner'
-import FilterDrawer from '@/components/drawers/FilterDrawer'
+import FilterDrawer, {
+  type FilterState,
+} from '@/components/drawers/FilterDrawer'
+import BrandFilterChips from '@/components/filters/BrandFilterChips'
 import {
   buildCategoryTree,
   buildCategoryPath,
@@ -21,7 +24,10 @@ import {
   slugify,
 } from '@/lib/utils'
 import { useGetCategoriesQuery } from '@/lib/graphql/generated'
+import { useQuery } from '@apollo/client'
+import { BRANDS_BY_CATEGORY } from '@/lib/graphql/queries/brands'
 import ListingsBoostCarousel from '@/components/carousel/ListingsBoostCarousel'
+import { useListingsNavPending } from './listings-nav-context'
 
 interface Listing {
   id: string
@@ -53,21 +59,6 @@ interface Listing {
   }
 }
 
-interface Filters {
-  categoryId?: string
-  minPrice?: number
-  maxPrice?: number
-  condition?: string
-  searchTerm?: string
-  sortBy?: string
-  sortOrder?: 'asc' | 'desc'
-  cityId?: string
-  cityLabel?: string
-  customCity?: string
-  minDate?: string
-  maxDate?: string
-}
-
 interface ListingsProps {
   serverListings: {
     listings: Listing[]
@@ -75,16 +66,24 @@ interface ListingsProps {
   }
   currentPage: number
   itemsPerPage: number
+  /** Resolved category for brand filters (from path or query). */
+  filterCategoryId?: string
+  filterBrandId?: string
 }
 
 const Listings: React.FC<ListingsProps> = ({
   serverListings,
   currentPage,
   itemsPerPage,
+  filterCategoryId,
+  filterBrandId,
 }) => {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const clickNavPending = useListingsNavPending()
   const [isFilterOpen, setIsFilterOpen] = useState(false)
+  const [isPending, startTransition] = useTransition()
+  const isResultsLoading = clickNavPending || isPending
   const [wishlistPendingId, setWishlistPendingId] = useState<string | null>(
     null,
   )
@@ -101,6 +100,19 @@ const Listings: React.FC<ListingsProps> = ({
     [wishlistIdsData?.myWatchlistListingIds],
   )
   const { data: categoriesData } = useGetCategoriesQuery()
+
+  const { data: brandsForFilter } = useQuery<{
+    brandsByCategory: { id: string; name: string }[]
+  }>(BRANDS_BY_CATEGORY, {
+    variables: { categoryId: filterCategoryId! },
+    skip: !filterCategoryId,
+  })
+
+  const activeBrandName = useMemo(() => {
+    if (!filterBrandId) return undefined
+    return brandsForFilter?.brandsByCategory.find((b) => b.id === filterBrandId)
+      ?.name
+  }, [filterBrandId, brandsForFilter])
 
   const handleWishlistToggle = useCallback(
     async (listingId: string) => {
@@ -144,6 +156,115 @@ const Listings: React.FC<ListingsProps> = ({
   const totalPages = Math.ceil(serverListings.totalCount / itemsPerPage)
   const pathname = usePathname()
 
+  const currentFiltersForDrawer = useMemo((): FilterState => {
+    const raw = Object.fromEntries(searchParams.entries())
+    const filters: FilterState = {
+      categoryId: filterCategoryId || (raw.categoryId as string | undefined),
+      brandId: filterBrandId || (raw.brandId as string | undefined),
+      minPrice: raw.minPrice ? Number(raw.minPrice) : undefined,
+      maxPrice: raw.maxPrice ? Number(raw.maxPrice) : undefined,
+      condition: raw.condition as string | undefined,
+      cityId: raw.cityId as string | undefined,
+      customCity: (raw.customCity as string) || '',
+      cityLabel: (raw.cityLabel as string) || '',
+      searchTerm: (raw.searchTerm as string) || '',
+      minDate: (raw.minDate as string) || '',
+      maxDate: (raw.maxDate as string) || '',
+      sortBy: (raw.sortBy as string) || 'createdAt',
+      sortOrder: (raw.sortOrder as 'asc' | 'desc') || 'desc',
+    }
+
+    if (pathname && categoriesData?.getCategories) {
+      const parts = pathname.split('/').filter(Boolean)
+      if (parts[0] === 'listings' && parts[1]) {
+        const allCats = categoriesData.getCategories as FlatCategory[]
+        const idMap = new Map(allCats.map((c) => [c.id, c]))
+
+        const getFullPath = (id: string): string[] => {
+          const p: string[] = []
+          let cur = idMap.get(id)
+          while (cur) {
+            p.unshift(cur.name.toLowerCase().replace(/\s+/g, '-'))
+            if (!cur.parentId) break
+            cur = idMap.get(cur.parentId as string)
+          }
+          return p
+        }
+
+        const slugMap: Record<string, string> = {}
+        for (const cat of allCats) {
+          const fullPath = getFullPath(cat.id)
+          slugMap[fullPath.join('/')] = cat.id
+          for (let k = fullPath.length - 1; k >= 1; k--) {
+            const suffix = fullPath.slice(-k).join('/')
+            if (!slugMap[suffix]) {
+              slugMap[suffix] = cat.id
+            }
+          }
+        }
+
+        const seg = parts[1]
+        const idx = seg.lastIndexOf('-in-')
+        let categoryPath: string[] = []
+        let cityLabel: string | undefined
+
+        if (idx > 0) {
+          categoryPath = [seg.slice(0, idx)]
+          cityLabel = seg.slice(idx + 4)
+        } else {
+          categoryPath = parts.slice(1)
+        }
+
+        if (categoryPath.length > 0) {
+          const pathKey = categoryPath.join('/')
+          const resolvedId = slugMap[pathKey]
+          if (resolvedId) {
+            filters.categoryId = resolvedId
+          }
+        }
+
+        if (cityLabel) {
+          filters.cityLabel = cityLabel
+        }
+      }
+    }
+
+    return filters
+  }, [
+    searchParams,
+    pathname,
+    categoriesData,
+    filterCategoryId,
+    filterBrandId,
+  ])
+
+  const navigate = useCallback(
+    (href: string) => {
+      startTransition(() => {
+        router.push(href)
+      })
+    },
+    [router],
+  )
+
+  const patchSearchParams = useCallback(
+    (updates: Record<string, string | undefined>) => {
+      const newParams = new URLSearchParams(searchParams.toString())
+      Object.entries(updates).forEach(([key, value]) => {
+        if (value === undefined || value === '') {
+          newParams.delete(key)
+        } else {
+          newParams.set(key, value)
+        }
+      })
+      const qs = newParams.toString()
+      const target =
+        pathname && pathname.startsWith('/listings') ? pathname : '/listings'
+      navigate(qs ? `${target}?${qs}` : target)
+    },
+    [searchParams, pathname, navigate],
+  )
+
   const humanize = (slug?: string) =>
     slug
       ? slug
@@ -153,31 +274,19 @@ const Listings: React.FC<ListingsProps> = ({
           .join(' ')
       : ''
 
-  const updateQuery = (params: Record<string, string | undefined>) => {
-    const newParams = new URLSearchParams(searchParams.toString())
-
-    Object.entries(params).forEach(([key, value]) => {
-      if (value === undefined || value === '') {
-        newParams.delete(key)
-      } else {
-        newParams.set(key, value)
-      }
-    })
-
-    router.push(`/listings?${newParams.toString()}`)
-  }
-
   const handlePageChange = (newPage: number) => {
-    updateQuery({ page: String(newPage) })
+    patchSearchParams({ page: String(newPage) })
   }
 
-  const handleApplyFilters = (newFilters: Filters) => {
+  const handleApplyFilters = (newFilters: FilterState) => {
     const newParams = new URLSearchParams()
+    const effectiveCategoryId =
+      newFilters.categoryId || filterCategoryId || undefined
 
     let categoryPath: string[] | undefined
-    if (newFilters.categoryId && categoriesData?.getCategories) {
+    if (effectiveCategoryId && categoriesData?.getCategories) {
       categoryPath = buildCategoryPath(
-        newFilters.categoryId,
+        effectiveCategoryId,
         categoriesData.getCategories as FlatCategory[],
       )
 
@@ -202,7 +311,7 @@ const Listings: React.FC<ListingsProps> = ({
           return parts
         }
 
-        const targetId = newFilters.categoryId as string
+        const targetId = effectiveCategoryId as string
         const targetFull = getFullPath(targetId)
         // Try shortest suffixes (leaf only, parent/leaf, ...) until unique
         let minimal: string[] | undefined
@@ -229,8 +338,8 @@ const Listings: React.FC<ListingsProps> = ({
       }
 
       // If we couldn't build a path, fall back to categoryId in query params
-      if (categoryPath.length === 0) {
-        newParams.set('categoryId', newFilters.categoryId)
+      if (!categoryPath || categoryPath.length === 0) {
+        newParams.set('categoryId', effectiveCategoryId)
         categoryPath = undefined
       }
     }
@@ -249,6 +358,7 @@ const Listings: React.FC<ListingsProps> = ({
     if (newFilters.maxDate) newParams.set('maxDate', newFilters.maxDate)
     if (newFilters.sortBy) newParams.set('sortBy', newFilters.sortBy)
     if (newFilters.sortOrder) newParams.set('sortOrder', newFilters.sortOrder)
+    if (newFilters.brandId) newParams.set('brandId', newFilters.brandId)
     newParams.set('page', '1') // reset page
 
     // Build path: prefer SEO-friendly single-segment like '/listings/{leafCategory}-in-{city}'
@@ -268,17 +378,24 @@ const Listings: React.FC<ListingsProps> = ({
     }
 
     const queryString = newParams.toString()
-    router.push(queryString ? `${basePath}?${queryString}` : basePath)
+    navigate(queryString ? `${basePath}?${queryString}` : basePath)
     setIsFilterOpen(false)
   }
 
   const clearAllFilters = () => {
-    router.replace('/listings')
+    startTransition(() => {
+      router.replace('/listings')
+    })
   }
 
   // Consider a set of real filter keys (ignore sort/pagination)
+  const handleBrandFilter = (brandId: string | undefined) => {
+    patchSearchParams({ brandId, page: '1' })
+  }
+
   const FILTER_KEYS = new Set([
     'categoryId',
+    'brandId',
     'minPrice',
     'maxPrice',
     'condition',
@@ -301,88 +418,13 @@ const Listings: React.FC<ListingsProps> = ({
 
   return (
     <div className='w-full flex justify-center'>
-      {(() => {
-        // Build currentFilters for the drawer: start from query params
-        const raw = Object.fromEntries(searchParams.entries()) as Record<
-          string,
-          unknown
-        >
-        const currentFiltersForDrawer: Record<string, unknown> = { ...raw }
-
-        // Try to derive categoryId / cityLabel from the pathname when the path encodes them
-        if (pathname && categoriesData?.getCategories) {
-          const parts = pathname.split('/').filter(Boolean)
-          if (parts[0] === 'listings' && parts[1]) {
-            const allCats = categoriesData.getCategories as FlatCategory[]
-            const idMap = new Map(allCats.map((c) => [c.id, c]))
-
-            // Build slug-to-ID map for this category tree
-            const getFullPath = (id: string): string[] => {
-              const p: string[] = []
-              let cur = idMap.get(id)
-              while (cur) {
-                p.unshift(cur.name.toLowerCase().replace(/\s+/g, '-'))
-                if (!cur.parentId) break
-                cur = idMap.get(cur.parentId as string)
-              }
-              return p
-            }
-
-            // Map all full category paths to their IDs
-            const slugMap: Record<string, string> = {}
-            for (const cat of allCats) {
-              const fullPath = getFullPath(cat.id)
-              slugMap[fullPath.join('/')] = cat.id
-              // add suffixes for partial matching
-              for (let k = fullPath.length - 1; k >= 1; k--) {
-                const suffix = fullPath.slice(-k).join('/')
-                if (!slugMap[suffix]) {
-                  slugMap[suffix] = cat.id
-                }
-              }
-            }
-
-            // Extract category and city from path
-            const seg = parts[1]
-            const idx = seg.lastIndexOf('-in-')
-            let categoryPath: string[] = []
-            let cityLabel: string | undefined
-
-            if (idx > 0) {
-              // Format: category-in-city
-              categoryPath = [seg.slice(0, idx)]
-              cityLabel = seg.slice(idx + 4)
-            } else {
-              // Could be category path like parent/child or just single category
-              categoryPath = parts.slice(1)
-            }
-
-            // Try to resolve category path to ID only if there's actually a category in the path
-            if (categoryPath.length > 0) {
-              const pathKey = categoryPath.join('/')
-              const resolvedId = slugMap[pathKey]
-              if (resolvedId) {
-                currentFiltersForDrawer.categoryId = resolvedId
-              }
-            }
-            // Don't set categoryId from anywhere else - it must come from explicit path segments
-
-            if (cityLabel) {
-              currentFiltersForDrawer.cityLabel = cityLabel
-            }
-          }
-        }
-
-        return (
-          <FilterDrawer
-            isOpen={isFilterOpen}
-            onClose={() => setIsFilterOpen(false)}
-            onApply={handleApplyFilters}
-            categories={categoriesTree}
-            currentFilters={currentFiltersForDrawer}
-          />
-        )
-      })()}
+      <FilterDrawer
+        isOpen={isFilterOpen}
+        onClose={() => setIsFilterOpen(false)}
+        onApply={handleApplyFilters}
+        categories={categoriesTree}
+        currentFilters={currentFiltersForDrawer}
+      />
 
       <div className='flex flex-col items-center p-6 w-full max-w-7xl'>
         <div className='flex items-center justify-between w-full mb-6'>
@@ -406,6 +448,19 @@ const Listings: React.FC<ListingsProps> = ({
           </div>
           <div className='w-12'></div>
         </div>
+
+        {currentFiltersForDrawer.categoryId && (
+          <div className='w-full mb-4'>
+            <BrandFilterChips
+              categoryId={currentFiltersForDrawer.categoryId}
+              selectedBrandId={
+                searchParams.get('brandId') || filterBrandId || undefined
+              }
+              onSelect={handleBrandFilter}
+              disabled={isResultsLoading}
+            />
+          </div>
+        )}
 
         {hasActiveFilters && (
           <div className='w-full mb-4 p-3 bg-muted rounded-lg'>
@@ -478,6 +533,9 @@ const Listings: React.FC<ListingsProps> = ({
                 }
                 if (params.searchTerm)
                   filterLabels.push(`Search: "${params.searchTerm}"`)
+                if (params.brandId && activeBrandName) {
+                  filterLabels.push(`Brand: ${activeBrandName}`)
+                }
                 if (params.sortBy)
                   filterLabels.push(`Sort by: ${params.sortBy}`)
                 if (params.sortOrder)
@@ -505,53 +563,71 @@ const Listings: React.FC<ListingsProps> = ({
           </div>
         )}
 
-        {(() => {
-          const activeListings = serverListings.listings.filter(
-            (listing) => !listing.sold,
-          )
-          return activeListings.length > 0 ? (
-            <>
-              <div className='w-full mb-4 text-sm text-muted-foreground'>
-                {`${activeListings.length} listing${
-                  activeListings.length !== 1 ? 's' : ''
-                } found`}
-              </div>
-              <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full pb-8'>
-                {activeListings.map((listing) => (
-                  <ListingCard
-                    key={listing.id}
-                    listing={{
-                      ...listing,
-                      user: listing.user ?? undefined,
-                    }}
-                    showWishlistHeart
-                    wishlisted={wishlistIdSet.has(listing.id)}
-                    wishlistLoading={wishlistPendingId === listing.id}
-                    onWishlistHeartClick={() =>
-                      handleWishlistToggle(listing.id)
-                    }
-                  />
-                ))}
-              </div>
-            </>
-          ) : (
-            <div className='text-center py-12'>
-              <p className='text-lg text-muted-foreground mb-2'>
-                No listings found
-              </p>
-              {hasActiveFilters && (
-                <Button
-                  variant='outlined'
-                  color='primary'
-                  onClick={clearAllFilters}
-                  className='mt-2'
-                >
-                  Clear Filters
-                </Button>
-              )}
+        <div className='relative w-full min-h-[12rem]'>
+          {isResultsLoading && (
+            <div
+              className='absolute inset-0 z-20 flex flex-col items-center justify-center gap-2 rounded-lg bg-background/75 backdrop-blur-[2px]'
+              aria-live='polite'
+              aria-busy='true'
+            >
+              <Loader2 className='h-8 w-8 animate-spin text-primary' />
+               
             </div>
-          )
-        })()}
+          )}
+
+          {(() => {
+            const activeListings = serverListings.listings.filter(
+              (listing) => !listing.sold,
+            )
+            return activeListings.length > 0 ? (
+              <>
+                <div className='w-full mb-4 text-sm text-muted-foreground'>
+                  {`${activeListings.length} listing${
+                    activeListings.length !== 1 ? 's' : ''
+                  } found`}
+                </div>
+                <div
+                  className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full pb-8 transition-opacity ${isResultsLoading ? 'opacity-50 pointer-events-none' : ''}`}
+                >
+                  {activeListings.map((listing) => (
+                    <ListingCard
+                      key={listing.id}
+                      listing={{
+                        ...listing,
+                        user: listing.user ?? undefined,
+                      }}
+                      showWishlistHeart
+                      wishlisted={wishlistIdSet.has(listing.id)}
+                      wishlistLoading={wishlistPendingId === listing.id}
+                      onWishlistHeartClick={() =>
+                        handleWishlistToggle(listing.id)
+                      }
+                    />
+                  ))}
+                </div>
+              </>
+            ) : (
+              <div
+                className={`text-center py-12 transition-opacity ${isResultsLoading ? 'opacity-50' : ''}`}
+              >
+                <p className='text-lg text-muted-foreground mb-2'>
+                  No listings found
+                </p>
+                {hasActiveFilters && (
+                  <Button
+                    variant='outlined'
+                    color='primary'
+                    onClick={clearAllFilters}
+                    className='mt-2'
+                    disabled={isResultsLoading}
+                  >
+                    Clear Filters
+                  </Button>
+                )}
+              </div>
+            )
+          })()}
+        </div>
 
         {totalPages > 1 && (
           <div className='flex items-center justify-center gap-4 mt-8'>

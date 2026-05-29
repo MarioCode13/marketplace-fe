@@ -204,6 +204,7 @@ export default async function SlugPage({ params, searchParams }: PageProps) {
   const cityId = !citySlug ? getParamValue('cityId') || undefined : undefined
   const sortBy = getParamValue('sortBy')
   const sortOrder = getParamValue('sortOrder')
+  const brandId = getParamValue('brandId') || undefined
 
   // Build variables object, explicitly excluding undefined/null values
   const variables: Record<string, string | number | undefined> = {
@@ -237,6 +238,7 @@ export default async function SlugPage({ params, searchParams }: PageProps) {
   if (maxDate) variables.maxDate = maxDate
   if (sortBy) variables.sortBy = sortBy
   if (sortOrder) variables.sortOrder = sortOrder
+  if (brandId) variables.brandId = brandId
 
   // Debug: log variables to see what we're sending
   console.log('Slug parts:', slugParts)
@@ -262,6 +264,8 @@ export default async function SlugPage({ params, searchParams }: PageProps) {
           serverListings={listings}
           currentPage={page}
           itemsPerPage={limit}
+          filterCategoryId={categoryId}
+          filterBrandId={brandId}
         />
       </ClientLoadingWrapper>
     )
@@ -273,6 +277,8 @@ export default async function SlugPage({ params, searchParams }: PageProps) {
           serverListings={{ listings: [], totalCount: 0 }}
           currentPage={page}
           itemsPerPage={limit}
+          filterCategoryId={categoryId}
+          filterBrandId={brandId}
         />
       </ClientLoadingWrapper>
     )

@@ -99,6 +99,14 @@ export enum BillingCycle {
   Yearly = 'YEARLY'
 }
 
+export type Brand = {
+  __typename?: 'Brand';
+  category: Category;
+  id: Scalars['ID']['output'];
+  name: Scalars['String']['output'];
+  slug: Scalars['String']['output'];
+};
+
 export type Business = {
   __typename?: 'Business';
   addressLine1?: Maybe<Scalars['String']['output']>;
@@ -317,6 +325,7 @@ export type Listing = {
   __typename?: 'Listing';
   /**  Added, nullable */
   archived: Scalars['Boolean']['output'];
+  brand?: Maybe<Brand>;
   /**  Now nullable */
   business?: Maybe<Business>;
   category?: Maybe<Category>;
@@ -487,6 +496,7 @@ export type MutationCreateCheckoutSessionArgs = {
 
 
 export type MutationCreateListingArgs = {
+  brandName?: InputMaybe<Scalars['String']['input']>;
   businessId?: InputMaybe<Scalars['ID']['input']>;
   categoryId: Scalars['ID']['input'];
   cityId?: InputMaybe<Scalars['ID']['input']>;
@@ -750,6 +760,8 @@ export type Query = {
   adminSubscriptionPromoCoupons: Array<AdminSubscriptionPromoCoupon>;
   /** Active boosted listings for the home carousel (NSFW-filtered for the viewer). */
   boostedHomeListings: Array<Listing>;
+  /** Get all brands in a category */
+  brandsByCategory: Array<Brand>;
   business?: Maybe<Business>;
   businessSubscriptions: Array<Subscription>;
   businessTrustRating?: Maybe<BusinessTrustRating>;
@@ -806,7 +818,6 @@ export type Query = {
   myBusinesses: Array<Business>;
   myCompletedPurchases: Array<Transaction>;
   myCompletedSales: Array<Transaction>;
-  /**  Nullable return type */
   myListings: ListingPageResponse;
   myPurchases: Array<Transaction>;
   mySales: Array<Transaction>;
@@ -818,6 +829,8 @@ export type Query = {
   myWatchlistListingIds: Array<Scalars['ID']['output']>;
   notifications: Array<Notification>;
   reviewsByUser: Array<Review>;
+  /** Search brands by name in a category */
+  searchBrands: Array<Brand>;
   searchCities: Array<City>;
   searchUsers: Array<User>;
   storeBySlug?: Maybe<User>;
@@ -829,6 +842,11 @@ export type Query = {
 
 export type QueryBoostedHomeListingsArgs = {
   limit?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+export type QueryBrandsByCategoryArgs = {
+  categoryId: Scalars['ID']['input'];
 };
 
 
@@ -923,6 +941,7 @@ export type QueryGetListingTransactionsArgs = {
 
 
 export type QueryGetListingsArgs = {
+  brandId?: InputMaybe<Scalars['ID']['input']>;
   businessId?: InputMaybe<Scalars['ID']['input']>;
   categoryId?: InputMaybe<Scalars['ID']['input']>;
   categorySlug?: InputMaybe<Scalars['String']['input']>;
@@ -1074,6 +1093,12 @@ export type QueryNotificationsArgs = {
 
 export type QueryReviewsByUserArgs = {
   userId: Scalars['ID']['input'];
+};
+
+
+export type QuerySearchBrandsArgs = {
+  categoryId: Scalars['ID']['input'];
+  query?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -1266,8 +1291,11 @@ export type UpdateBusinessInput = {
 };
 
 export type UpdateListingInput = {
+  brandName?: InputMaybe<Scalars['String']['input']>;
   categoryId?: InputMaybe<Scalars['ID']['input']>;
   cityId?: InputMaybe<Scalars['ID']['input']>;
+  /** When true, removes the brand (brandName is ignored). */
+  clearBrand?: InputMaybe<Scalars['Boolean']['input']>;
   /** When true, removes the secondary category (secondaryCategoryId is ignored). */
   clearSecondaryCategory?: InputMaybe<Scalars['Boolean']['input']>;
   condition?: InputMaybe<Condition>;
@@ -1409,6 +1437,7 @@ export type CreateListingMutationVariables = Exact<{
   businessId?: InputMaybe<Scalars['ID']['input']>;
   nsfwFlagged?: InputMaybe<Scalars['Boolean']['input']>;
   sellerMarked18Plus?: InputMaybe<Scalars['Boolean']['input']>;
+  brandName?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 
@@ -1655,6 +1684,21 @@ export type ListingBoostPriceZarQueryVariables = Exact<{
 
 export type ListingBoostPriceZarQuery = { __typename?: 'Query', listingBoostPriceZar: number };
 
+export type BrandsByCategoryQueryVariables = Exact<{
+  categoryId: Scalars['ID']['input'];
+}>;
+
+
+export type BrandsByCategoryQuery = { __typename?: 'Query', brandsByCategory: Array<{ __typename?: 'Brand', id: string, name: string, slug: string }> };
+
+export type SearchBrandsQueryVariables = Exact<{
+  categoryId: Scalars['ID']['input'];
+  query: Scalars['String']['input'];
+}>;
+
+
+export type SearchBrandsQuery = { __typename?: 'Query', searchBrands: Array<{ __typename?: 'Brand', id: string, name: string, slug: string }> };
+
 export type GetBusinessByIdQueryVariables = Exact<{
   id: Scalars['ID']['input'];
 }>;
@@ -1686,7 +1730,7 @@ export type GetListingByIdQueryVariables = Exact<{
 }>;
 
 
-export type GetListingByIdQuery = { __typename?: 'Query', getListingById?: { __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, sold: boolean, customCity?: string | null, condition: Condition, createdAt: string, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, category?: { __typename?: 'Category', id: string, name: string, parentId?: string | null } | null, secondaryCategory?: { __typename?: 'Category', id: string, name: string, parentId?: string | null } | null, user?: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null, email?: string | null, planType?: PlanType | null, trustRating?: { __typename?: 'TrustRating', verifiedId: boolean, overallScore: number, starRating: number, totalReviews: number } | null } | null, business?: { __typename?: 'Business', id: string, name: string, businessType?: string | null, email: string, slug?: string | null, trustRating?: { __typename?: 'BusinessTrustRating', averageRating: number, reviewCount: number, verifiedWithThirdParty: boolean } | null, storeBranding?: { __typename?: 'StoreBranding', storeName?: string | null, logoUrl?: string | null } | null, businessUsers: Array<{ __typename?: 'BusinessUser', user: { __typename?: 'User', id: string, username: string } }> } | null } | null };
+export type GetListingByIdQuery = { __typename?: 'Query', getListingById?: { __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, sold: boolean, customCity?: string | null, condition: Condition, createdAt: string, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, category?: { __typename?: 'Category', id: string, name: string, parentId?: string | null } | null, secondaryCategory?: { __typename?: 'Category', id: string, name: string, parentId?: string | null } | null, brand?: { __typename?: 'Brand', id: string, name: string } | null, user?: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null, email?: string | null, planType?: PlanType | null, trustRating?: { __typename?: 'TrustRating', verifiedId: boolean, overallScore: number, starRating: number, totalReviews: number } | null } | null, business?: { __typename?: 'Business', id: string, name: string, businessType?: string | null, email: string, slug?: string | null, trustRating?: { __typename?: 'BusinessTrustRating', averageRating: number, reviewCount: number, verifiedWithThirdParty: boolean } | null, storeBranding?: { __typename?: 'StoreBranding', storeName?: string | null, logoUrl?: string | null } | null, businessUsers: Array<{ __typename?: 'BusinessUser', user: { __typename?: 'User', id: string, username: string } }> } | null } | null };
 
 export type GetListingsQueryVariables = Exact<{
   limit: Scalars['Int']['input'];
@@ -1705,10 +1749,11 @@ export type GetListingsQueryVariables = Exact<{
   sortOrder?: InputMaybe<Scalars['String']['input']>;
   userId?: InputMaybe<Scalars['ID']['input']>;
   businessId?: InputMaybe<Scalars['ID']['input']>;
+  brandId?: InputMaybe<Scalars['ID']['input']>;
 }>;
 
 
-export type GetListingsQuery = { __typename?: 'Query', getListings: { __typename?: 'ListingPageResponse', totalCount: number, listings: Array<{ __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, sold: boolean, nsfwApprovalStatus?: ContentApprovalStatus | null, customCity?: string | null, condition: Condition, createdAt: string, expiresAt: string, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, category?: { __typename?: 'Category', id: string, name: string } | null, user?: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null, trustRating?: { __typename?: 'TrustRating', verifiedId: boolean, starRating: number, totalReviews: number } | null } | null, business?: { __typename?: 'Business', name: string, trustRating?: { __typename?: 'BusinessTrustRating', verifiedWithThirdParty: boolean, averageRating: number, reviewCount: number } | null } | null }> } };
+export type GetListingsQuery = { __typename?: 'Query', getListings: { __typename?: 'ListingPageResponse', totalCount: number, listings: Array<{ __typename?: 'Listing', id: string, title: string, description: string, images: Array<string>, price: number, sold: boolean, nsfwApprovalStatus?: ContentApprovalStatus | null, customCity?: string | null, condition: Condition, createdAt: string, expiresAt: string, city?: { __typename?: 'City', id: string, name: string, region?: { __typename?: 'Region', name: string, country: { __typename?: 'Country', name: string } } | null } | null, category?: { __typename?: 'Category', id: string, name: string } | null, brand?: { __typename?: 'Brand', id: string, name: string } | null, user?: { __typename?: 'User', id: string, username: string, profileImageUrl?: string | null, trustRating?: { __typename?: 'TrustRating', verifiedId: boolean, starRating: number, totalReviews: number } | null } | null, business?: { __typename?: 'Business', name: string, trustRating?: { __typename?: 'BusinessTrustRating', verifiedWithThirdParty: boolean, averageRating: number, reviewCount: number } | null } | null }> } };
 
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -2044,7 +2089,7 @@ export type UpdateUserPreferencesMutationHookResult = ReturnType<typeof useUpdat
 export type UpdateUserPreferencesMutationResult = Apollo.MutationResult<UpdateUserPreferencesMutation>;
 export type UpdateUserPreferencesMutationOptions = Apollo.BaseMutationOptions<UpdateUserPreferencesMutation, UpdateUserPreferencesMutationVariables>;
 export const CreateListingDocument = gql`
-    mutation CreateListing($title: String!, $description: String!, $images: [String!]!, $categoryId: ID!, $secondaryCategoryId: ID, $price: Float!, $quantity: Int, $customCity: String, $cityId: ID, $condition: Condition!, $userId: ID!, $businessId: ID, $nsfwFlagged: Boolean, $sellerMarked18Plus: Boolean) {
+    mutation CreateListing($title: String!, $description: String!, $images: [String!]!, $categoryId: ID!, $secondaryCategoryId: ID, $price: Float!, $quantity: Int, $customCity: String, $cityId: ID, $condition: Condition!, $userId: ID!, $businessId: ID, $nsfwFlagged: Boolean, $sellerMarked18Plus: Boolean, $brandName: String) {
   createListing(
     title: $title
     description: $description
@@ -2060,6 +2105,7 @@ export const CreateListingDocument = gql`
     businessId: $businessId
     nsfwFlagged: $nsfwFlagged
     sellerMarked18Plus: $sellerMarked18Plus
+    brandName: $brandName
   ) {
     id
     title
@@ -2104,6 +2150,7 @@ export type CreateListingMutationFn = Apollo.MutationFunction<CreateListingMutat
  *      businessId: // value for 'businessId'
  *      nsfwFlagged: // value for 'nsfwFlagged'
  *      sellerMarked18Plus: // value for 'sellerMarked18Plus'
+ *      brandName: // value for 'brandName'
  *   },
  * });
  */
@@ -3493,6 +3540,91 @@ export type ListingBoostPriceZarQueryHookResult = ReturnType<typeof useListingBo
 export type ListingBoostPriceZarLazyQueryHookResult = ReturnType<typeof useListingBoostPriceZarLazyQuery>;
 export type ListingBoostPriceZarSuspenseQueryHookResult = ReturnType<typeof useListingBoostPriceZarSuspenseQuery>;
 export type ListingBoostPriceZarQueryResult = Apollo.QueryResult<ListingBoostPriceZarQuery, ListingBoostPriceZarQueryVariables>;
+export const BrandsByCategoryDocument = gql`
+    query BrandsByCategory($categoryId: ID!) {
+  brandsByCategory(categoryId: $categoryId) {
+    id
+    name
+    slug
+  }
+}
+    `;
+
+/**
+ * __useBrandsByCategoryQuery__
+ *
+ * To run a query within a React component, call `useBrandsByCategoryQuery` and pass it any options that fit your needs.
+ * When your component renders, `useBrandsByCategoryQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useBrandsByCategoryQuery({
+ *   variables: {
+ *      categoryId: // value for 'categoryId'
+ *   },
+ * });
+ */
+export function useBrandsByCategoryQuery(baseOptions: Apollo.QueryHookOptions<BrandsByCategoryQuery, BrandsByCategoryQueryVariables> & ({ variables: BrandsByCategoryQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<BrandsByCategoryQuery, BrandsByCategoryQueryVariables>(BrandsByCategoryDocument, options);
+      }
+export function useBrandsByCategoryLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<BrandsByCategoryQuery, BrandsByCategoryQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<BrandsByCategoryQuery, BrandsByCategoryQueryVariables>(BrandsByCategoryDocument, options);
+        }
+export function useBrandsByCategorySuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<BrandsByCategoryQuery, BrandsByCategoryQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<BrandsByCategoryQuery, BrandsByCategoryQueryVariables>(BrandsByCategoryDocument, options);
+        }
+export type BrandsByCategoryQueryHookResult = ReturnType<typeof useBrandsByCategoryQuery>;
+export type BrandsByCategoryLazyQueryHookResult = ReturnType<typeof useBrandsByCategoryLazyQuery>;
+export type BrandsByCategorySuspenseQueryHookResult = ReturnType<typeof useBrandsByCategorySuspenseQuery>;
+export type BrandsByCategoryQueryResult = Apollo.QueryResult<BrandsByCategoryQuery, BrandsByCategoryQueryVariables>;
+export const SearchBrandsDocument = gql`
+    query SearchBrands($categoryId: ID!, $query: String!) {
+  searchBrands(categoryId: $categoryId, query: $query) {
+    id
+    name
+    slug
+  }
+}
+    `;
+
+/**
+ * __useSearchBrandsQuery__
+ *
+ * To run a query within a React component, call `useSearchBrandsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useSearchBrandsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useSearchBrandsQuery({
+ *   variables: {
+ *      categoryId: // value for 'categoryId'
+ *      query: // value for 'query'
+ *   },
+ * });
+ */
+export function useSearchBrandsQuery(baseOptions: Apollo.QueryHookOptions<SearchBrandsQuery, SearchBrandsQueryVariables> & ({ variables: SearchBrandsQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<SearchBrandsQuery, SearchBrandsQueryVariables>(SearchBrandsDocument, options);
+      }
+export function useSearchBrandsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<SearchBrandsQuery, SearchBrandsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<SearchBrandsQuery, SearchBrandsQueryVariables>(SearchBrandsDocument, options);
+        }
+export function useSearchBrandsSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<SearchBrandsQuery, SearchBrandsQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<SearchBrandsQuery, SearchBrandsQueryVariables>(SearchBrandsDocument, options);
+        }
+export type SearchBrandsQueryHookResult = ReturnType<typeof useSearchBrandsQuery>;
+export type SearchBrandsLazyQueryHookResult = ReturnType<typeof useSearchBrandsLazyQuery>;
+export type SearchBrandsSuspenseQueryHookResult = ReturnType<typeof useSearchBrandsSuspenseQuery>;
+export type SearchBrandsQueryResult = Apollo.QueryResult<SearchBrandsQuery, SearchBrandsQueryVariables>;
 export const GetBusinessByIdDocument = gql`
     query GetBusinessById($id: ID!) {
   business(id: $id) {
@@ -3811,6 +3943,10 @@ export const GetListingByIdDocument = gql`
       name
       parentId
     }
+    brand {
+      id
+      name
+    }
     customCity
     condition
     createdAt
@@ -3886,12 +4022,13 @@ export type GetListingByIdLazyQueryHookResult = ReturnType<typeof useGetListingB
 export type GetListingByIdSuspenseQueryHookResult = ReturnType<typeof useGetListingByIdSuspenseQuery>;
 export type GetListingByIdQueryResult = Apollo.QueryResult<GetListingByIdQuery, GetListingByIdQueryVariables>;
 export const GetListingsDocument = gql`
-    query GetListings($limit: Int!, $offset: Int!, $categoryId: ID, $categorySlug: String, $minPrice: Float, $maxPrice: Float, $condition: Condition, $cityId: ID, $citySlug: String, $searchTerm: String, $minDate: String, $maxDate: String, $sortBy: String, $sortOrder: String, $userId: ID, $businessId: ID) {
+    query GetListings($limit: Int!, $offset: Int!, $categoryId: ID, $categorySlug: String, $minPrice: Float, $maxPrice: Float, $condition: Condition, $cityId: ID, $citySlug: String, $searchTerm: String, $minDate: String, $maxDate: String, $sortBy: String, $sortOrder: String, $userId: ID, $businessId: ID, $brandId: ID) {
   getListings(
     limit: $limit
     offset: $offset
     categoryId: $categoryId
     categorySlug: $categorySlug
+    brandId: $brandId
     minPrice: $minPrice
     maxPrice: $maxPrice
     condition: $condition
@@ -3928,6 +4065,10 @@ export const GetListingsDocument = gql`
       createdAt
       expiresAt
       category {
+        id
+        name
+      }
+      brand {
         id
         name
       }
@@ -3983,6 +4124,7 @@ export const GetListingsDocument = gql`
  *      sortOrder: // value for 'sortOrder'
  *      userId: // value for 'userId'
  *      businessId: // value for 'businessId'
+ *      brandId: // value for 'brandId'
  *   },
  * });
  */

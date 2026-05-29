@@ -39,6 +39,7 @@ import { buildCategoryTree, FlatCategory, formatEnum } from '@/lib/utils'
 import CityAutocomplete from '@/components/drawers/CityAutocomplete'
 import { listingSchema, type ListingFormData } from '@/lib/validation'
 import { checkImageForApproval } from '@/lib/utils/contentModeration'
+import BrandPicker from '@/components/BrandPicker'
 
 export default function EditListingPage() {
   const router = useRouter()
@@ -82,6 +83,7 @@ export default function EditListingPage() {
       condition: 'NEW',
       quantity: '',
       customCity: '',
+      brandName: '',
     },
   })
 
@@ -130,6 +132,7 @@ export default function EditListingPage() {
       setValue('condition', listing.condition)
       setValue('customCity', listing?.customCity || '')
       setValue('sellerMarked18Plus', listing.sellerMarked18Plus || false)
+      setValue('brandName', listing.brand?.name || '')
 
       setCityState({
         city: listing.city?.id || '',
@@ -240,7 +243,11 @@ export default function EditListingPage() {
     setSaving(true)
 
     try {
-      const input: UpdateListingInput = {
+      const trimmedBrand = formData.brandName?.trim() ?? ''
+      const input: UpdateListingInput & {
+        brandName?: string
+        clearBrand?: boolean
+      } = {
         id: listingId,
         title: formData.title,
         description: formData.description,
@@ -257,6 +264,9 @@ export default function EditListingPage() {
         quantity: formData.quantity
           ? parseInt(formData.quantity, 10)
           : undefined,
+        ...(trimmedBrand
+          ? { brandName: trimmedBrand }
+          : { clearBrand: true }),
       }
 
       await updateListing({
@@ -468,6 +478,7 @@ export default function EditListingPage() {
                   value={watch('categoryId')}
                   onChange={(id) => {
                     setValue('categoryId', id)
+                    setValue('brandName', '')
                   }}
                   placeholder='Select a Category'
                 />
@@ -527,6 +538,12 @@ export default function EditListingPage() {
                 </p>
               )}
             </div>
+
+            <BrandPicker
+              categoryId={watch('categoryId') || undefined}
+              value={watch('brandName') || ''}
+              onChange={(name) => setValue('brandName', name)}
+            />
 
             <div className='flex items-center gap-3'>
               <input

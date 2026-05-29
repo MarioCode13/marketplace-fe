@@ -296,7 +296,17 @@ export default function ListingDetailClient({
                   </Button>
                 )}
               </div>
-              <Badge className='w-fit'>{listing.condition}</Badge>
+              <div className='flex flex-wrap gap-2 mt-2'>
+                <Badge className='w-fit'>{listing.condition}</Badge>
+                {listing.brand?.name && (
+                  <Badge
+                    variant='secondary'
+                    className='w-fit'
+                  >
+                    {listing.brand.name}
+                  </Badge>
+                )}
+              </div>
               <p className='text-gray-600 my-4'>{listing.description}</p>
               <p
                 className='text-2xl font-semibold text-green-600 mb-2'

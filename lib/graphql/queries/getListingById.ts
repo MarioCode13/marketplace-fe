@@ -29,6 +29,10 @@ export const GET_LISTING_BY_ID = gql`
         name
         parentId
       }
+      brand {
+        id
+        name
+      }
       customCity
       condition
       createdAt

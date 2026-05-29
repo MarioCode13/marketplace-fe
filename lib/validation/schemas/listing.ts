@@ -72,6 +72,17 @@ export const listingSchema = z.object({
             'Custom city contains invalid characters or patterns'
         ),
     sellerMarked18Plus: z.boolean().optional(),
+    brandName: z
+        .string()
+        .optional()
+        .refine(
+            (val) => !val || (val.length >= 1 && val.length <= 100),
+            'Brand name must be between 1 and 100 characters'
+        )
+        .refine(
+            (val) => !val || isValidForInput(val),
+            'Brand name contains invalid characters or patterns'
+        ),
 }).superRefine((data, ctx) => {
     if (
         data.secondaryCategoryId &&

@@ -6,17 +6,32 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /**
- * Generates a safe image URL for display
- * Handles both pre-signed URLs and relative filenames
+ * Fixes legacy rows where an external URL was incorrectly stored as a B2 object key.
+ */
+export function unwrapMalformedB2ImageUrl(url: string): string {
+  if (!url?.includes('backblazeb2.com')) return url
+  const searchFrom = url.startsWith('https://') ? 8 : url.startsWith('http://') ? 7 : 0
+  const nestedHttps = url.indexOf('https://', searchFrom)
+  const nestedHttp =
+    nestedHttps < 0 ? url.indexOf('http://', searchFrom) : -1
+  const nested = nestedHttps >= 0 ? nestedHttps : nestedHttp
+  if (nested < 0) return url
+  const inner = url.slice(nested)
+  const authIdx = inner.indexOf('?Authorization=')
+  return authIdx > 0 ? inner.slice(0, authIdx) : inner
+}
+
+/**
+ * Generates a safe image URL for display.
+ * Listings should receive pre-signed URLs from the API; this normalizes edge cases.
  */
 export function generateImageUrl(filename: string): string {
-  // If it's already a valid URL, return it
-  if (filename && (filename.startsWith('http://') || filename.startsWith('https://'))) {
-    return filename
+  if (!filename) return '/logo.png'
+
+  if (filename.startsWith('http://') || filename.startsWith('https://')) {
+    return unwrapMalformedB2ImageUrl(filename)
   }
 
-  // If it's a relative filename, return a placeholder
-  // In production, this should be handled by the backend
   return '/logo.png'
 }
 

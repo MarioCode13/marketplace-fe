@@ -1,9 +1,8 @@
 'use client'
 
-import React from 'react'
-import LoadingListings from './loading'
+import React, { useEffect, useState } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { ListingsNavPendingContext } from './listings-nav-context'
 
 export default function ClientLoadingWrapper({
   children,
@@ -21,21 +20,23 @@ export default function ClientLoadingWrapper({
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement
-      const paginationButton = target.closest('button[data-pagination]')
-      if (paginationButton && !paginationButton.hasAttribute('disabled')) {
-        setIsNavigating(true)
-        return
-      }
-      const filterActionButton = target.closest('button[data-filter-action]')
-      if (filterActionButton && !filterActionButton.hasAttribute('disabled')) {
-        setIsNavigating(true)
-        return
-      }
-
-      const applyButton = target.closest('button')
       if (
-        applyButton?.getAttribute('type') === 'submit' &&
-        applyButton.closest('[role="dialog"]')
+        target.closest('button[data-pagination]') &&
+        !target.closest('button[disabled]')
+      ) {
+        setIsNavigating(true)
+        return
+      }
+      if (
+        target.closest('button[data-filter-action]') &&
+        !target.closest('button[disabled]')
+      ) {
+        setIsNavigating(true)
+        return
+      }
+      if (
+        target.closest('button[data-filter-nav]') &&
+        !target.closest('button[disabled]')
       ) {
         setIsNavigating(true)
       }
@@ -45,9 +46,9 @@ export default function ClientLoadingWrapper({
     return () => document.removeEventListener('click', handleClick)
   }, [])
 
-  if (isNavigating) {
-    return <LoadingListings />
-  }
-
-  return <>{children}</>
+  return (
+    <ListingsNavPendingContext.Provider value={isNavigating}>
+      {children}
+    </ListingsNavPendingContext.Provider>
+  )
 }

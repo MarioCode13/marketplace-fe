@@ -17,13 +17,15 @@ export const GET_LISTINGS = gql`
     $sortBy: String,
     $sortOrder: String,
     $userId: ID,
-    $businessId: ID
+    $businessId: ID,
+    $brandId: ID
   ) {
     getListings(
       limit: $limit,
       offset: $offset,
       categoryId: $categoryId,
       categorySlug: $categorySlug,
+      brandId: $brandId,
       minPrice: $minPrice,
       maxPrice: $maxPrice,
       condition: $condition,
@@ -60,6 +62,10 @@ export const GET_LISTINGS = gql`
         createdAt
         expiresAt
         category {
+          id
+          name
+        }
+        brand {
           id
           name
         }

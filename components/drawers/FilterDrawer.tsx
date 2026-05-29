@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import Drawer from './Drawer'
 import { Label } from '../ui/label'
@@ -14,11 +14,13 @@ import { Badge } from '../ui/badge'
 import { X, Search, MapPin, Calendar, SortAsc, SortDesc } from 'lucide-react'
 import CityAutocomplete from './CityAutocomplete'
 import CategoryCascader, { CategoryNode } from './CategoryCascader'
+import BrandFilterChips from '@/components/filters/BrandFilterChips'
 
 type SortOrder = 'asc' | 'desc'
 
 export interface FilterState {
   categoryId?: string
+  brandId?: string
   minPrice?: number
   maxPrice?: number
   condition?: string
@@ -72,6 +74,7 @@ export default function FilterDrawer({
 
   const [filters, setFilters] = useState<FilterState>({
     categoryId: currentFilters.categoryId,
+    brandId: currentFilters.brandId,
     minPrice: toNumber(currentFilters.minPrice),
     maxPrice: toNumber(currentFilters.maxPrice),
     condition: currentFilters.condition,
@@ -86,25 +89,31 @@ export default function FilterDrawer({
   })
 
   const [showCustomCity, setShowCustomCity] = useState(false)
+  const wasOpenRef = useRef(false)
 
-  // Reset filters when drawer opens
+  const filtersFromCurrent = (): FilterState => ({
+    categoryId: currentFilters.categoryId,
+    brandId: currentFilters.brandId,
+    minPrice: toNumber(currentFilters.minPrice),
+    maxPrice: toNumber(currentFilters.maxPrice),
+    condition: currentFilters.condition,
+    cityId: currentFilters.cityId,
+    customCity: currentFilters.customCity || '',
+    cityLabel: currentFilters.cityLabel || '',
+    searchTerm: currentFilters.searchTerm || '',
+    minDate: currentFilters.minDate || '',
+    maxDate: currentFilters.maxDate || '',
+    sortBy: currentFilters.sortBy || 'createdAt',
+    sortOrder: currentFilters.sortOrder || 'desc',
+  })
+
+  // Sync from URL/path only when the drawer opens — avoid wiping in-progress edits on re-render
   useEffect(() => {
-    if (isOpen) {
-      setFilters({
-        categoryId: currentFilters.categoryId,
-        minPrice: toNumber(currentFilters.minPrice),
-        maxPrice: toNumber(currentFilters.maxPrice),
-        condition: currentFilters.condition,
-        cityId: currentFilters.cityId,
-        customCity: currentFilters.customCity || '',
-        cityLabel: currentFilters.cityLabel || '',
-        searchTerm: currentFilters.searchTerm || '',
-        minDate: currentFilters.minDate || '',
-        maxDate: currentFilters.maxDate || '',
-        sortBy: currentFilters.sortBy || 'createdAt',
-        sortOrder: currentFilters.sortOrder || 'desc',
-      })
+    if (isOpen && !wasOpenRef.current) {
+      setFilters(filtersFromCurrent())
+      setShowCustomCity(Boolean(currentFilters.customCity))
     }
+    wasOpenRef.current = isOpen
   }, [isOpen, currentFilters])
 
   const updateFilter = <K extends keyof FilterState>(
@@ -121,6 +130,7 @@ export default function FilterDrawer({
   const clearAllFilters = () => {
     setFilters({
       categoryId: undefined,
+      brandId: undefined,
       minPrice: undefined,
       maxPrice: undefined,
       condition: undefined,
@@ -137,7 +147,6 @@ export default function FilterDrawer({
 
   const applyFilters = () => {
     onApply(filters)
-    onClose()
   }
 
   const hasActiveFilters = () => {
@@ -263,10 +272,25 @@ export default function FilterDrawer({
               <CategoryCascader
                 categories={categories as CategoryNode[]}
                 value={filters.categoryId}
-                onChange={(id) => updateFilter('categoryId', id)}
+                onChange={(id) => {
+                  setFilters((prev) => ({
+                    ...prev,
+                    categoryId: id,
+                    brandId: id === prev.categoryId ? prev.brandId : undefined,
+                  }))
+                }}
                 placeholder='Select a Category'
               />
             </div>
+
+            {filters.categoryId && (
+              <BrandFilterChips
+                categoryId={filters.categoryId}
+                selectedBrandId={filters.brandId}
+                onSelect={(brandId) => updateFilter('brandId', brandId)}
+                compact
+              />
+            )}
 
             {/* Condition */}
             <div className='space-y-2'>

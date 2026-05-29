@@ -61,11 +61,13 @@ export default async function Page({
   const cityId = getParamValue('cityId') || undefined
   const sortBy = getParamValue('sortBy')
   const sortOrder = getParamValue('sortOrder')
+  const brandId = getParamValue('brandId') || undefined
 
   const variables = {
     limit,
     offset,
     categoryId,
+    brandId,
     minPrice: minPrice ? parseFloat(minPrice) : undefined,
     maxPrice: maxPrice ? parseFloat(maxPrice) : undefined,
     condition,
@@ -92,6 +94,8 @@ export default async function Page({
         serverListings={listings}
         currentPage={page}
         itemsPerPage={limit}
+        filterCategoryId={categoryId}
+        filterBrandId={brandId}
       />
     </ClientLoadingWrapper>
   )

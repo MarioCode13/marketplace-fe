@@ -37,6 +37,7 @@ import CategoryCascader, {
 import { buildCategoryTree, FlatCategory, formatEnum } from '@/lib/utils'
 import { listingSchema, type ListingFormData } from '@/lib/validation'
 import { checkImageForApproval } from '@/lib/utils/contentModeration'
+import BrandPicker from '@/components/BrandPicker'
 
 const CREATE_LISTING = gql`
   mutation CreateListing(
@@ -54,6 +55,7 @@ const CREATE_LISTING = gql`
     $businessId: ID
     $nsfwFlagged: Boolean
     $sellerMarked18Plus: Boolean
+    $brandName: String
   ) {
     createListing(
       title: $title
@@ -70,6 +72,7 @@ const CREATE_LISTING = gql`
       businessId: $businessId
       nsfwFlagged: $nsfwFlagged
       sellerMarked18Plus: $sellerMarked18Plus
+      brandName: $brandName
     ) {
       id
       title
@@ -142,6 +145,7 @@ export default function SellPage() {
       quantity: '',
       customCity: '',
       sellerMarked18Plus: false,
+      brandName: '',
     },
   })
 
@@ -254,6 +258,7 @@ export default function SellPage() {
           businessId: userContext.businessId || undefined,
           nsfwFlagged: hasExplicitImages || undefined,
           sellerMarked18Plus: formData.sellerMarked18Plus || undefined,
+          brandName: formData.brandName?.trim() || undefined,
         },
       })
 
@@ -456,6 +461,7 @@ export default function SellPage() {
                 value={watch('categoryId')}
                 onChange={(id) => {
                   setValue('categoryId', id)
+                  setValue('brandName', '')
                   if (watch('secondaryCategoryId') === id) {
                     setValue('secondaryCategoryId', '')
                   }
@@ -469,6 +475,12 @@ export default function SellPage() {
               )}
             </div>
           )}
+
+          <BrandPicker
+            categoryId={watch('categoryId') || undefined}
+            value={watch('brandName') || ''}
+            onChange={(name) => setValue('brandName', name)}
+          />
 
           {categoriesLoading ? (
             <p>Loading categories...</p>

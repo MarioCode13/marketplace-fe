@@ -1,4 +1,5 @@
 export * from './getListings'
+export * from './brands'
 export * from './getListingById'
 export * from './getCategories'
 export * from './getConditions'
