@@ -45,7 +45,7 @@ export const metadata: Metadata = {
       "Buy and sell secondhand items safely on Dealio, South Africa's trusted marketplace. Secure transactions, verified sellers, and a transparent trust rating system.",
     images: [
       {
-        url: '/og-image.jpg',
+        url: '/og-image.png',
         width: 1200,
         height: 630,
         alt: "Dealio - South Africa's Trusted Secondhand Marketplace",
@@ -63,7 +63,7 @@ export const metadata: Metadata = {
     title: "Dealio - South Africa's Trusted Secondhand Marketplace",
     description:
       "Buy and sell secondhand items safely on Dealio, South Africa's trusted marketplace.",
-    images: ['/og-image.jpg'],
+    images: ['/og-image.png'],
     creator: '@dealio_za',
   },
   robots: {
@@ -90,7 +90,10 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang='en-ZA' suppressHydrationWarning>
+    <html
+      lang='en-ZA'
+      suppressHydrationWarning
+    >
       <head>
         <link
           rel='icon'

@@ -330,18 +330,33 @@ export default function PrivacyPolicyPage() {
               9. Cookies and Similar Technologies
             </h2>
             <p className='text-foreground leading-relaxed mb-4'>
-              We use cookies and similar technologies to:
+              We use cookies and similar technologies (including browser local
+              storage) only as needed to operate Dealio. We do not currently use
+              analytics, advertising, or third-party tracking cookies. In
+              particular, we use them to:
             </p>
             <ul className='list-disc list-inside space-y-2 text-foreground'>
-              <li>Remember your preferences and settings</li>
-              <li>Analyze how you use our platform</li>
-              <li>Provide personalized content and features</li>
-              <li>Ensure security and prevent fraud</li>
+              <li>
+                Keep you signed in and maintain your session (secure,
+                httpOnly cookies)
+              </li>
+              <li>
+                Protect your account and requests (for example, CSRF tokens)
+              </li>
+              <li>
+                Remember display preferences such as light or dark theme
+              </li>
+              <li>Support core platform functionality while you use the site</li>
             </ul>
             <p className='text-foreground leading-relaxed mt-4'>
-              You can control cookie settings through your browser preferences.
-              However, disabling certain cookies may affect the functionality of
-              our platform.
+              If we introduce analytics or other non-essential cookies in the
+              future, we will update this policy and, where required, ask for
+              your consent before those technologies are used.
+            </p>
+            <p className='text-foreground leading-relaxed mt-4'>
+              You can control cookies through your browser settings. Disabling
+              essential cookies may prevent you from signing in or using parts
+              of the platform.
             </p>
           </section>
 
