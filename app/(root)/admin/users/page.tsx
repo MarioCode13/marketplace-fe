@@ -29,7 +29,7 @@ interface UserData {
   getAllUsers: {
     id: string
     username: string
-    email: string
+    email?: string | null
     firstName?: string | null
     lastName?: string | null
     role: string
@@ -112,16 +112,30 @@ export default function AdminUsersPage() {
     // Filter by search term
     if (searchTerm) {
       const search = searchTerm.toLowerCase()
-      return (
-        user.username.toLowerCase().includes(search) ||
-        user.email.toLowerCase().includes(search) ||
-        user.firstName?.toLowerCase().includes(search) ||
-        user.lastName?.toLowerCase().includes(search)
-      )
+      const searchableText = [
+        user.username,
+        user.email,
+        user.firstName,
+        user.lastName,
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase()
+
+      return searchableText.includes(search)
     }
 
     return true
   })
+
+  const getDisplayName = (user: UserData['getAllUsers'][number]) => {
+    const fullName = [user.firstName, user.lastName].filter(Boolean).join(' ')
+    return fullName || user.username || 'Unknown user'
+  }
+
+  const getEmailDisplay = (user: UserData['getAllUsers'][number]) => {
+    return user.email?.trim() || user.username || 'No email on file'
+  }
 
   const getUserTypeIcon = (planType?: string | null) => {
     switch (planType) {
@@ -218,10 +232,10 @@ export default function AdminUsersPage() {
                       </div>
                       <div>
                         <div className='font-medium'>
-                          {user.firstName} {user.lastName || user.username}
+                          {getDisplayName(user)}
                         </div>
                         <div className='text-sm text-muted-foreground'>
-                          {user.email}
+                          {getEmailDisplay(user)}
                         </div>
                       </div>
                     </div>

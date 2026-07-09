@@ -6,6 +6,9 @@ export const GET_USERS = gql`
       id
       username
       email
+      firstName
+      lastName
+      planType
       city {
         id
         name
@@ -17,6 +20,15 @@ export const GET_USERS = gql`
         }
       }
       customCity
+      trustRating {
+        overallScore
+        starRating
+        trustLevel
+        totalReviews
+        totalTransactions
+        successfulTransactions
+      }
+      createdAt
     }
   }
 `
